@@ -1,0 +1,6 @@
+[submodule "external/libds"]
+	path = external/libds
+	url = http://dev.danilafe.com/Experiments/libds.git
+[submodule "external/liblex"]
+	path = external/liblex
+	url = http://dev.danilafe.com/Experiments/liblex.git
