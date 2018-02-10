@@ -17,7 +17,34 @@ struct lexer {
     eval_config config;
 };
 
+/**
+ * The various tokens used by the lexer
+ * in order to tag meaningful sequences
+ * of characters.
+ */
+enum lexer_token {
+    TOKEN_CHAR = 0,
+    TOKEN_ID,
+    TOKEN_TRUE,
+    TOKEN_FALSE,
+    TOKEN_NUM,
+    TOKEN_STR,
+    TOKEN_CHAR_LIT,
+    TOKEN_KW_FUN,
+    TOKEN_KW_IF,
+    TOKEN_KW_ELSE,
+    TOKEN_KW_WHILE,
+    TOKEN_KW_DO,
+    TOKEN_KW_FOR,
+    TOKEN_KW_RETURN,
+    TOKEN_OP_INFIX,
+    TOKEN_OP_POSTFIX,
+    TOKEN_OP_PREFIX,
+    TOKEN_LAST
+};
+
 typedef struct lexer lexer;
+typedef enum lexer_token lexer_token;
 
 /**
  * Initializes the given lexer,
