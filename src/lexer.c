@@ -68,6 +68,7 @@ int _lexer_foreach_convert_match(void* data, va_list args) {
         state->line++;
         state->line_from = match->to;
     } if((new_match = malloc(sizeof(*new_match)))) {
+        new_match->type = match->pattern;
         new_match->from = match->from;
         new_match->to = match->to;
         new_match->line_from = state->line_from;
