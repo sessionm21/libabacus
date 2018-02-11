@@ -52,6 +52,13 @@ typedef struct table_entry table_entry;
  */
 void table_init(table* table);
 /**
+ * Searches for the given string in the table.
+ * @param table the table to search.
+ * @param string the string to search for.
+ * @return the table entry, or NULL if an entry was not found.
+ */
+table_entry* table_search(table* table, const char* string);
+/**
  * Frees the resources allocated by the
  * given table.
  * @param table the table to free.
