@@ -3,6 +3,7 @@
 #include "libabacus_util.h"
 #include "lexer.h"
 #include <stdlib.h>
+#include <string.h>
 
 struct parser_state {
     ll_node* current_node;
@@ -54,6 +55,18 @@ libab_result _parser_consume_char(struct parser_state* state, char to_consume) {
 }
 
 libab_result _parse_block(struct parser_state*, tree**, int);
+
+libab_result _parser_extract_token(struct parser_state* state, char** into, lexer_match* match) {
+    libab_result result = LIBAB_SUCCESS;
+    size_t string_size = match->to - match->from;
+    if((*into = malloc(string_size + 1))) {
+        strncpy(*into, state->string + match->from, string_size);
+        (*into)[string_size] = '\0';
+    } else {
+        result = LIBAB_MALLOC;
+    }
+    return result;
+}
 
 libab_result _parse_expression(struct parser_state* state, tree** store_into) {
     libab_result result = LIBAB_SUCCESS;
