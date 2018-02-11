@@ -1,4 +1,5 @@
 #include "lexer.h"
+#include "libabacus_util.h"
 
 libab_result lexer_init(lexer* lexer) {
     size_t i;
@@ -39,14 +40,12 @@ libab_result lexer_init(lexer* lexer) {
 
     eval_config_init(&lexer->config);
     for(i = 0; i < count && result == LIBAB_SUCCESS; i++) {
-        result =
-            (eval_config_add(&lexer->config, words[i], tokens[i]) == LIBLEX_SUCCESS)
-            ? LIBAB_SUCCESS : LIBAB_MALLOC;
+        result = convert_lex_result(
+                eval_config_add(&lexer->config, words[i], tokens[i]));
     }
 
     return result;
 }
 libab_result lexer_free(lexer* lexer) {
-    return (eval_config_free(&lexer->config) == LIBLEX_SUCCESS) ?
-        LIBAB_SUCCESS : LIBAB_MALLOC;
+    return convert_lex_result(eval_config_free(&lexer->config));
 }
