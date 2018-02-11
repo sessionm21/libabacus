@@ -99,8 +99,8 @@ libab_result lexer_lex(lexer* lexer, const char* string, ll* lex_into) {
             eval_all(string, 0, &lexer->config, &raw_matches));
 
     if(result == LIBAB_SUCCESS) {
-        result = ll_foreach(&raw_matches, NULL, compare_always,
-                _lexer_foreach_convert_match, &state);
+        result = (libab_result) ll_foreach(&raw_matches, NULL, compare_always,
+                                           _lexer_foreach_convert_match, &state);
     }
 
     if(result != LIBAB_SUCCESS) {
