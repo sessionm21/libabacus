@@ -9,7 +9,9 @@ enum libab_result {
     LIBAB_SUCCESS,
     LIBAB_MALLOC,
     LIBAB_BAD_PATTERN,
-    LIBAB_FAILED_MATCH
+    LIBAB_FAILED_MATCH,
+    LIBAB_EOF,
+    LIBAB_UNEXPECTED
 };
 
 typedef enum libab_result libab_result;
