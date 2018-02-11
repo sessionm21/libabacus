@@ -12,7 +12,7 @@ libab_result lexer_init(lexer* lexer) {
         "[a-zA-Z][a-zA-Z0-9_]*",
         "true",
         "false",
-        "[0-9]+(\\.[0-9]*)",
+        "[0-9]+(\\.[0-9]*)?",
         "\"[^\"]*\"",
         "'[^']'",
         "fun",
