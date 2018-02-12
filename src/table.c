@@ -14,6 +14,22 @@ libab_table_entry* table_search(libab_table* table, const char* string) {
     } while(table && to_return == NULL);
     return to_return;
 }
+libab_operator* libab_table_search_operator(libab_table* table, const char* string) {
+    libab_table_entry* entry = table_search(table, string);
+    libab_operator* to_return = NULL;
+    if(entry && entry->variant == ENTRY_OPERATOR) {
+        to_return = &entry->data_u.op;
+    }
+    return to_return;
+}
+libab_function* libab_table_search_function(libab_table* table, const char* string) {
+    libab_table_entry* entry = table_search(table, string);
+    libab_function* to_return = NULL;
+    if(entry && entry->variant == ENTRY_FUNCTION) {
+        to_return = &entry->data_u.function;
+    }
+    return to_return;
+}
 libab_result libab_table_put(libab_table* table, const char* string, libab_table_entry* entry) {
     return libab_convert_ds_result(ht_put(&table->table, string, entry));
 }

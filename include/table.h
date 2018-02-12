@@ -69,6 +69,22 @@ void libab_table_init(libab_table* table);
  */
 libab_table_entry* libab_table_search(libab_table* table, const char* string);
 /**
+ * Searches for the given string in the table, returning a value only
+ * if it is an operator.
+ * @param table the table to search.
+ * @param string the string to search for.
+ * @return the found operator, or NULL if it was not found.
+ */
+libab_operator* libab_table_search_operator(libab_table* table, const char* string);
+/**
+ * Searches for the given string in the table, returning a value only
+ * if it is a function.
+ * @param table the table to search.
+ * @param string the string to search for.
+ * @return the found function, or NULL if it was not found.
+ */
+libab_function* libab_table_search_function(libab_table* table, const char* string);
+/**
  * Stores the given entry in the table under the given key.
  * @param table the table to store the entry into.
  * @param string the string to use as the key.
