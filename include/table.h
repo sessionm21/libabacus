@@ -3,6 +3,7 @@
 
 #include "ht.h"
 #include "result.h"
+#include "custom.h"
 
 /**
  * A struct that represents a structure
@@ -29,6 +30,7 @@ struct libab_table_s {
 enum libab_table_entry_variant_e {
     ENTRY_VALUE,
     ENTRY_TYPE,
+    ENTRY_OPERATOR,
     ENTRY_FUNCTION
 };
 
@@ -40,6 +42,14 @@ struct libab_table_entry_s {
      * The type of this entry.
      */
     enum libab_table_entry_variant_e variant;
+    /**
+     * Union that holds the various types of
+     * data that this entry could hold.
+     */
+    union {
+        libab_operator op;
+        libab_function function;
+    } data_u;
 };
 
 typedef struct libab_table_s libab_table;
@@ -58,6 +68,14 @@ void libab_table_init(libab_table* table);
  * @return the table entry, or NULL if an entry was not found.
  */
 libab_table_entry* libab_table_search(libab_table* table, const char* string);
+/**
+ * Stores the given entry in the table under the given key.
+ * @param table the table to store the entry into.
+ * @param string the string to use as the key.
+ * @param entry the new entry to put into the table.
+ * @return the result of the insertion, which could be LIBAB_MALLOC.
+ */
+libab_result libab_table_put(libab_table* table, const char* string, libab_table_entry* entry);
 /**
  * Frees the resources allocated by the
  * given table.
