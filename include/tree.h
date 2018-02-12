@@ -1,7 +1,7 @@
 #ifndef LIBABACUS_TREE_H
 #define LIBABACUS_TREE_H
 
-#include "libabacus_result.h"
+#include "result.h"
 #include "vec.h"
 
 /**

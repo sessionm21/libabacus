@@ -1,4 +1,4 @@
-#include "libabacus_util.h"
+#include "util.h"
 
 libab_result libab_convert_lex_result(liblex_result to_convert) {
     libab_result result = LIBAB_SUCCESS;

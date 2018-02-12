@@ -3,7 +3,7 @@
 
 #include "libds.h"
 #include "liblex.h"
-#include "libabacus_result.h"
+#include "result.h"
 
 /**
  * Converts a result code from liblex to libabacus.

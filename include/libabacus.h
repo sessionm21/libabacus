@@ -5,7 +5,7 @@
 #include "lexer.h"
 #include "table.h"
 #include "parser.h"
-#include "libabacus_result.h"
+#include "result.h"
 
 /**
  * A function pointer that is called

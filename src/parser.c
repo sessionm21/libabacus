@@ -1,6 +1,6 @@
 #include "parser.h"
-#include "libabacus_util.h"
-#include "libabacus_result.h"
+#include "util.h"
+#include "result.h"
 #include "lexer.h"
 #include <stdlib.h>
 #include <string.h>

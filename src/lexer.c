@@ -1,6 +1,6 @@
 #include "lexer.h"
 #include "ll.h"
-#include "libabacus_util.h"
+#include "util.h"
 #include <stdlib.h>
 #include <ctype.h>
 

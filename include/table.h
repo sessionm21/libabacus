@@ -2,7 +2,7 @@
 #define LIBABACUS_TABLE_H
 
 #include "ht.h"
-#include "libabacus_result.h"
+#include "result.h"
 
 /**
  * A struct that represents a structure
