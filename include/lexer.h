@@ -2,7 +2,7 @@
 #define LIBABACUS_LEXER_H
 
 #include "eval.h"
-#include "libabacus.h"
+#include "libabacus_result.h"
 
 /**
  * The lexer used for reading
