@@ -4,6 +4,7 @@
 #include "ht.h"
 #include "lexer.h"
 #include "table.h"
+#include "parser.h"
 #include "libabacus_result.h"
 
 /**
@@ -52,6 +53,11 @@ struct libab_s {
      * to tokens.
      */
     libab_lexer lexer;
+    /**
+     * The parser used to convert
+     * tokens to a tree.
+     */
+    libab_parser parser;
     /**
      * The table used to store top-level
      * things like functions and operators.

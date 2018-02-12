@@ -1,6 +1,6 @@
-#include "libabacus.h"
 #include "parser.h"
 #include "libabacus_util.h"
+#include "libabacus_result.h"
 #include "lexer.h"
 #include <stdlib.h>
 #include <string.h>
@@ -9,15 +9,18 @@ struct parser_state {
     ll_node* current_node;
     libab_lexer_match* current_match;
     const char* string;
+    libab_table* base_table;
 };
 
 void _parser_state_update(struct parser_state* state) {
     state->current_match = state->current_node ? state->current_node->data : NULL;
 }
 
-void _parser_state_init(struct parser_state* state, ll* tokens, const char* string) {
+void _parser_state_init(struct parser_state* state,
+        ll* tokens, const char* string, libab_table* table) {
     state->current_node = tokens->head;
     state->string = string;
+    state->base_table = table;
     _parser_state_update(state);
 }
 
@@ -109,10 +112,14 @@ libab_result _parse_block(struct parser_state* state,
     return result;
 }
 
-libab_result libab_parse_tokens(ll* tokens, const char* string, libab_tree** store_into) {
+void libab_parser_init(libab_parser* parser, libab_table* table) {
+    parser->base_table = table;
+}
+libab_result libab_parser_parse(libab_parser* parser, ll* tokens,
+        const char* string, libab_tree** store_into) {
     libab_result result = LIBAB_SUCCESS;
     struct parser_state state;
-    _parser_state_init(&state, tokens, string);
+    _parser_state_init(&state, tokens, string, parser->base_table);
 
     result = _parse_block(&state, store_into, 0);
     if(result == LIBAB_SUCCESS) {
@@ -120,4 +127,7 @@ libab_result libab_parse_tokens(ll* tokens, const char* string, libab_tree** sto
     } 
 
     return result;
+}
+void libab_parser_free(libab_parser* parser) {
+    parser->base_table = NULL;
 }
