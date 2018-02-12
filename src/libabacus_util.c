@@ -1,6 +1,6 @@
 #include "libabacus_util.h"
 
-libab_result convert_lex_result(liblex_result to_convert) {
+libab_result libab_convert_lex_result(liblex_result to_convert) {
     libab_result result = LIBAB_SUCCESS;
     if(to_convert == LIBLEX_MALLOC) {
         result = LIBAB_MALLOC;
@@ -11,7 +11,7 @@ libab_result convert_lex_result(liblex_result to_convert) {
     }
     return result;
 }
-libab_result convert_ds_result(libds_result to_convert) {
+libab_result libab_convert_ds_result(libds_result to_convert) {
     libab_result result = LIBAB_SUCCESS;
     if(to_convert == LIBDS_MALLOC) {
         result = LIBAB_MALLOC;

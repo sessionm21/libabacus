@@ -11,11 +11,11 @@
  * as types, functions, and variables in an
  * environment with scopes.
  */
-struct table {
+struct libab_table_s {
     /**
      * The "parent" scope of this table.
      */
-    struct table* parent;
+    struct libab_table_s* parent;
     /**
      * The hash table used to store the data.
      */
@@ -26,7 +26,7 @@ struct table {
  * Enum that represents the type of a table
  * entry.
  */
-enum table_entry_variant {
+enum libab_table_entry_variant_e {
     ENTRY_VALUE,
     ENTRY_TYPE,
     ENTRY_FUNCTION
@@ -35,34 +35,34 @@ enum table_entry_variant {
 /**
  * An entry in the table.
  */
-struct table_entry {
+struct libab_table_entry_s {
     /**
      * The type of this entry.
      */
-    enum table_entry_variant variant;
+    enum libab_table_entry_variant_e variant;
 };
 
-typedef struct table table;
-typedef enum table_entry_variant table_entry_variant;
-typedef struct table_entry table_entry;
+typedef struct libab_table_s libab_table;
+typedef enum libab_table_entry_variant_e libab_table_entry_variant;
+typedef struct libab_table_entry_s libab_table_entry;
 
 /**
  * Initializes the given table.
  * @param table the table to initialize.
  */
-void table_init(table* table);
+void libab_table_init(libab_table* table);
 /**
  * Searches for the given string in the table.
  * @param table the table to search.
  * @param string the string to search for.
  * @return the table entry, or NULL if an entry was not found.
  */
-table_entry* table_search(table* table, const char* string);
+libab_table_entry* libab_table_search(libab_table* table, const char* string);
 /**
  * Frees the resources allocated by the
  * given table.
  * @param table the table to free.
  */
-void table_free(table* table);
+void libab_table_free(libab_table* table);
 
 #endif

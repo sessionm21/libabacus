@@ -7,7 +7,7 @@
 /**
  * Enum to represent the variant of a tree node.
  */
-enum tree_variant {
+enum libab_tree_variant_e {
     NONE,
     BASE,
     ID,
@@ -31,11 +31,11 @@ enum tree_variant {
 /**
  * A tree node that has been parsed from the input tokens.
  */
-struct tree {
+struct libab_tree_s {
     /**
      * The variant of tree node.
      */
-    enum tree_variant variant;
+    enum libab_tree_variant_e variant;
     /**
      * The string value of this tree, if applicable.
      */
@@ -70,7 +70,7 @@ struct tree {
     size_t to;
 };
 
-typedef enum tree_variant tree_variant;
-typedef struct tree tree;
+typedef enum libab_tree_variant_e libab_tree_variant;
+typedef struct libab_tree_s libab_tree;
 
 #endif

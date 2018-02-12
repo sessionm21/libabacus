@@ -7,7 +7,7 @@
 
 struct parser_state {
     ll_node* current_node;
-    lexer_match* current_match;
+    libab_lexer_match* current_match;
     const char* string;
 };
 
@@ -33,7 +33,7 @@ int _parser_is_char(struct parser_state* state, char to_expect) {
             state->string[state->current_match->from] == to_expect);
 }
 
-int _parser_is_type(struct parser_state* state, lexer_token to_expect) {
+int _parser_is_type(struct parser_state* state, libab_lexer_token to_expect) {
     return (state->current_match && state->current_match->type == to_expect);
 }
 
@@ -54,9 +54,9 @@ libab_result _parser_consume_char(struct parser_state* state, char to_consume) {
     return result;
 }
 
-libab_result _parse_block(struct parser_state*, tree**, int);
+libab_result _parse_block(struct parser_state*, libab_tree**, int);
 
-libab_result _parser_extract_token(struct parser_state* state, char** into, lexer_match* match) {
+libab_result _parser_extract_token(struct parser_state* state, char** into, libab_lexer_match* match) {
     libab_result result = LIBAB_SUCCESS;
     size_t string_size = match->to - match->from;
     if((*into = malloc(string_size + 1))) {
@@ -68,12 +68,12 @@ libab_result _parser_extract_token(struct parser_state* state, char** into, lexe
     return result;
 }
 
-libab_result _parse_expression(struct parser_state* state, tree** store_into) {
+libab_result _parse_expression(struct parser_state* state, libab_tree** store_into) {
     libab_result result = LIBAB_SUCCESS;
     return result;
 }
 
-libab_result _parse_statement(struct parser_state* state, tree** store_into) {
+libab_result _parse_statement(struct parser_state* state, libab_tree** store_into) {
     libab_result result = LIBAB_SUCCESS;
 
     if(_parser_is_char(state, '{')) result = _parse_block(state, store_into, 1);
@@ -93,7 +93,7 @@ libab_result _parse_statement(struct parser_state* state, tree** store_into) {
 }
 
 libab_result _parse_block(struct parser_state* state,
-        tree** store_into, int expect_braces) {
+        libab_tree** store_into, int expect_braces) {
     libab_result result = LIBAB_SUCCESS;
     if((*store_into = malloc(sizeof(**store_into))) == NULL) result = LIBAB_MALLOC;
 
@@ -109,7 +109,7 @@ libab_result _parse_block(struct parser_state* state,
     return result;
 }
 
-libab_result parse_tokens(ll* tokens, const char* string, tree** store_into) {
+libab_result libab_parse_tokens(ll* tokens, const char* string, libab_tree** store_into) {
     libab_result result = LIBAB_SUCCESS;
     struct parser_state state;
     _parser_state_init(&state, tokens, string);

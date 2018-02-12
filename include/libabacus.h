@@ -5,7 +5,7 @@
  * An enum that represents the outcomes of
  * libabacus functions that can fail.
  */
-enum libab_result {
+enum libab_result_e {
     LIBAB_SUCCESS,
     LIBAB_MALLOC,
     LIBAB_BAD_PATTERN,
@@ -14,6 +14,6 @@ enum libab_result {
     LIBAB_UNEXPECTED
 };
 
-typedef enum libab_result libab_result;
+typedef enum libab_result_e libab_result;
 
 #endif

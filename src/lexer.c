@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-libab_result lexer_init(lexer* lexer) {
+libab_result libab_lexer_init(libab_lexer* lexer) {
     size_t i;
     libab_result result = LIBAB_SUCCESS;
     const char* words[] = {
@@ -23,7 +23,7 @@ libab_result lexer_init(lexer* lexer) {
         "for",
         "return"
     };
-    lexer_token tokens[] = {
+    libab_lexer_token tokens[] = {
         TOKEN_CHAR,
         TOKEN_ID,
         TOKEN_TRUE,
@@ -39,11 +39,11 @@ libab_result lexer_init(lexer* lexer) {
         TOKEN_KW_FOR,
         TOKEN_KW_RETURN
     };
-    const size_t count = sizeof(tokens)/sizeof(lexer_token);
+    const size_t count = sizeof(tokens)/sizeof(libab_lexer_token);
 
     eval_config_init(&lexer->config);
     for(i = 0; i < count && result == LIBAB_SUCCESS; i++) {
-        result = convert_lex_result(
+        result = libab_convert_lex_result(
                 eval_config_add(&lexer->config, words[i], tokens[i]));
     }
 
@@ -58,7 +58,7 @@ struct lexer_state {
 };
 int _lexer_foreach_convert_match(void* data, va_list args) {
     libab_result result = LIBAB_SUCCESS;
-    lexer_match* new_match;
+    libab_lexer_match* new_match;
     match* match = data;
     struct lexer_state* state = va_arg(args, struct lexer_state*);
     char first_char = state->source[match->from];
@@ -73,7 +73,7 @@ int _lexer_foreach_convert_match(void* data, va_list args) {
         new_match->to = match->to;
         new_match->line_from = state->line_from;
         new_match->line = state->line;
-        result = convert_ds_result(ll_append(state->matches, new_match));
+        result = libab_convert_ds_result(ll_append(state->matches, new_match));
         if(result != LIBAB_SUCCESS) {
             free(new_match);
         }
@@ -83,7 +83,7 @@ int _lexer_foreach_convert_match(void* data, va_list args) {
     return result;
 }
 
-libab_result lexer_lex(lexer* lexer, const char* string, ll* lex_into) {
+libab_result libab_lexer_lex(libab_lexer* lexer, const char* string, ll* lex_into) {
     libab_result result;
     ll raw_matches;
     struct lexer_state state;
@@ -95,7 +95,7 @@ libab_result lexer_lex(lexer* lexer, const char* string, ll* lex_into) {
     state.matches = lex_into;
     state.source = string;
 
-    result = convert_lex_result(
+    result = libab_convert_lex_result(
             eval_all(string, 0, &lexer->config, &raw_matches));
 
     if(result == LIBAB_SUCCESS) {
@@ -104,7 +104,7 @@ libab_result lexer_lex(lexer* lexer, const char* string, ll* lex_into) {
     }
 
     if(result != LIBAB_SUCCESS) {
-        ll_foreach(lex_into, NULL, compare_always, lexer_foreach_match_free);
+        ll_foreach(lex_into, NULL, compare_always, libab_lexer_foreach_match_free);
     }
 
     ll_foreach(&raw_matches, NULL, compare_always, eval_foreach_match_free);
@@ -112,10 +112,10 @@ libab_result lexer_lex(lexer* lexer, const char* string, ll* lex_into) {
 
     return result;
 }
-libab_result lexer_free(lexer* lexer) {
-    return convert_lex_result(eval_config_free(&lexer->config));
+libab_result libab_lexer_free(libab_lexer* lexer) {
+    return libab_convert_lex_result(eval_config_free(&lexer->config));
 }
-int lexer_foreach_match_free(void* data, va_list args) {
-    free((lexer_match*) data);
+int libab_lexer_foreach_match_free(void* data, va_list args) {
+    free((libab_lexer_match*) data);
     return 0;
 }

@@ -11,6 +11,6 @@
  * @param string the string to use for determining token values.
  * @param store_into tree pointer to store the new data into.
  */
-libab_result parse_tokens(ll* tokens, const char* string, tree** store_into);
+libab_result libab_parse_tokens(ll* tokens, const char* string, libab_tree** store_into);
 
 #endif

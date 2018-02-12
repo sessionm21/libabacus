@@ -9,7 +9,7 @@
  * a string and converting it into
  * tokens.
  */
-struct lexer {
+struct libab_lexer_s {
     /**
      * The liblex configuration used
      * to convert the string into tokens.
@@ -20,7 +20,7 @@ struct lexer {
 /**
  * A token that is produced by the lexer.
  */
-struct lexer_match {
+struct libab_lexer_match_s {
     /**
      * The line that this token was found on.
      */
@@ -51,7 +51,7 @@ struct lexer_match {
  * in order to tag meaningful sequences
  * of characters.
  */
-enum lexer_token {
+enum libab_lexer_token_e {
     TOKEN_CHAR = 0,
     TOKEN_ID,
     TOKEN_TRUE,
@@ -72,9 +72,9 @@ enum lexer_token {
     TOKEN_LAST
 };
 
-typedef struct lexer lexer;
-typedef enum lexer_token lexer_token;
-typedef struct lexer_match lexer_match;
+typedef struct libab_lexer_s libab_lexer;
+typedef enum libab_lexer_token_e libab_lexer_token;
+typedef struct libab_lexer_match_s libab_lexer_match;
 
 /**
  * Initializes the given lexer,
@@ -82,7 +82,7 @@ typedef struct lexer_match lexer_match;
  * @param lexer the lexer to intiailize.
  * @return the result of the operation (can be MALLOC on failed allocation.)
  */
-libab_result lexer_init(lexer* lexer);
+libab_result libab_lexer_init(libab_lexer* lexer);
 /**
  * Turns the given input string into tokens.
  * @param lexer the lexer to use to turn the string into tokens.
@@ -90,19 +90,19 @@ libab_result lexer_init(lexer* lexer);
  * @param lex_into the list which should be populated with matches.
  * @return the result of the operation.
  */
-libab_result lexer_lex(lexer* lexer, const char* string, ll* lext_into);
+libab_result libab_lexer_lex(libab_lexer* lexer, const char* string, ll* lext_into);
 /**
  * Releases the memory associated with the given lexer,
  * removing all registered patterns from it.
  * @param lexer the lexer to free.
  * @return the result of the operation.
  */
-libab_result lexer_free(lexer* lexer);
+libab_result libab_lexer_free(libab_lexer* lexer);
 /**
  * Function intended to be passed to "foreach" calls
  * in libds. lexer_lex allocates matches, and passing this function
  * to foreach will free the memory allocated for the matches.
  */
-int lexer_foreach_match_free(void* data, va_list args);
+int libab_lexer_foreach_match_free(void* data, va_list args);
 
 #endif
