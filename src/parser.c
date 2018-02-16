@@ -71,6 +71,11 @@ libab_result _parser_extract_token(struct parser_state* state, char** into, liba
     return result;
 }
 
+int _parser_match_is_op(libab_lexer_match* match) {
+    return match->type == TOKEN_OP_INFIX ||
+        match->type == TOKEN_OP_PREFIX ||
+        match->type == TOKEN_OP_POSTFIX;
+}
 libab_result _parse_expression(struct parser_state* state, libab_tree** store_into) {
     libab_result result = LIBAB_SUCCESS;
     return result;
