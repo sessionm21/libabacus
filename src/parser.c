@@ -76,6 +76,32 @@ int _parser_match_is_op(libab_lexer_match* match) {
         match->type == TOKEN_OP_PREFIX ||
         match->type == TOKEN_OP_POSTFIX;
 }
+
+libab_result _parser_construct_op_node(struct parser_state* state, libab_lexer_match* match, libab_tree** into) {
+    libab_result result = LIBAB_SUCCESS;
+    if((*into = malloc(sizeof(**into)))) {
+        result = _parser_extract_token(state, &(*into)->string_value, match);
+    } else {
+        result = LIBAB_MALLOC;
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = libab_convert_ds_result(vec_init(&(*into)->children));
+        if(result == LIBAB_SUCCESS) {
+            (*into)->variant = OP;
+            (*into)->from = match->from;
+            (*into)->to = match->to;
+            (*into)->line = match->line;
+            (*into)->line_from = match->line_from;
+        } else {
+            free((*into)->string_value);
+        }
+    } else {
+        free(*into);
+        *into = NULL;
+    }
+    return result;
+}
 libab_result _parse_expression(struct parser_state* state, libab_tree** store_into) {
     libab_result result = LIBAB_SUCCESS;
     return result;
