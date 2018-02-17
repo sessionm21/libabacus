@@ -115,6 +115,19 @@ libab_result _parser_append_op_node(struct parser_state* state, libab_lexer_matc
     } 
     return result;
 }
+
+libab_result _parser_pop_brackets(struct parser_state* state, ll* pop_from, ll* push_to, char bracket, int* success) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_lexer_match* remaining_match;
+    while(result == LIBAB_SUCCESS && _parser_match_is_op(pop_from->tail->data)) {
+        libab_lexer_match* new_match = ll_poptail(pop_from);
+        result = _parser_append_op_node(state, new_match, push_to);
+        free(new_match);
+    }
+    remaining_match = (pop_from->tail) ? pop_from->tail->data : NULL;
+    *success = remaining_match && (remaining_match->type == TOKEN_CHAR) && (state->string[remaining_match->from] == bracket);
+    return result;
+}
 libab_result _parse_expression(struct parser_state* state, libab_tree** store_into) {
     libab_result result = LIBAB_SUCCESS;
     return result;
