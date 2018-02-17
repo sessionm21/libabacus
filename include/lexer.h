@@ -54,21 +54,11 @@ struct libab_lexer_match_s {
 enum libab_lexer_token_e {
     TOKEN_CHAR = 0,
     TOKEN_ID,
-    TOKEN_TRUE,
-    TOKEN_FALSE,
     TOKEN_NUM,
-    TOKEN_STR,
-    TOKEN_CHAR_LIT,
-    TOKEN_KW_FUN,
-    TOKEN_KW_IF,
-    TOKEN_KW_ELSE,
-    TOKEN_KW_WHILE,
-    TOKEN_KW_DO,
-    TOKEN_KW_FOR,
-    TOKEN_KW_RETURN,
     TOKEN_OP_INFIX,
-    TOKEN_OP_POSTFIX,
     TOKEN_OP_PREFIX,
+    TOKEN_OP_POSTFIX,
+    TOKEN_FUN,
     TOKEN_LAST
 };
 

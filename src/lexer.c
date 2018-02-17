@@ -10,34 +10,12 @@ libab_result libab_lexer_init(libab_lexer* lexer) {
     const char* words[] = {
         ".",
         "[a-zA-Z][a-zA-Z0-9_]*",
-        "true",
-        "false",
-        "[0-9]+(\\.[0-9]*)?",
-        "\"[^\"]*\"",
-        "'[^']'",
-        "fun",
-        "if",
-        "else",
-        "while",
-        "do",
-        "for",
-        "return"
+        "[0-9]+(\\.[0-9]*)?"
     };
     libab_lexer_token tokens[] = {
         TOKEN_CHAR,
         TOKEN_ID,
-        TOKEN_TRUE,
-        TOKEN_FALSE,
         TOKEN_NUM,
-        TOKEN_STR,
-        TOKEN_CHAR_LIT,
-        TOKEN_KW_FUN,
-        TOKEN_KW_IF,
-        TOKEN_KW_ELSE,
-        TOKEN_KW_WHILE,
-        TOKEN_KW_DO,
-        TOKEN_KW_FOR,
-        TOKEN_KW_RETURN
     };
     const size_t count = sizeof(tokens)/sizeof(libab_lexer_token);
 
