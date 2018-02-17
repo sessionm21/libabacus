@@ -128,8 +128,69 @@ libab_result _parser_pop_brackets(struct parser_state* state, ll* pop_from, ll* 
     *success = remaining_match && (remaining_match->type == TOKEN_CHAR) && (state->string[remaining_match->from] == bracket);
     return result;
 }
+
+enum parser_expression_type {
+    EXPR_NONE,
+    EXPR_ATOM,
+    EXPR_OPEN_PARENTH,
+    EXPR_CLOSE_PARENTH,
+    EXPR_OP_PREFIX,
+    EXPR_OP_POSTFIX,
+    EXPR_OP_INFIX
+};
+
+int _parser_can_prefix_follow(enum parser_expression_type type) {
+    return type == EXPR_OPEN_PARENTH || type == EXPR_OP_PREFIX || type == EXPR_OP_INFIX || type == EXPR_NONE;
+}
+
+int _parser_can_postfix_follow(enum parser_expression_type type) {
+    return type == EXPR_CLOSE_PARENTH || type == EXPR_ATOM || type == EXPR_OP_POSTFIX;
+}
+
 libab_result _parse_expression(struct parser_state* state, libab_tree** store_into) {
     libab_result result = LIBAB_SUCCESS;
+    ll out_stack;
+    ll op_stack;
+    int pop_success = 0;
+    enum parser_expression_type last_type = EXPR_NONE;
+
+    ll_init(&out_stack);
+    ll_init(&op_stack);
+
+    while(result == LIBAB_SUCCESS && !_parser_eof(state)) {
+        enum parser_expression_type new_type = EXPR_NONE;
+        libab_lexer_match* new_token = state->current_match;
+        if(_parser_is_type(state, TOKEN_CHAR)) {
+            char current_char = state->string[new_token->from];
+            if(current_char == '(') {
+                result = libab_convert_ds_result(ll_append(&op_stack, new_token));
+                if(result != LIBAB_SUCCESS) break;
+                _parser_state_step(state);
+                new_type = EXPR_OPEN_PARENTH;
+            } else if(current_char == ')') {
+                result = _parser_pop_brackets(state, &op_stack, &out_stack, '(', &pop_success);
+                if(result != LIBAB_SUCCESS || !pop_success) break;
+                free(ll_poptail(&op_stack));
+                _parser_state_step(state);
+                new_type = EXPR_CLOSE_PARENTH;
+            } else {
+                break;
+            }
+        } else if(new_token->type == TOKEN_OP_PREFIX && _parser_can_prefix_follow(last_type)) {
+            result = libab_convert_ds_result(ll_append(&op_stack, new_token));
+            if(result != LIBAB_SUCCESS) break;
+            _parser_state_step(state);
+            new_type = EXPR_OP_PREFIX;
+        } else if(new_token->type == TOKEN_OP_POSTFIX && _parser_can_postfix_follow(last_type)) {
+            result = _parser_append_op_node(state, new_token, &out_stack);
+        } else if(new_token->type == TOKEN_OP_INFIX) {
+            
+        } else {
+
+        }
+        last_type = new_type;
+    }
+
     return result;
 }
 
