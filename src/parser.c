@@ -113,10 +113,6 @@ libab_result _parse_statement(struct parser_state* state, libab_tree** store_int
     if(_parser_is_char(state, '{')) result = _parse_block(state, store_into, 1);
     else if(_parser_is_type(state, TOKEN_ID) ||
             _parser_is_type(state, TOKEN_NUM) ||
-            _parser_is_type(state, TOKEN_STR) ||
-            _parser_is_type(state, TOKEN_CHAR_LIT) ||
-            _parser_is_type(state, TOKEN_TRUE) ||
-            _parser_is_type(state, TOKEN_FALSE) ||
             _parser_is_char(state, '(') ||
             _parser_is_type(state, TOKEN_OP_PREFIX)) {
         result = _parse_expression(state, store_into);
