@@ -48,7 +48,26 @@ libab_result libab_init(libab* ab);
  * @param func the function that describes the functionality of the operator.
  * @return the result of the initialization.
  */
-libab_result libab_register_operator(libab* ab, const char* op, int precedence, libab_function_ptr func);
+libab_result libab_register_operator_infix(libab* ab, const char* op, int precedence, libab_function_ptr func);
+/**
+ * Registers an operation with libabacus that appears
+ * before its operand.
+ * @param ab the libabacus instance to register the operator with.
+ * @param op the operator string to register.
+ * @param func the function that describes the functionality of the operator.
+ * @return the result of the registration.
+ */
+libab_result libab_register_operator_prefix(libab* ab, const char* op, libab_function_ptr func);
+/**
+ * Registers an operation with libabacus that appears
+ * after its operand.
+ * @param ab the libabacus instance to register the operator with.
+ * @param op the operator string to register.
+ * @param func the function that describes the functionality of the operator.
+ * @return the result of the registration.
+ */
+libab_result libab_register_operator_postfix(libab* ab, const char* op, libab_function_ptr func);
+
 /**
  * Registers a function with libabacus.
  * @param ab the libabacus instance used to keep state.

@@ -30,8 +30,8 @@ struct libab_table_s {
 enum libab_table_entry_variant_e {
     ENTRY_VALUE,
     ENTRY_TYPE,
-    ENTRY_OPERATOR,
-    ENTRY_FUNCTION
+    ENTRY_OP,
+    ENTRY_FUN
 };
 
 /**
