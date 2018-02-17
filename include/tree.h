@@ -73,4 +73,12 @@ struct libab_tree_s {
 typedef enum libab_tree_variant_e libab_tree_variant;
 typedef struct libab_tree_s libab_tree;
 
+/**
+ * Frees the given tree, using its
+ * variant as a hint as to what
+ * variables need to be freed.
+ * @param tree the tree to free.
+ */
+void libab_tree_free(libab_tree* tree);
+
 #endif
