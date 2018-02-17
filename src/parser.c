@@ -102,6 +102,19 @@ libab_result _parser_construct_op_node(struct parser_state* state, libab_lexer_m
     }
     return result;
 }
+libab_result _parser_append_op_node(struct parser_state* state, libab_lexer_match* match, ll* append_to) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_tree* new_tree = NULL;
+    result = _parser_construct_op_node(state, match, &new_tree);
+    if(result == LIBAB_SUCCESS) {
+        result = libab_convert_ds_result(ll_append(append_to, new_tree));
+        if(result != LIBAB_SUCCESS) {
+            libab_tree_free(new_tree);
+            free(new_tree);
+        }
+    } 
+    return result;
+}
 libab_result _parse_expression(struct parser_state* state, libab_tree** store_into) {
     libab_result result = LIBAB_SUCCESS;
     return result;
