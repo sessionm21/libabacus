@@ -105,7 +105,7 @@ libab_result _parser_construct_op_node(struct parser_state* state, libab_lexer_m
     if(result == LIBAB_SUCCESS) {
         result = libab_convert_ds_result(vec_init(&(*into)->children));
         if(result == LIBAB_SUCCESS) {
-            (*into)->variant = OP;
+            (*into)->variant = (match->type == TOKEN_OP_INFIX) ? OP : UNARY_OP;
         } else {
             free((*into)->string_value);
             free(*into);
@@ -188,7 +188,7 @@ libab_result _parser_append_atom(struct parser_state* state, ll* append_to) {
     if(result == LIBAB_SUCCESS) {
         result = libab_convert_ds_result(ll_append(append_to, tree));
         if(result != LIBAB_SUCCESS) {
-            libab_tree_free(tree);
+            libab_tree_free_recursive(tree);
             free(tree);
         }
     }
@@ -219,8 +219,8 @@ libab_result _parser_expression_tree(struct parser_state* state, ll* source, lib
         }
 
         if(result != LIBAB_SUCCESS) {
-            if(left) libab_tree_free(left);
-            if(right) libab_tree_free(right);
+            if(left) libab_tree_free_recursive(left);
+            if(right) libab_tree_free_recursive(right);
             libab_tree_free(top);
             free(left);
             free(right);
@@ -241,7 +241,7 @@ libab_result _parser_expression_tree(struct parser_state* state, ll* source, lib
         }
 
         if(result != LIBAB_SUCCESS) {
-            if(child) libab_tree_free(child);
+            if(child) libab_tree_free_recursive(child);
             libab_tree_free(top);
             free(child);
             free(top);
@@ -339,7 +339,7 @@ libab_result _parse_expression(struct parser_state* state, libab_tree** store_in
     }
 
     if(result == LIBAB_SUCCESS && out_stack.tail) {
-        libab_tree_free(*store_into);
+        libab_tree_free_recursive(*store_into);
         free(*store_into);
         *store_into = NULL;
         result = LIBAB_UNEXPECTED;

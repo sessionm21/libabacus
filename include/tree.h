@@ -80,5 +80,12 @@ typedef struct libab_tree_s libab_tree;
  * @param tree the tree to free.
  */
 void libab_tree_free(libab_tree* tree);
+/**
+ * Frees the given tree recursively,
+ * deleting the children first and the moving on
+ * to the parents. 
+ * @param tree the tree to free.
+ */
+void libab_tree_free_recursive(libab_tree* tree);
 
 #endif
