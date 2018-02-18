@@ -77,28 +77,40 @@ int _parser_match_is_op(libab_lexer_match* match) {
         match->type == TOKEN_OP_POSTFIX;
 }
 
-libab_result _parser_construct_op_node(struct parser_state* state, libab_lexer_match* match, libab_tree** into) {
+libab_result _parser_construct_node_string(struct parser_state* state, libab_lexer_match* match, libab_tree** into) {
     libab_result result = LIBAB_SUCCESS;
-    if((*into = malloc(sizeof(**into)))) {
+    if(((*into) = malloc(sizeof(**into)))) {
         result = _parser_extract_token(state, &(*into)->string_value, match);
     } else {
         result = LIBAB_MALLOC;
     }
 
+
+    if(result != LIBAB_SUCCESS) {
+        free(*into);
+        *into = NULL;
+    } else {
+        (*into)->from = match->from;
+        (*into)->to = match->to;
+        (*into)->line = match->line;
+        (*into)->line_from = match->line_from;
+    }
+
+    return result;
+}
+
+libab_result _parser_construct_op_node(struct parser_state* state, libab_lexer_match* match, libab_tree** into) {
+    libab_result result = _parser_construct_node_string(state, match, into);
+
     if(result == LIBAB_SUCCESS) {
         result = libab_convert_ds_result(vec_init(&(*into)->children));
         if(result == LIBAB_SUCCESS) {
             (*into)->variant = OP;
-            (*into)->from = match->from;
-            (*into)->to = match->to;
-            (*into)->line = match->line;
-            (*into)->line_from = match->line_from;
         } else {
             free((*into)->string_value);
+            free(*into);
+            *into = NULL;
         }
-    } else {
-        free(*into);
-        *into = NULL;
     }
     return result;
 }
@@ -122,7 +134,6 @@ libab_result _parser_pop_brackets(struct parser_state* state, ll* pop_from, ll* 
     while(result == LIBAB_SUCCESS && _parser_match_is_op(pop_from->tail->data)) {
         libab_lexer_match* new_match = ll_poptail(pop_from);
         result = _parser_append_op_node(state, new_match, push_to);
-        free(new_match);
     }
     remaining_match = (pop_from->tail) ? pop_from->tail->data : NULL;
     *success = remaining_match && (remaining_match->type == TOKEN_CHAR) && (state->string[remaining_match->from] == bracket);
@@ -145,6 +156,43 @@ int _parser_can_prefix_follow(enum parser_expression_type type) {
 
 int _parser_can_postfix_follow(enum parser_expression_type type) {
     return type == EXPR_CLOSE_PARENTH || type == EXPR_ATOM || type == EXPR_OP_POSTFIX;
+}
+
+libab_operator* _parser_find_operator(struct parser_state* state, libab_lexer_match* match) {
+    char op_buffer[8];
+    size_t token_size = match->to - match->from;
+    size_t buffer_length = (token_size < 7) ? token_size : 7;
+    strncpy(op_buffer, state->string + match->from, buffer_length);
+    op_buffer[buffer_length] = '\0';
+    return libab_table_search_operator(state->base_table, op_buffer);
+}
+
+libab_result _parse_atom(struct parser_state* state, libab_tree** store_into) {
+    libab_result result = LIBAB_SUCCESS;
+    if(_parser_is_type(state, TOKEN_NUM) || _parser_is_type(state, TOKEN_ID)) {
+        result = _parser_construct_node_string(state, state->current_match, store_into);
+        if(result == LIBAB_SUCCESS) {
+            (*store_into)->variant = (state->current_match->type == TOKEN_NUM) ? NUM : ID;
+        }
+        _parser_state_step(state);
+    } else {
+        result = LIBAB_UNEXPECTED;
+    }
+    return result;
+}
+
+libab_result _parser_append_atom(struct parser_state* state, ll* append_to) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_tree* tree;
+    result = _parse_atom(state, &tree);
+    if(result == LIBAB_SUCCESS) {
+        result = libab_convert_ds_result(ll_append(append_to, tree));
+        if(result != LIBAB_SUCCESS) {
+            libab_tree_free(tree);
+            free(tree);
+        }
+    }
+    return result;
 }
 
 libab_result _parse_expression(struct parser_state* state, libab_tree** store_into) {
@@ -170,7 +218,7 @@ libab_result _parse_expression(struct parser_state* state, libab_tree** store_in
             } else if(current_char == ')') {
                 result = _parser_pop_brackets(state, &op_stack, &out_stack, '(', &pop_success);
                 if(result != LIBAB_SUCCESS || !pop_success) break;
-                free(ll_poptail(&op_stack));
+                ll_poptail(&op_stack);
                 _parser_state_step(state);
                 new_type = EXPR_CLOSE_PARENTH;
             } else {
@@ -184,9 +232,32 @@ libab_result _parse_expression(struct parser_state* state, libab_tree** store_in
         } else if(new_token->type == TOKEN_OP_POSTFIX && _parser_can_postfix_follow(last_type)) {
             result = _parser_append_op_node(state, new_token, &out_stack);
         } else if(new_token->type == TOKEN_OP_INFIX) {
-            
-        } else {
+            libab_operator* operator = _parser_find_operator(state, new_token);
+            _parser_state_step(state);
 
+            while(result == LIBAB_SUCCESS && op_stack.tail &&
+                    _parser_match_is_op(op_stack.tail->data)) {
+                libab_operator* other_operator = _parser_find_operator(state, new_token);
+
+                if(new_token->type == TOKEN_OP_PREFIX ||
+                        (operator->associativity == -1 &&
+                         operator->precedence <= other_operator->precedence) ||
+                        (operator->associativity == 1 &&
+                         operator->precedence < other_operator->precedence)) {
+                    libab_lexer_match* match = ll_poptail(&op_stack);
+                    result = _parser_append_op_node(state, match, &out_stack);
+                } else {
+                    break;
+                }
+            }
+            if(result == LIBAB_SUCCESS) {
+                result = libab_convert_ds_result(ll_append(&op_stack, new_token));
+            }
+            new_type = EXPR_OP_INFIX;
+        } else {
+            if(last_type == EXPR_ATOM) break;
+            result = _parser_append_atom(state, &out_stack);
+            new_type = EXPR_ATOM;
         }
         last_type = new_type;
     }
