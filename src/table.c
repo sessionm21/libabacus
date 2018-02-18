@@ -36,3 +36,6 @@ libab_result libab_table_put(libab_table* table, const char* string, libab_table
 void libab_table_free(libab_table* table) {
     ht_free(&table->table);
 }
+void libab_table_entry_free(libab_table_entry* entry) {
+    
+}

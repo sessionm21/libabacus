@@ -98,5 +98,10 @@ libab_result libab_table_put(libab_table* table, const char* string, libab_table
  * @param table the table to free.
  */
 void libab_table_free(libab_table* table);
+/**
+ * Frees the given table entry.
+ * @param entry the entry to free.
+ */
+void libab_table_entry_free(libab_table_entry* entry);
 
 #endif
