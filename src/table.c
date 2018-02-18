@@ -33,7 +33,13 @@ libab_function* libab_table_search_function(libab_table* table, const char* stri
 libab_result libab_table_put(libab_table* table, const char* string, libab_table_entry* entry) {
     return libab_convert_ds_result(ht_put(&table->table, string, entry));
 }
+int _table_foreach_entry_free(void* data, va_list args) {
+    libab_table_entry_free(data);
+    free(data);
+    return 0;
+}
 void libab_table_free(libab_table* table) {
+    ht_foreach(&table->table, NULL, compare_always, _table_foreach_entry_free);
     ht_free(&table->table);
 }
 void libab_table_entry_free(libab_table_entry* entry) {
