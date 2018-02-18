@@ -189,7 +189,6 @@ libab_result _parser_append_atom(struct parser_state* state, ll* append_to) {
         result = libab_convert_ds_result(ll_append(append_to, tree));
         if(result != LIBAB_SUCCESS) {
             libab_tree_free_recursive(tree);
-            free(tree);
         }
     }
     return result;
@@ -222,8 +221,6 @@ libab_result _parser_expression_tree(struct parser_state* state, ll* source, lib
             if(left) libab_tree_free_recursive(left);
             if(right) libab_tree_free_recursive(right);
             libab_tree_free(top);
-            free(left);
-            free(right);
             free(top);
             top = NULL;
         }
@@ -243,7 +240,6 @@ libab_result _parser_expression_tree(struct parser_state* state, ll* source, lib
         if(result != LIBAB_SUCCESS) {
             if(child) libab_tree_free_recursive(child);
             libab_tree_free(top);
-            free(child);
             free(top);
             top = NULL;
         }
@@ -340,7 +336,6 @@ libab_result _parse_expression(struct parser_state* state, libab_tree** store_in
 
     if(result == LIBAB_SUCCESS && out_stack.tail) {
         libab_tree_free_recursive(*store_into);
-        free(*store_into);
         *store_into = NULL;
         result = LIBAB_UNEXPECTED;
     }
@@ -369,17 +364,40 @@ libab_result _parse_statement(struct parser_state* state, libab_tree** store_int
 libab_result _parse_block(struct parser_state* state,
         libab_tree** store_into, int expect_braces) {
     libab_result result = LIBAB_SUCCESS;
+    libab_tree* temp;
     if((*store_into = malloc(sizeof(**store_into))) == NULL) result = LIBAB_MALLOC;
+    if(result == LIBAB_SUCCESS) {
+        (*store_into)->variant = BLOCK;
+        (*store_into)->from = state->current_match->from;
+        (*store_into)->to = state->current_match->to;
+        (*store_into)->line = state->current_match->line;
+        (*store_into)->line_from = state->current_match->line_from;
+        result = libab_convert_ds_result(vec_init(&(*store_into)->children));
+        if(result != LIBAB_SUCCESS) {
+            free(*store_into);
+        }
+    }
 
     if(expect_braces && result == LIBAB_SUCCESS) result = _parser_consume_char(state, '{');
 
     while(result == LIBAB_SUCCESS && 
             !_parser_eof(state) &&
             !(expect_braces && _parser_is_char(state, '}'))) {
-        
+        result = _parse_statement(state, &temp);
+        if(result == LIBAB_SUCCESS) {
+            result = libab_convert_ds_result(vec_add(&(*store_into)->children, temp));
+            if(result != LIBAB_SUCCESS) {
+                libab_tree_free_recursive(temp);
+            }
+        }
     }
 
     if(expect_braces && result == LIBAB_SUCCESS) result = _parser_consume_char(state, '}');
+
+    if(result != LIBAB_SUCCESS && *store_into) {
+        libab_tree_free_recursive(*store_into);
+    }
+
     return result;
 }
 
