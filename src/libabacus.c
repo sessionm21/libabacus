@@ -8,7 +8,17 @@ libab_result libab_init(libab* ab) {
     return libab_lexer_init(&ab->lexer);
 }
 
+void _sanitize(char* to, const char* from, size_t buffer_size) {
+    size_t index = 0;
+    while(*from && index < (buffer_size - 2)) {
+        if(*from == '+' || *from == '*' || *from == '\\') to[index++] = '\\';       
+        to[index++] = *(from++);
+    }
+    to[index] = '\0';
+}
+
 libab_result _register_operator(libab* ab, const char* op, int token_type, int precedence, int associativity, libab_function_ptr func) {
+    char op_buffer[8];
     libab_result result = LIBAB_SUCCESS;
     libab_table_entry* new_entry;
     if((new_entry = malloc(sizeof(*new_entry)))) {
@@ -20,7 +30,8 @@ libab_result _register_operator(libab* ab, const char* op, int token_type, int p
     }
 
     if(result == LIBAB_SUCCESS) {
-        result = libab_convert_lex_result(eval_config_add(&ab->lexer.config, op, token_type));
+        _sanitize(op_buffer, op, 8);
+        result = libab_convert_lex_result(eval_config_add(&ab->lexer.config, op_buffer, token_type));
     }
 
     if(result == LIBAB_SUCCESS) {
