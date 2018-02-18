@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "util.h"
 
-void table_init(libab_table* table) {
+void libab_table_init(libab_table* table) {
     ht_init(&table->table);
     table->parent = NULL;
 } 
@@ -33,6 +33,6 @@ libab_function* libab_table_search_function(libab_table* table, const char* stri
 libab_result libab_table_put(libab_table* table, const char* string, libab_table_entry* entry) {
     return libab_convert_ds_result(ht_put(&table->table, string, entry));
 }
-void table_free(libab_table* table) {
+void libab_table_free(libab_table* table) {
     ht_free(&table->table);
 }

@@ -195,6 +195,69 @@ libab_result _parser_append_atom(struct parser_state* state, ll* append_to) {
     return result;
 }
 
+libab_result _parser_expression_tree(struct parser_state* state, ll* source, libab_tree** into) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_tree* top = ll_poptail(source);
+    if(top && top->variant == OP) {
+        libab_tree* left = NULL;
+        libab_tree* right = NULL;
+
+        result = _parser_expression_tree(state, source, &right);
+        if(result == LIBAB_SUCCESS) {
+            result = _parser_expression_tree(state, source, &left);
+        }
+
+        if(result == LIBAB_SUCCESS && (left == NULL || right == NULL)) {
+            result = LIBAB_UNEXPECTED;
+        }
+
+        if(result == LIBAB_SUCCESS) {
+            result = libab_convert_ds_result(vec_add(&top->children, left));
+        }
+        if(result == LIBAB_SUCCESS) {
+            result = libab_convert_ds_result(vec_add(&top->children, right));
+        }
+
+        if(result != LIBAB_SUCCESS) {
+            if(left) libab_tree_free(left);
+            if(right) libab_tree_free(right);
+            libab_tree_free(top);
+            free(left);
+            free(right);
+            free(top);
+            top = NULL;
+        }
+    } else if(top && top->variant == UNARY_OP) {
+        libab_tree* child = NULL;
+
+        result = _parser_expression_tree(state, source, &child);
+
+        if(result == LIBAB_SUCCESS && child == NULL) {
+            result = LIBAB_UNEXPECTED;
+        }
+
+        if(result == LIBAB_SUCCESS) {
+            result = libab_convert_ds_result(vec_add(&top->children, child));
+        }
+
+        if(result != LIBAB_SUCCESS) {
+            if(child) libab_tree_free(child);
+            libab_tree_free(top);
+            free(child);
+            free(top);
+            top = NULL;
+        }
+    }
+    *into = top;
+    return result;
+}
+
+int _parser_foreach_free_tree(void* data, va_list args) {
+    libab_tree_free(data);
+    free(data);
+    return 0;
+}
+
 libab_result _parse_expression(struct parser_state* state, libab_tree** store_into) {
     libab_result result = LIBAB_SUCCESS;
     ll out_stack;
@@ -261,6 +324,29 @@ libab_result _parse_expression(struct parser_state* state, libab_tree** store_in
         }
         last_type = new_type;
     }
+
+    while(result == LIBAB_SUCCESS && op_stack.tail) {
+        libab_lexer_match* match = ll_poptail(&op_stack);
+        if(_parser_match_is_op(match)) {
+            result = _parser_append_op_node(state, match, &out_stack);
+        } else {
+            result = LIBAB_UNEXPECTED;
+        }
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = _parser_expression_tree(state, &out_stack, store_into);
+    }
+
+    if(result == LIBAB_SUCCESS && out_stack.tail) {
+        libab_tree_free(*store_into);
+        free(*store_into);
+        *store_into = NULL;
+        result = LIBAB_UNEXPECTED;
+    }
+
+    ll_free(&op_stack);
+    ll_foreach(&out_stack, NULL, compare_always, _parser_foreach_free_tree);
 
     return result;
 }
