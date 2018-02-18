@@ -129,7 +129,7 @@ libab_result _parser_append_atom(struct parser_state* state, ll* append_to) {
     return result;
 }
 
-libab_result _parser_construct_op_node(struct parser_state* state, libab_lexer_match* match, libab_tree** into) {
+libab_result _parser_construct_op(struct parser_state* state, libab_lexer_match* match, libab_tree** into) {
     libab_result result = _parser_construct_node_string(state, match, into);
 
     if(result == LIBAB_SUCCESS) {
@@ -147,7 +147,7 @@ libab_result _parser_construct_op_node(struct parser_state* state, libab_lexer_m
 libab_result _parser_append_op_node(struct parser_state* state, libab_lexer_match* match, ll* append_to) {
     libab_result result = LIBAB_SUCCESS;
     libab_tree* new_tree = NULL;
-    result = _parser_construct_op_node(state, match, &new_tree);
+    result = _parser_construct_op(state, match, &new_tree);
     if(result == LIBAB_SUCCESS) {
         result = libab_convert_ds_result(ll_append(append_to, new_tree));
         if(result != LIBAB_SUCCESS) {
