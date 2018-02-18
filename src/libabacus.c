@@ -8,7 +8,7 @@ libab_result libab_init(libab* ab) {
     return libab_lexer_init(&ab->lexer);
 }
 
-libab_result _register_operator(libab* ab, const char* op, int token_type, int precedence, libab_function_ptr func) {
+libab_result _register_operator(libab* ab, const char* op, int token_type, int precedence, int associativity, libab_function_ptr func) {
     libab_result result = LIBAB_SUCCESS;
     libab_table_entry* new_entry;
     if((new_entry = malloc(sizeof(*new_entry)))) {
@@ -35,16 +35,16 @@ libab_result _register_operator(libab* ab, const char* op, int token_type, int p
     return result;
 }
 
-libab_result libab_register_operator_infix(libab* ab, const char* op, int precedence, libab_function_ptr func) {
-    return _register_operator(ab, op, TOKEN_OP_INFIX, precedence, func);
+libab_result libab_register_operator_infix(libab* ab, const char* op, int precedence, int associativity, libab_function_ptr func) {
+    return _register_operator(ab, op, TOKEN_OP_INFIX, precedence, associativity, func);
 }
 
 libab_result libab_register_operator_prefix(libab* ab, const char* op, libab_function_ptr func) {
-    return _register_operator(ab, op, TOKEN_OP_PREFIX, 0, func);
+    return _register_operator(ab, op, TOKEN_OP_PREFIX, 0, 0, func);
 }
 
 libab_result libab_register_operator_postfix(libab* ab, const char* op, libab_function_ptr func) {
-    return _register_operator(ab, op, TOKEN_OP_POSTFIX, 0, func);
+    return _register_operator(ab, op, TOKEN_OP_POSTFIX, 0, 0, func);
 }
 
 libab_result libab_register_function(libab* ab, const char* name, libab_function_ptr func) {

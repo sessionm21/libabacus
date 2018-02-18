@@ -18,6 +18,10 @@ struct libab_operator_s {
      */
     int precedence;
     /**
+     * The associativity of the operator.
+     */
+    int associativity;
+    /**
      * The functionality of the operator.
      */
     libab_function_ptr function;
