@@ -4,10 +4,7 @@
 int _tree_has_vector(libab_tree* tree) {
     return tree->variant == BASE || tree->variant == OP ||
             tree->variant == UNARY_OP || tree->variant == BLOCK ||
-            tree->variant == FUN || tree->variant == IF ||
-            tree->variant == WHILE || tree->variant == DOWHILE ||
-            tree->variant == FOR || tree->variant == CALL ||
-            tree->variant == RETURN;
+            tree->variant == IF;
 }
 
 void libab_tree_free(libab_tree* tree) {
@@ -16,9 +13,8 @@ void libab_tree_free(libab_tree* tree) {
     if(_tree_has_vector(tree)) {
         free_vector = 1;
     }
-    if(tree->variant == ID || tree->variant == STR || tree->variant == NUM ||
-            tree->variant == KW || tree->variant == OP || tree->variant == UNARY_OP ||
-            tree->variant == FUN || tree->variant == CALL) {
+    if(tree->variant == ID || tree->variant == NUM ||
+            tree->variant == OP || tree->variant == UNARY_OP) {
         free_string = 1;
     }
     if(free_string) free(tree->string_value);

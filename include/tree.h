@@ -11,21 +11,11 @@ enum libab_tree_variant_e {
     NONE,
     BASE,
     ID,
-    STR,
-    CHAR,
     NUM,
-    BOOL,
-    KW,
     OP,
     UNARY_OP,
     BLOCK,
-    FUN,
-    IF,
-    WHILE,
-    DOWHILE,
-    FOR,
-    CALL,
-    RETURN
+    IF
 };
 
 /**
