@@ -361,17 +361,7 @@ libab_result _parse_statement(struct parser_state* state, libab_tree** store_int
             _parser_is_char(state, '(') ||
             _parser_is_type(state, TOKEN_OP_PREFIX)) {
         result = _parse_expression(state, store_into);
-        if(result == LIBAB_SUCCESS) {
-            if(_parser_is_char(state, ';') || _parser_eof(state)) {
-                _parser_state_step(state);
-            } else {
-                result = LIBAB_UNEXPECTED;
-
-                libab_tree_free_recursive(*store_into);
-                free(*store_into);
-                *store_into = NULL;
-            }
-        }
+        if(result == LIBAB_SUCCESS) result = _parser_consume_char(state, ';');
     }
 
     return result;
