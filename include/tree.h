@@ -15,6 +15,7 @@ enum libab_tree_variant_e {
     OP,
     UNARY_OP,
     BLOCK,
+    VOID,
     IF
 };
 
