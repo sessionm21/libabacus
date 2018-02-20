@@ -384,17 +384,9 @@ libab_result _parse_block(struct parser_state* state,
         libab_tree** store_into, int expect_braces) {
     libab_result result = LIBAB_SUCCESS;
     libab_tree* temp;
-    if((*store_into = malloc(sizeof(**store_into))) == NULL) result = LIBAB_MALLOC;
+    result = _parser_construct_node_vec(state, state->current_match, store_into);
     if(result == LIBAB_SUCCESS) {
         (*store_into)->variant = BLOCK;
-        (*store_into)->from = state->current_match->from;
-        (*store_into)->to = state->current_match->to;
-        (*store_into)->line = state->current_match->line;
-        (*store_into)->line_from = state->current_match->line_from;
-        result = libab_convert_ds_result(vec_init(&(*store_into)->children));
-        if(result != LIBAB_SUCCESS) {
-            free(*store_into);
-        }
     }
 
     if(expect_braces && result == LIBAB_SUCCESS) result = _parser_consume_char(state, '{');
@@ -416,14 +408,14 @@ libab_result _parse_block(struct parser_state* state,
     }
 
     if(result == LIBAB_SUCCESS && temp == NULL) {
-        if((temp = malloc(sizeof(*temp)))) {
+        result = _parser_allocate_node(state, state->current_match, &temp);
+        if(result == LIBAB_SUCCESS) {
             temp->variant = VOID;
             result = libab_convert_ds_result(vec_add(&(*store_into)->children, temp));
+
             if(result != LIBAB_SUCCESS) {
                 free(temp);
             }
-        } else {
-            result = LIBAB_MALLOC;
         }
     }
 
