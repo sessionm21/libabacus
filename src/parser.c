@@ -81,23 +81,48 @@ libab_result _parser_consume_char(struct parser_state* state, char to_consume) {
 
 libab_result _parse_block(struct parser_state*, libab_tree**, int);
 
-libab_result _parser_construct_node_string(struct parser_state* state, libab_lexer_match* match, libab_tree** into) {
+libab_result _parser_allocate_node(struct parser_state* state, libab_lexer_match* match, libab_tree** into) {
     libab_result result = LIBAB_SUCCESS;
-    if(((*into) = malloc(sizeof(**into)))) {
-        result = _parser_extract_token(state, &(*into)->string_value, match);
-    } else {
+    if(((*into) = malloc(sizeof(**into))) == NULL) {
         result = LIBAB_MALLOC;
-    }
-
-    if(result != LIBAB_SUCCESS) {
-        free(*into);
-        *into = NULL;
     } else {
         (*into)->from = match->from;
         (*into)->to = match->to;
         (*into)->line = match->line;
         (*into)->line_from = match->line_from;
     }
+    return result;
+}
+
+libab_result _parser_construct_node_string(struct parser_state* state, libab_lexer_match* match, libab_tree** into) {
+    libab_result result = _parser_allocate_node(state, match, into);
+
+    if(result == LIBAB_SUCCESS) {
+        result = _parser_extract_token(state, &(*into)->string_value, match);
+    }
+
+    if(result != LIBAB_SUCCESS) {
+        free(*into);
+        *into = NULL;
+    }
+
+    return result;
+}
+
+libab_result _parser_construct_node_vec(struct parser_state* state, libab_lexer_match* match, libab_tree** into) {
+    libab_result result = _parser_allocate_node(state, match, into);
+
+    if(result == LIBAB_SUCCESS) {
+        result = libab_convert_ds_result(vec_init(&(*into)->children));
+    }
+
+    if(result != LIBAB_SUCCESS) {
+        free(*into);
+        *into = NULL;
+    }
+
+    return result;
+}
 
     return result;
 }
