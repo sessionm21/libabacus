@@ -77,9 +77,23 @@ libab_result _parser_consume_char(struct parser_state* state, char to_consume) {
     return result;
 }
 
+libab_result _parser_consume_type(struct parser_state* state,
+        libab_lexer_token to_consume) {
+    libab_result result = LIBAB_SUCCESS;
+    if(state->current_match == NULL) {
+        result = LIBAB_EOF;
+    } else if(state->current_match->type != to_consume) {
+        result = LIBAB_UNEXPECTED;
+    } else {
+        _parser_state_step(state);
+    }
+    return result;
+}
+
 // Basic Tree Constructors
 
 libab_result _parse_block(struct parser_state*, libab_tree**, int);
+libab_result _parse_expression(struct parser_state* state, libab_tree** store_into);
 
 libab_result _parser_allocate_node(struct parser_state* state, libab_lexer_match* match, libab_tree** into) {
     libab_result result = LIBAB_SUCCESS;
@@ -124,6 +138,67 @@ libab_result _parser_construct_node_vec(struct parser_state* state, libab_lexer_
     return result;
 }
 
+libab_result _parse_if(struct parser_state* state, libab_tree** store_into) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_tree* condition;
+    libab_tree* if_branch;
+    libab_tree* else_branch;
+
+    if(_parser_is_type(state, TOKEN_KW_IF)) {
+        result = _parser_construct_node_vec(state, state->current_match, store_into);
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = _parser_consume_type(state, TOKEN_KW_IF);
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = _parser_consume_char(state, '(');
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = _parse_expression(state, &condition);
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = _parser_consume_char(state, ')');
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = _parse_expression(state, &if_branch);
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        (*store_into)->variant = IF;
+        if(_parser_is_type(state, TOKEN_KW_ELSE)) {
+            _parser_state_step(state);
+            result = _parse_expression(state, &else_branch);
+        } else {
+            result = _parser_allocate_node(state, state->current_match, &else_branch);
+            if(result == LIBAB_SUCCESS) else_branch->variant = VOID;
+        }
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = libab_convert_ds_result(vec_add(&(*store_into)->children, condition));
+        if(result == LIBAB_SUCCESS) {
+            result = libab_convert_ds_result(vec_add(&(*store_into)->children, if_branch));   
+        }
+        if(result == LIBAB_SUCCESS) {
+            result = libab_convert_ds_result(vec_add(&(*store_into)->children, else_branch));
+        }
+    }
+
+    if(result != LIBAB_SUCCESS) {
+        if(condition) libab_tree_free_recursive(condition);
+        if(if_branch) libab_tree_free_recursive(if_branch);
+        if(else_branch) libab_tree_free_recursive(else_branch);
+
+        libab_tree_free(*store_into);
+        free(*store_into);
+        *store_into = NULL;
+    }
+
     return result;
 }
 
@@ -135,6 +210,8 @@ libab_result _parse_atom(struct parser_state* state, libab_tree** store_into) {
             (*store_into)->variant = (state->current_match->type == TOKEN_NUM) ? NUM : ID;
         }
         _parser_state_step(state);
+    } else if(_parser_is_type(state, TOKEN_KW_IF)) {
+        result = _parse_if(state, store_into);
     } else if(_parser_is_char(state, '{')) {
         result = _parse_block(state, store_into, 1);
     } else {
@@ -197,7 +274,7 @@ int _parser_match_is_op(libab_lexer_match* match) {
 libab_result _parser_pop_brackets(struct parser_state* state, ll* pop_from, ll* push_to, char bracket, int* success) {
     libab_result result = LIBAB_SUCCESS;
     libab_lexer_match* remaining_match;
-    while(result == LIBAB_SUCCESS && _parser_match_is_op(pop_from->tail->data)) {
+    while(result == LIBAB_SUCCESS && pop_from->tail && _parser_match_is_op(pop_from->tail->data)) {
         libab_lexer_match* new_match = ll_poptail(pop_from);
         result = _parser_append_op_node(state, new_match, push_to);
     }
