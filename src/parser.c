@@ -149,6 +149,9 @@ libab_result _parse_if(struct parser_state* state, libab_tree** store_into) {
 
     if(_parser_is_type(state, TOKEN_KW_IF)) {
         result = _parser_construct_node_vec(state, state->current_match, store_into);
+        if(result == LIBAB_SUCCESS) {
+            (*store_into)->variant = IF;
+        }
     }
 
     if(result == LIBAB_SUCCESS) {
@@ -172,7 +175,6 @@ libab_result _parse_if(struct parser_state* state, libab_tree** store_into) {
     }
 
     if(result == LIBAB_SUCCESS) {
-        (*store_into)->variant = IF;
         if(_parser_is_type(state, TOKEN_KW_ELSE)) {
             _parser_state_step(state);
             result = _parse_expression(state, &else_branch);
