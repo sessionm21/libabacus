@@ -8,6 +8,7 @@
 struct parser_state {
     ll_node* current_node;
     libab_lexer_match* current_match;
+    libab_lexer_match* last_match;
     const char* string;
     libab_table* base_table;
 };
@@ -34,10 +35,12 @@ libab_result _parser_extract_token(struct parser_state* state, char** into, liba
 // State functions
 void _parser_state_update(struct parser_state* state) {
     state->current_match = state->current_node ? state->current_node->data : NULL;
+    if(state->current_match) state->last_match = state->current_match;
 }
 
 void _parser_state_init(struct parser_state* state,
         ll* tokens, const char* string, libab_table* table) {
+    state->last_match = NULL;
     state->current_node = tokens->head;
     state->string = string;
     state->base_table = table;
@@ -99,7 +102,7 @@ libab_result _parser_allocate_node(struct parser_state* state, libab_lexer_match
     libab_result result = LIBAB_SUCCESS;
     if(((*into) = malloc(sizeof(**into))) == NULL) {
         result = LIBAB_MALLOC;
-    } else {
+    } else if(match) {
         (*into)->from = match->from;
         (*into)->to = match->to;
         (*into)->line = match->line;
@@ -174,7 +177,7 @@ libab_result _parse_if(struct parser_state* state, libab_tree** store_into) {
             _parser_state_step(state);
             result = _parse_expression(state, &else_branch);
         } else {
-            result = _parser_allocate_node(state, state->current_match, &else_branch);
+            result = _parser_allocate_node(state, state->last_match, &else_branch);
             if(result == LIBAB_SUCCESS) else_branch->variant = VOID;
         }
     }
@@ -182,7 +185,7 @@ libab_result _parse_if(struct parser_state* state, libab_tree** store_into) {
     if(result == LIBAB_SUCCESS) {
         result = libab_convert_ds_result(vec_add(&(*store_into)->children, condition));
         if(result == LIBAB_SUCCESS) {
-            result = libab_convert_ds_result(vec_add(&(*store_into)->children, if_branch));   
+            result = libab_convert_ds_result(vec_add(&(*store_into)->children, if_branch));
         }
         if(result == LIBAB_SUCCESS) {
             result = libab_convert_ds_result(vec_add(&(*store_into)->children, else_branch));
@@ -258,7 +261,7 @@ libab_result _parser_append_op_node(struct parser_state* state, libab_lexer_matc
             libab_tree_free(new_tree);
             free(new_tree);
         }
-    } 
+    }
     return result;
 }
 
@@ -452,7 +455,7 @@ libab_result _parse_expression(struct parser_state* state, libab_tree** store_in
     }
 
     if(result == LIBAB_SUCCESS && *store_into == NULL) {
-    		result = LIBAB_UNEXPECTED;
+        result = LIBAB_UNEXPECTED;
     }
 
     ll_free(&op_stack);
@@ -490,7 +493,7 @@ libab_result _parse_block(struct parser_state* state,
     }
 
     if(result == LIBAB_SUCCESS && temp == NULL) {
-        result = _parser_allocate_node(state, state->current_match, &temp);
+        result = _parser_allocate_node(state, state->last_match, &temp);
         if(result == LIBAB_SUCCESS) {
             temp->variant = VOID;
             result = libab_convert_ds_result(vec_add(&(*store_into)->children, temp));
