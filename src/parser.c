@@ -98,7 +98,7 @@ libab_result _parser_consume_type(struct parser_state* state,
 libab_result _parse_block(struct parser_state*, libab_tree**, int);
 libab_result _parse_expression(struct parser_state* state, libab_tree** store_into);
 
-libab_result _parser_allocate_node(struct parser_state* state, libab_lexer_match* match, libab_tree** into) {
+libab_result _parser_allocate_node(libab_lexer_match* match, libab_tree** into) {
     libab_result result = LIBAB_SUCCESS;
     if(((*into) = malloc(sizeof(**into))) == NULL) {
         result = LIBAB_MALLOC;
@@ -112,7 +112,7 @@ libab_result _parser_allocate_node(struct parser_state* state, libab_lexer_match
 }
 
 libab_result _parser_construct_node_string(struct parser_state* state, libab_lexer_match* match, libab_tree** into) {
-    libab_result result = _parser_allocate_node(state, match, into);
+    libab_result result = _parser_allocate_node(match, into);
 
     if(result == LIBAB_SUCCESS) {
         result = _parser_extract_token(state, &(*into)->string_value, match);
@@ -126,8 +126,8 @@ libab_result _parser_construct_node_string(struct parser_state* state, libab_lex
     return result;
 }
 
-libab_result _parser_construct_node_vec(struct parser_state* state, libab_lexer_match* match, libab_tree** into) {
-    libab_result result = _parser_allocate_node(state, match, into);
+libab_result _parser_construct_node_vec(libab_lexer_match* match, libab_tree** into) {
+    libab_result result = _parser_allocate_node(match, into);
 
     if(result == LIBAB_SUCCESS) {
         result = libab_convert_ds_result(vec_init(&(*into)->children));
@@ -148,7 +148,7 @@ libab_result _parse_if(struct parser_state* state, libab_tree** store_into) {
     libab_tree* else_branch = NULL;
 
     if(_parser_is_type(state, TOKEN_KW_IF)) {
-        result = _parser_construct_node_vec(state, state->current_match, store_into);
+        result = _parser_construct_node_vec(state->current_match, store_into);
         if(result == LIBAB_SUCCESS) {
             (*store_into)->variant = IF;
         }
@@ -179,7 +179,7 @@ libab_result _parse_if(struct parser_state* state, libab_tree** store_into) {
             _parser_state_step(state);
             result = _parse_expression(state, &else_branch);
         } else {
-            result = _parser_allocate_node(state, state->last_match, &else_branch);
+            result = _parser_allocate_node(state->last_match, &else_branch);
             if(result == LIBAB_SUCCESS) else_branch->variant = VOID;
         }
     }
@@ -208,7 +208,7 @@ libab_result _parse_if(struct parser_state* state, libab_tree** store_into) {
 }
 
 libab_result _parse_atom(struct parser_state* state, libab_tree** store_into) {
-    libab_result result = LIBAB_SUCCESS;
+    libab_result result;
     if(_parser_is_type(state, TOKEN_NUM) || _parser_is_type(state, TOKEN_ID)) {
         result = _parser_construct_node_string(state, state->current_match, store_into);
         if(result == LIBAB_SUCCESS) {
@@ -226,7 +226,7 @@ libab_result _parse_atom(struct parser_state* state, libab_tree** store_into) {
 }
 
 libab_result _parser_append_atom(struct parser_state* state, ll* append_to) {
-    libab_result result = LIBAB_SUCCESS;
+    libab_result result;
     libab_tree* tree;
     result = _parse_atom(state, &tree);
     if(result == LIBAB_SUCCESS) {
@@ -254,7 +254,7 @@ libab_result _parser_construct_op(struct parser_state* state, libab_lexer_match*
     return result;
 }
 libab_result _parser_append_op_node(struct parser_state* state, libab_lexer_match* match, ll* append_to) {
-    libab_result result = LIBAB_SUCCESS;
+    libab_result result;
     libab_tree* new_tree = NULL;
     result = _parser_construct_op(state, match, &new_tree);
     if(result == LIBAB_SUCCESS) {
@@ -469,9 +469,9 @@ libab_result _parse_expression(struct parser_state* state, libab_tree** store_in
 
 libab_result _parse_block(struct parser_state* state,
         libab_tree** store_into, int expect_braces) {
-    libab_result result = LIBAB_SUCCESS;
+    libab_result result;
     libab_tree* temp = NULL;
-    result = _parser_construct_node_vec(state, state->current_match, store_into);
+    result = _parser_construct_node_vec(state->current_match, store_into);
     if(result == LIBAB_SUCCESS) {
         (*store_into)->variant = BLOCK;
     }
@@ -495,7 +495,7 @@ libab_result _parse_block(struct parser_state* state,
     }
 
     if(result == LIBAB_SUCCESS && temp == NULL) {
-        result = _parser_allocate_node(state, state->last_match, &temp);
+        result = _parser_allocate_node(state->last_match, &temp);
         if(result == LIBAB_SUCCESS) {
             temp->variant = VOID;
             result = libab_convert_ds_result(vec_add(&(*store_into)->children, temp));
@@ -521,7 +521,7 @@ void libab_parser_init(libab_parser* parser, libab_table* table) {
 }
 libab_result libab_parser_parse(libab_parser* parser, ll* tokens,
         const char* string, libab_tree** store_into) {
-    libab_result result = LIBAB_SUCCESS;
+    libab_result result;
     struct parser_state state;
     _parser_state_init(&state, tokens, string, parser->base_table);
 

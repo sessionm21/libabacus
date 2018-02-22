@@ -25,6 +25,7 @@ libab_result _register_operator(libab* ab, const char* op, int token_type, int p
         new_entry->variant = ENTRY_OP;
         new_entry->data_u.op.function = func;
         new_entry->data_u.op.precedence = precedence;
+        new_entry->data_u.op.associativity = associativity;
     } else {
         result = LIBAB_MALLOC;
     }
