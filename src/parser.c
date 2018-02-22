@@ -373,6 +373,7 @@ libab_result _parse_expression(struct parser_state* state, libab_tree** store_in
 
     ll_init(&out_stack);
     ll_init(&op_stack);
+    *store_into = NULL;
 
     while(result == LIBAB_SUCCESS && !_parser_eof(state)) {
         enum parser_expression_type new_type = EXPR_NONE;
@@ -450,6 +451,10 @@ libab_result _parse_expression(struct parser_state* state, libab_tree** store_in
         result = LIBAB_UNEXPECTED;
     }
 
+    if(result == LIBAB_SUCCESS && *store_into == NULL) {
+    		result = LIBAB_UNEXPECTED;
+    }
+
     ll_free(&op_stack);
     ll_foreach(&out_stack, NULL, compare_always, _parser_foreach_free_tree);
     ll_free(&out_stack);
@@ -460,7 +465,7 @@ libab_result _parse_expression(struct parser_state* state, libab_tree** store_in
 libab_result _parse_block(struct parser_state* state,
         libab_tree** store_into, int expect_braces) {
     libab_result result = LIBAB_SUCCESS;
-    libab_tree* temp;
+    libab_tree* temp = NULL;
     result = _parser_construct_node_vec(state, state->current_match, store_into);
     if(result == LIBAB_SUCCESS) {
         (*store_into)->variant = BLOCK;
@@ -500,6 +505,7 @@ libab_result _parse_block(struct parser_state* state,
 
     if(result != LIBAB_SUCCESS && *store_into) {
         libab_tree_free_recursive(*store_into);
+        *store_into = NULL;
     }
 
     return result;
@@ -517,7 +523,7 @@ libab_result libab_parser_parse(libab_parser* parser, ll* tokens,
     result = _parse_block(&state, store_into, 0);
     if(result == LIBAB_SUCCESS) {
         (*store_into)->variant = BASE;
-    } 
+    }
 
     return result;
 }
