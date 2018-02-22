@@ -143,9 +143,9 @@ libab_result _parser_construct_node_vec(struct parser_state* state, libab_lexer_
 
 libab_result _parse_if(struct parser_state* state, libab_tree** store_into) {
     libab_result result = LIBAB_SUCCESS;
-    libab_tree* condition;
-    libab_tree* if_branch;
-    libab_tree* else_branch;
+    libab_tree* condition = NULL;
+    libab_tree* if_branch = NULL;
+    libab_tree* else_branch = NULL;
 
     if(_parser_is_type(state, TOKEN_KW_IF)) {
         result = _parser_construct_node_vec(state, state->current_match, store_into);
