@@ -406,6 +406,8 @@ libab_result _parse_expression(struct parser_state* state, libab_tree** store_in
             new_type = EXPR_OP_PREFIX;
         } else if(new_token->type == TOKEN_OP_POSTFIX && _parser_can_postfix_follow(last_type)) {
             result = _parser_append_op_node(state, new_token, &out_stack);
+            _parser_state_step(state);
+            new_type = EXPR_OP_POSTFIX;
         } else if(new_token->type == TOKEN_OP_INFIX) {
             libab_operator* operator = _parser_find_operator(state, new_token);
             _parser_state_step(state);
