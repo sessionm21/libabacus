@@ -164,11 +164,10 @@ libab_result _parse_if(struct parser_state* state, libab_tree** store_into) {
         result = _parser_construct_node_vec(state->current_match, store_into);
         if(result == LIBAB_SUCCESS) {
             (*store_into)->variant = IF;
+            _parser_state_step(state);
         }
-    }
-
-    if(result == LIBAB_SUCCESS) {
-        result = _parser_consume_type(state, TOKEN_KW_IF);
+    } else {
+        result = LIBAB_UNEXPECTED;
     }
 
     if(result == LIBAB_SUCCESS) {
@@ -211,8 +210,8 @@ libab_result _parse_if(struct parser_state* state, libab_tree** store_into) {
         if(condition) libab_tree_free_recursive(condition);
         if(if_branch) libab_tree_free_recursive(if_branch);
         if(else_branch) libab_tree_free_recursive(else_branch);
+        if(*store_into) libab_tree_free(*store_into);
 
-        libab_tree_free(*store_into);
         free(*store_into);
         *store_into = NULL;
     }
