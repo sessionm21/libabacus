@@ -141,6 +141,19 @@ libab_result _parser_construct_node_vec(libab_lexer_match* match, libab_tree** i
     return result;
 }
 
+libab_result _parser_construct_node_both(struct parser_state* state, libab_lexer_match* match, libab_tree** store_into) {
+    libab_result result = _parser_construct_node_string(state, match, store_into);
+    if(result == LIBAB_SUCCESS) {
+        result = libab_convert_ds_result(vec_init(&(*store_into)->children));
+        if(result != LIBAB_SUCCESS) {
+            free((*store_into)->string_value);
+            free(*store_into);
+            *store_into = NULL;
+        }
+    }
+    return result;
+}
+
 libab_result _parse_if(struct parser_state* state, libab_tree** store_into) {
     libab_result result = LIBAB_SUCCESS;
     libab_tree* condition = NULL;
@@ -239,18 +252,12 @@ libab_result _parser_append_atom(struct parser_state* state, ll* append_to) {
 }
 
 libab_result _parser_construct_op(struct parser_state* state, libab_lexer_match* match, libab_tree** into) {
-    libab_result result = _parser_construct_node_string(state, match, into);
+    libab_result result = _parser_construct_node_both(state, match, into);
 
     if(result == LIBAB_SUCCESS) {
-        result = libab_convert_ds_result(vec_init(&(*into)->children));
-        if(result == LIBAB_SUCCESS) {
-            (*into)->variant = (match->type == TOKEN_OP_INFIX) ? OP : UNARY_OP;
-        } else {
-            free((*into)->string_value);
-            free(*into);
-            *into = NULL;
-        }
+        (*into)->variant = (match->type == TOKEN_OP_INFIX) ? OP : UNARY_OP;
     }
+
     return result;
 }
 libab_result _parser_append_op_node(struct parser_state* state, libab_lexer_match* match, ll* append_to) {
