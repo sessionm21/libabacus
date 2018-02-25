@@ -70,6 +70,10 @@ libab_result libab_register_function(libab* ab, const char* name, libab_function
     }
 
     if(result == LIBAB_SUCCESS) {
+        result = libab_convert_lex_result(eval_config_add(&ab->lexer.config, name, TOKEN_FUN));
+    }
+
+    if(result == LIBAB_SUCCESS) {
         result = libab_table_put(&ab->table, name, new_entry);
     }
 

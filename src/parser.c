@@ -219,6 +219,51 @@ libab_result _parse_if(struct parser_state* state, libab_tree** store_into) {
     return result;
 }
 
+libab_result _parse_call(struct parser_state* state, libab_tree** store_into) {
+    libab_result result =  LIBAB_SUCCESS;
+    libab_tree* temp;
+
+    if(_parser_is_type(state, TOKEN_FUN)) {
+        result = _parser_construct_node_both(state, state->current_match, store_into);
+        if(result == LIBAB_SUCCESS) {
+            (*store_into)->variant = CALL;
+        }
+        _parser_state_step(state);
+    } else {
+        result = LIBAB_UNEXPECTED;
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = _parser_consume_char(state, '(');
+    }
+
+    while(result == LIBAB_SUCCESS && !_parser_eof(state) && !_parser_is_char(state, ')')) {
+        result = _parse_expression(state, &temp);
+        if(result == LIBAB_SUCCESS) {
+            result = libab_convert_ds_result(vec_add(&(*store_into)->children, temp));
+            if(result != LIBAB_SUCCESS) {
+                libab_tree_free_recursive(temp);
+            }
+        }
+
+        if(result == LIBAB_SUCCESS && !(_parser_is_char(state, ')') || _parser_is_char(state, ','))) {
+            result = LIBAB_UNEXPECTED;
+        } else if(_parser_is_char(state, ',')) {
+            _parser_state_step(state);
+        }
+    }
+    if(result == LIBAB_SUCCESS) {
+        result = _parser_consume_char(state, ')');
+    }
+
+    if(result != LIBAB_SUCCESS) {
+        libab_tree_free_recursive(*store_into);
+        *store_into = NULL;
+    }
+
+    return result;
+}
+
 libab_result _parse_atom(struct parser_state* state, libab_tree** store_into) {
     libab_result result;
     if(_parser_is_type(state, TOKEN_NUM) || _parser_is_type(state, TOKEN_ID)) {
@@ -231,6 +276,8 @@ libab_result _parse_atom(struct parser_state* state, libab_tree** store_into) {
         result = _parse_if(state, store_into);
     } else if(_parser_is_char(state, '{')) {
         result = _parse_block(state, store_into, 1);
+    } else if(_parser_is_type(state, TOKEN_FUN)) {
+        result = _parse_call(state, store_into);
     } else {
         result = LIBAB_UNEXPECTED;
     }
