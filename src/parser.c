@@ -223,18 +223,14 @@ libab_result _parse_call(struct parser_state* state, libab_tree** store_into) {
     libab_result result =  LIBAB_SUCCESS;
     libab_tree* temp;
 
-    if(_parser_is_type(state, TOKEN_FUN)) {
-        result = _parser_construct_node_both(state, state->current_match, store_into);
+    if(_parser_is_char(state, '(')) {
+        result = _parser_construct_node_vec(state->current_match, store_into);
         if(result == LIBAB_SUCCESS) {
             (*store_into)->variant = CALL;
         }
         _parser_state_step(state);
     } else {
         result = LIBAB_UNEXPECTED;
-    }
-
-    if(result == LIBAB_SUCCESS) {
-        result = _parser_consume_char(state, '(');
     }
 
     while(result == LIBAB_SUCCESS && !_parser_eof(state) && !_parser_is_char(state, ')')) {
@@ -264,6 +260,19 @@ libab_result _parse_call(struct parser_state* state, libab_tree** store_into) {
     return result;
 }
 
+libab_result _parser_append_call(struct parser_state* state, ll* append_to) {
+    libab_result result;
+    libab_tree* into;
+    result = _parse_call(state, &into);
+    if(result == LIBAB_SUCCESS) {
+        result = libab_convert_ds_result(ll_append(append_to, into));
+        if(result != LIBAB_SUCCESS) {
+            libab_tree_free_recursive(into);
+        }
+    }
+    return result;
+}
+
 libab_result _parse_atom(struct parser_state* state, libab_tree** store_into) {
     libab_result result;
     if(_parser_is_type(state, TOKEN_NUM) || _parser_is_type(state, TOKEN_ID)) {
@@ -276,8 +285,6 @@ libab_result _parse_atom(struct parser_state* state, libab_tree** store_into) {
         result = _parse_if(state, store_into);
     } else if(_parser_is_char(state, '{')) {
         result = _parse_block(state, store_into, 1);
-    } else if(_parser_is_type(state, TOKEN_FUN)) {
-        result = _parse_call(state, store_into);
     } else {
         result = LIBAB_UNEXPECTED;
     }
@@ -371,17 +378,15 @@ libab_operator* _parser_find_operator(struct parser_state* state, libab_lexer_ma
 libab_result _parser_expression_tree(struct parser_state* state, ll* source, libab_tree** into) {
     libab_result result = LIBAB_SUCCESS;
     libab_tree* top = ll_poptail(source);
-    if(top && top->variant == OP) {
+    if(top == NULL) {
+        result = LIBAB_UNEXPECTED;
+    } else if(top->variant == OP) {
         libab_tree* left = NULL;
         libab_tree* right = NULL;
 
         result = _parser_expression_tree(state, source, &right);
         if(result == LIBAB_SUCCESS) {
             result = _parser_expression_tree(state, source, &left);
-        }
-
-        if(result == LIBAB_SUCCESS && (left == NULL || right == NULL)) {
-            result = LIBAB_UNEXPECTED;
         }
 
         if(result == LIBAB_SUCCESS) {
@@ -398,14 +403,10 @@ libab_result _parser_expression_tree(struct parser_state* state, ll* source, lib
             free(top);
             top = NULL;
         }
-    } else if(top && top->variant == UNARY_OP) {
+    } else if(top->variant == UNARY_OP || top->variant == CALL) {
         libab_tree* child = NULL;
 
         result = _parser_expression_tree(state, source, &child);
-
-        if(result == LIBAB_SUCCESS && child == NULL) {
-            result = LIBAB_UNEXPECTED;
-        }
 
         if(result == LIBAB_SUCCESS) {
             result = libab_convert_ds_result(vec_add(&top->children, child));
@@ -413,8 +414,12 @@ libab_result _parser_expression_tree(struct parser_state* state, ll* source, lib
 
         if(result != LIBAB_SUCCESS) {
             if(child) libab_tree_free_recursive(child);
-            libab_tree_free(top);
-            free(top);
+            if(top->variant == UNARY_OP) {
+                libab_tree_free(top);
+                free(top);
+            } else {
+                libab_tree_free_recursive(top);
+            }
             top = NULL;
         }
     }
@@ -438,7 +443,11 @@ libab_result _parse_expression(struct parser_state* state, libab_tree** store_in
         libab_lexer_match* new_token = state->current_match;
         char current_char = state->string[new_token->from];
         if(_parser_is_type(state, TOKEN_CHAR) && current_char != '{') {
-            if(current_char == '(') {
+            if(current_char == '(' && _parser_can_postfix_follow(last_type)) {
+                result = _parser_append_call(state, &out_stack);
+                if(result != LIBAB_SUCCESS) break;
+                new_type = EXPR_OP_POSTFIX;
+            } else if(current_char == '(') {
                 result = libab_convert_ds_result(ll_append(&op_stack, new_token));
                 if(result != LIBAB_SUCCESS) break;
                 _parser_state_step(state);
