@@ -73,6 +73,20 @@ typedef struct libab_tree_s libab_tree;
  */
 void libab_tree_free(libab_tree* tree);
 /**
+ * Determines if the given tree node variant
+ * should contain a string.
+ * @param var the variant of the tree node.
+ * @return true if the tree node variant contains a string.
+ */
+int libab_tree_has_string(libab_tree_variant var);
+/**
+ * Determines if the given tree node variant
+ * should contain a vector.
+ * @param var the variant of the tree node.
+ * @return true if the tree node variant contains a vector.
+ */
+int libab_tree_has_vector(libab_tree_variant var);
+/**
  * Frees the given tree recursively,
  * deleting the children first and the moving on
  * to the parents. 
