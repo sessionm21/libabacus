@@ -8,7 +8,7 @@ project(libabacus)
 
 add_compile_options(-pedantic -Wall)
 
-add_library(abacus STATIC src/lexer.c src/util.c src/table.c src/parser.c src/libabacus.c src/tree.c)
+add_library(abacus STATIC src/lexer.c src/util.c src/table.c src/parser.c src/libabacus.c src/tree.c src/debug.c)
 add_executable(libabacus src/main.c)
 add_subdirectory(external/liblex)
 
