@@ -60,6 +60,7 @@ enum libab_lexer_token_e {
     TOKEN_OP_POSTFIX,
     TOKEN_KW_IF,
     TOKEN_KW_ELSE,
+    TOKEN_KW_WHILE,
     TOKEN_LAST
 };
 

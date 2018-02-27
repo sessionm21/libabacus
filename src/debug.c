@@ -13,6 +13,7 @@ const char* _debug_node_name(libab_tree_variant var) {
         "block",
         "void",
         "if",
+        "while",
         "call"
     };
     return names[var];

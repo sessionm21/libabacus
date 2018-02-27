@@ -227,6 +227,45 @@ libab_result _parse_if(struct parser_state* state, libab_tree** store_into) {
     return result;
 }
 
+libab_result _parse_while(struct parser_state* state, libab_tree** store_into) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_tree* condition = NULL;
+    libab_tree* value = NULL;
+
+    if(_parser_is_type(state, TOKEN_KW_WHILE)) {
+        result = _parser_construct_node_vec(state->current_match, store_into);
+        if(result == LIBAB_SUCCESS) {
+            (*store_into)->variant = WHILE;
+            _parser_state_step(state);
+        }
+    } else {
+        result = LIBAB_UNEXPECTED;
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = _parser_consume_char(state, '(');
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        PARSE_CHILD(result, state, _parse_expression, condition, &(*store_into)->children);
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = _parser_consume_char(state, ')');
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        PARSE_CHILD(result, state, _parse_expression, value, &(*store_into)->children);
+    }
+
+    if(result != LIBAB_SUCCESS) {
+        if(*store_into) libab_tree_free_recursive(*store_into);
+        *store_into = NULL;
+    }
+    
+    return result;
+}
+
 libab_result _parse_call(struct parser_state* state, libab_tree** store_into) {
     libab_result result =  LIBAB_SUCCESS;
     libab_tree* temp;
@@ -285,6 +324,8 @@ libab_result _parse_atom(struct parser_state* state, libab_tree** store_into) {
         _parser_state_step(state);
     } else if(_parser_is_type(state, TOKEN_KW_IF)) {
         result = _parse_if(state, store_into);
+    } else if(_parser_is_type(state, TOKEN_KW_WHILE)) {
+        result = _parse_while(state, store_into);
     } else if(_parser_is_char(state, '{')) {
         result = _parse_block(state, store_into, 1);
     } else {
