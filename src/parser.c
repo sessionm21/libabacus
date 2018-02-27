@@ -368,6 +368,10 @@ int _parser_can_postfix_follow(enum parser_expression_type type) {
     return type == EXPR_CLOSE_PARENTH || type == EXPR_ATOM || type == EXPR_OP_POSTFIX;
 }
 
+int _parser_can_atom_follow(enum parser_expression_type type) {
+    return !(type == EXPR_CLOSE_PARENTH || type == EXPR_OP_POSTFIX || type == EXPR_ATOM);
+}
+
 libab_operator* _parser_find_operator(struct parser_state* state, libab_lexer_match* match) {
     char op_buffer[8];
     size_t token_size = match->to - match->from;
@@ -496,7 +500,7 @@ libab_result _parse_expression(struct parser_state* state, libab_tree** store_in
             }
             new_type = EXPR_OP_INFIX;
         } else {
-            if(last_type == EXPR_ATOM) break;
+            if(!_parser_can_atom_follow(last_type)) break;
             result = _parser_append_atom(state, &out_stack);
             new_type = EXPR_ATOM;
         }
