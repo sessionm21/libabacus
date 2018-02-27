@@ -18,6 +18,7 @@ enum libab_tree_variant_e {
     VOID,
     IF,
     WHILE,
+    DOWHILE,
     CALL
 };
 

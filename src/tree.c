@@ -4,7 +4,8 @@
 int libab_tree_has_vector(libab_tree_variant variant) {
     return variant == BASE || variant == OP ||
             variant == UNARY_OP || variant == BLOCK ||
-            variant == IF || variant == CALL || variant == WHILE;
+            variant == IF || variant == CALL || variant == WHILE ||
+            variant == DOWHILE;
 }
 
 int libab_tree_has_string(libab_tree_variant variant) {
