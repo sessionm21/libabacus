@@ -31,15 +31,7 @@ int _parser_foreach_free_tree(void* data, va_list args) {
 }
 
 libab_result _parser_extract_token(struct parser_state* state, char** into, libab_lexer_match* match) {
-    libab_result result = LIBAB_SUCCESS;
-    size_t string_size = match->to - match->from;
-    if((*into = malloc(string_size + 1))) {
-        strncpy(*into, state->string + match->from, string_size);
-        (*into)[string_size] = '\0';
-    } else {
-        result = LIBAB_MALLOC;
-    }
-    return result;
+    return libab_copy_string_range(into, state->string, match->from, match->to);
 }
 
 // State functions
@@ -107,6 +99,168 @@ libab_result _parser_consume_type(struct parser_state* state,
 
 libab_result _parse_block(struct parser_state*, libab_tree**, int);
 libab_result _parse_expression(struct parser_state* state, libab_tree** store_into);
+libab_result _parse_type(struct parser_state* state, libab_parsetype** into);
+
+libab_result _parser_allocate_type(libab_parsetype** into, const char* source, size_t from, size_t to) {
+    libab_result result = LIBAB_SUCCESS;
+    if((*into = malloc(sizeof(**into)))) {
+        result = libab_copy_string_range(&(*into)->name, source, from, to);
+    } else {
+        result = LIBAB_MALLOC;
+    }
+
+    if(result != LIBAB_SUCCESS) {
+        free(*into);
+        *into = NULL;
+    }
+    return result;
+}
+
+libab_result _parser_append_type(struct parser_state* state, vec* into) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_parsetype* temp = NULL;
+    result = _parse_type(state, &temp);
+    if(result == LIBAB_SUCCESS) {
+        result = libab_convert_ds_result(vec_add(into, temp));
+        if(result != LIBAB_SUCCESS) {
+            libab_parsetype_free_recursive(temp);
+        }
+    }
+    return result;
+}
+
+libab_result _parse_type_list(struct parser_state* state, vec* into, char end_char) {
+    libab_result result = LIBAB_SUCCESS;
+    int is_parenth, is_comma;
+    while(result == LIBAB_SUCCESS && !_parser_eof(state) && !_parser_is_char(state, end_char)) {
+        result = _parser_append_type(state, into);
+        is_parenth = _parser_is_char(state, end_char);
+        is_comma = _parser_is_char(state, ',');
+        if(result == LIBAB_SUCCESS && !(is_parenth || is_comma)) {
+            result = LIBAB_UNEXPECTED;
+        } else if(result == LIBAB_SUCCESS && is_comma) {
+            _parser_state_step(state);
+            if(_parser_is_char(state, end_char)) {
+                result = LIBAB_UNEXPECTED;
+            }
+        }
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = _parser_consume_char(state, end_char);
+    }
+
+    return result;
+}
+
+libab_result _parse_type_id(struct parser_state* state, libab_parsetype** into) {
+    libab_result result = _parser_allocate_type(into, state->string, 
+            state->current_match->from, state->current_match->to); 
+    if(result == LIBAB_SUCCESS) {
+        (*into)->variant = PT_STRING;
+        _parser_state_step(state);
+    }
+
+    if(result == LIBAB_SUCCESS && _parser_is_char(state, '(')) {
+        result = libab_convert_ds_result(vec_init(&(*into)->children));
+        if(result != LIBAB_SUCCESS) {
+            free((*into)->name);
+            free(*into);
+            *into = NULL;
+        } else {
+            (*into)->variant = PT_PARENT;
+            _parser_state_step(state);
+            result = _parse_type_list(state, &(*into)->children, ')');
+        }
+    }
+
+    if(result != LIBAB_SUCCESS && *into) {
+        libab_parsetype_free_recursive(*into);
+        *into = NULL;
+    }
+
+    return result;
+}   
+
+libab_result _parse_type_function(struct parser_state* state,
+        libab_parsetype** into) {
+    libab_result result = _parser_allocate_type(into, "function", 0, 8);
+    if(result == LIBAB_SUCCESS) {
+        (*into)->variant = PT_PARENT;
+        result = libab_convert_ds_result(vec_init(&(*into)->children));
+        if(result != LIBAB_SUCCESS) {
+            free((*into)->name);
+            free(*into);
+            *into = NULL;
+        } else {
+            _parser_state_step(state);
+        }
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = _parse_type_list(state, &(*into)->children, ')');
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = _parser_consume_type(state, TOKEN_KW_ARROW);
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = _parser_append_type(state, &(*into)->children);
+    }
+
+    if(result != LIBAB_SUCCESS && *into) {
+        libab_parsetype_free_recursive(*into);
+        *into = NULL;
+    }
+
+    return result;
+}
+
+libab_result _parse_type_array(struct parser_state* state,
+        libab_parsetype** into) {
+    libab_result result = _parser_allocate_type(into, "array", 0, 5);
+    if(result == LIBAB_SUCCESS) {
+        (*into)->variant = PT_PARENT;
+        result = libab_convert_ds_result(vec_init(&(*into)->children));
+        if(result != LIBAB_SUCCESS) {
+            free((*into)->name);
+            free(*into);
+            *into = NULL;
+        } else {
+            _parser_state_step(state);
+        }
+    }
+    if(result == LIBAB_SUCCESS) {
+        result = _parser_append_type(state, &(*into)->children);
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = _parser_consume_char(state, ']');
+    }
+
+    if(result != LIBAB_SUCCESS && *into) {
+        libab_parsetype_free_recursive(*into);
+        *into = NULL;
+    }
+
+    return result;
+}
+
+libab_result _parse_type(struct parser_state* state, libab_parsetype** into) {
+    libab_result result;
+    if(_parser_is_type(state, TOKEN_ID)) {
+        result = _parse_type_id(state, into);
+    } else if(_parser_is_char(state, '(')) {
+        result = _parse_type_function(state, into);
+    } else if(_parser_is_char(state, '[')) {
+        result = _parse_type_array(state, into);
+    } else {
+        *into = NULL;
+        result = LIBAB_UNEXPECTED;
+    }
+    return result;
+}
 
 libab_result _parser_allocate_node(libab_lexer_match* match, libab_tree** into) {
     libab_result result = LIBAB_SUCCESS;
@@ -668,6 +822,13 @@ libab_result libab_parser_parse(libab_parser* parser, ll* tokens,
     }
 
     return result;
+}
+libab_result libab_parser_parse_type(libab_parser* parser, ll* tokens,
+        const char* string, libab_parsetype** store_into) {
+    struct parser_state state;
+    _parser_state_init(&state, tokens, string, parser->base_table);
+
+    return _parse_type(&state, store_into);
 }
 void libab_parser_free(libab_parser* parser) {
     parser->base_table = NULL;

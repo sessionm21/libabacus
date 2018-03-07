@@ -14,7 +14,8 @@ libab_result libab_lexer_init(libab_lexer* lexer) {
         "if",
         "else",
         "while",
-        "do"
+        "do",
+        "->"
     };
     libab_lexer_token tokens[] = {
         TOKEN_CHAR,
@@ -23,7 +24,8 @@ libab_result libab_lexer_init(libab_lexer* lexer) {
         TOKEN_KW_IF,
         TOKEN_KW_ELSE,
         TOKEN_KW_WHILE,
-        TOKEN_KW_DO
+        TOKEN_KW_DO,
+        TOKEN_KW_ARROW
     };
     const size_t count = sizeof(tokens)/sizeof(libab_lexer_token);
 
