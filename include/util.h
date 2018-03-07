@@ -4,6 +4,7 @@
 #include "libds.h"
 #include "liblex.h"
 #include "result.h"
+#include <string.h>
 
 /**
  * Converts a result code from liblex to libabacus.
@@ -17,5 +18,31 @@ libab_result libab_convert_lex_result(liblex_result to_convert);
  * @return the libabacus equivalent of the error code.
  */
 libab_result libab_convert_ds_result(libds_result to_convert);
+/**
+ * Copies a range of the given string into a new, null-terminated string allocated
+ * on the heap.
+ * @param destination the pointer to populate with the newly created string.
+ * @param source the source from which to pull character information from.
+ * @param from the index (inclusive) at which to begin copying.
+ * @param to the index (exclusive) at which to end copying.
+ * @return the result of the operation.
+ */
+libab_result libab_copy_string_range(char** destination, const char* source, size_t from, size_t to);
+/**
+ * Copies the given string, starting at 0 and copying length bytes.
+ * @param destination the pointer to populate with the newly created string.
+ * @param source to source string to copy.
+ * @param length the number of bytes to copy.
+ * @return the result of the operation.
+ */
+libab_result libab_copy_string_size(char** destination, const char* source, size_t length);
+/**
+ * Copies the entire string into a null-terminated string allocated
+ * on the heap.
+ * @param destination the pointer to populate with the newly allocated string.
+ * @param source the source string to copy.
+ * @return the result of the operation.
+ */
+libab_result libab_copy_string(char** destination, const char* source);
 
 #endif
