@@ -15,7 +15,9 @@ const char* _debug_node_name(libab_tree_variant var) {
         "if",
         "while",
         "dowhile",
-        "call"
+        "call",
+        "fun",
+        "fun_param"
     };
     return names[var];
 }

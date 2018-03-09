@@ -2,6 +2,7 @@
 #define LIBABACUS_TREE_H
 
 #include "result.h"
+#include "parsetype.h"
 #include "vec.h"
 
 /**
@@ -19,13 +20,19 @@ enum libab_tree_variant_e {
     IF,
     WHILE,
     DOWHILE,
-    CALL
+    CALL,
+    FUN,
+    FUN_PARAM
 };
 
 /**
  * A tree node that has been parsed from the input tokens.
  */
 struct libab_tree_s {
+    /**
+     * The parse type of this node, if applicable.
+     */
+    libab_parsetype* parse_type;
     /**
      * The variant of tree node.
      */
@@ -81,6 +88,13 @@ void libab_tree_free(libab_tree* tree);
  * @return true if the tree node variant contains a string.
  */
 int libab_tree_has_string(libab_tree_variant var);
+/**
+ * Determines if the given tree node variant
+ * should contain a parse type.
+ * @param var the variant of the tree node.
+ * @return true if the tree node variant contains a type.
+ */
+int libab_tree_has_type(libab_tree_variant var);
 /**
  * Determines if the given tree node variant
  * should contain a vector.

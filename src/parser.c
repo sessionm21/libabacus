@@ -101,6 +101,10 @@ libab_result _parse_block(struct parser_state*, libab_tree**, int);
 libab_result _parse_expression(struct parser_state* state, libab_tree** store_into);
 libab_result _parse_type(struct parser_state* state, libab_parsetype** into);
 
+libab_result _parse_braced_block(struct parser_state* state, libab_tree** store_into) {
+    return _parse_block(state, store_into, 1);
+}
+
 libab_result _parser_allocate_type(libab_parsetype** into, const char* source, size_t from, size_t to) {
     libab_result result = LIBAB_SUCCESS;
     if((*into = malloc(sizeof(**into)))) {
@@ -381,6 +385,88 @@ libab_result _parse_if(struct parser_state* state, libab_tree** store_into) {
     return result;
 }
 
+libab_result _parse_fun_param(struct parser_state* state, libab_tree** store_into) {
+    libab_result result = LIBAB_SUCCESS;
+    if(_parser_is_type(state, TOKEN_ID)) {
+        result = _parser_construct_node_string(state, state->current_match, store_into);
+    } else {
+        result = LIBAB_UNEXPECTED;
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        _parser_state_step(state);
+        (*store_into)->variant = FUN_PARAM;
+        (*store_into)->parse_type = NULL;
+        result = _parser_consume_char(state, ':');
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = _parse_type(state, &(*store_into)->parse_type);
+    }
+
+    if(result != LIBAB_SUCCESS && *store_into) {
+        libab_tree_free_recursive(*store_into);
+        *store_into = NULL;
+    }
+    return result;
+}
+
+libab_result _parse_fun(struct parser_state* state, libab_tree** store_into) {
+    libab_result result = LIBAB_SUCCESS;
+    int is_parenth, is_comma;
+    libab_tree* temp;
+    result = _parser_consume_type(state, TOKEN_KW_FUN);
+    if(result == LIBAB_SUCCESS) {
+        if(_parser_is_type(state, TOKEN_ID)) {
+            result = _parser_construct_node_both(state, state->current_match, store_into);
+        } else {
+            result = LIBAB_UNEXPECTED;
+        }
+    }
+    if(result == LIBAB_SUCCESS) {
+        _parser_state_step(state);
+        (*store_into)->parse_type = NULL;
+        (*store_into)->variant = FUN;
+        result = _parser_consume_char(state, '(');
+    }
+    while(result == LIBAB_SUCCESS && !_parser_eof(state) && !_parser_is_char(state, ')')) {
+        PARSE_CHILD(result, state, _parse_fun_param, temp, &(*store_into)->children);
+        is_parenth = _parser_is_char(state, ')');
+        is_comma = _parser_is_char(state, ',');
+        if(result == LIBAB_SUCCESS && !(is_parenth || is_comma)) {
+            result = LIBAB_UNEXPECTED;
+        } else if(result == LIBAB_SUCCESS && is_comma) {
+            _parser_state_step(state);
+            if(_parser_is_char(state, ')')) {
+                result = LIBAB_UNEXPECTED;
+            }
+        }
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = _parser_consume_char(state, ')');
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = _parser_consume_char(state, ':');
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = _parse_type(state, &(*store_into)->parse_type);
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        PARSE_CHILD(result, state, _parse_braced_block, temp, &(*store_into)->children);
+    }
+
+    if(result != LIBAB_SUCCESS && *store_into) {
+        libab_tree_free_recursive(*store_into);
+        *store_into = NULL;
+    }
+
+    return result;
+}
+
 libab_result _parse_while(struct parser_state* state, libab_tree** store_into) {
     libab_result result = LIBAB_SUCCESS;
     libab_tree* condition = NULL;
@@ -521,7 +607,9 @@ libab_result _parse_atom(struct parser_state* state, libab_tree** store_into) {
     } else if(_parser_is_type(state, TOKEN_KW_DO)) {
         result = _parse_dowhile(state, store_into);
     } else if(_parser_is_char(state, '{')) {
-        result = _parse_block(state, store_into, 1);
+        result = _parse_braced_block(state, store_into);
+    } else if(_parser_is_type(state, TOKEN_KW_FUN)) {
+        result = _parse_fun(state, store_into);
     } else {
         result = LIBAB_UNEXPECTED;
     }
