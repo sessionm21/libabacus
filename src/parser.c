@@ -325,7 +325,7 @@ libab_result _parser_construct_node_both(struct parser_state* state, libab_lexer
 libab_result _parse_void(struct parser_state* state, libab_tree** store_into) {
     libab_result result = LIBAB_SUCCESS;
     if((*store_into = malloc(sizeof(**store_into)))) {
-        (*store_into)->variant = VOID;
+        (*store_into)->variant = TREE_VOID;
     } else {
         result = LIBAB_MALLOC;
     }
@@ -341,7 +341,7 @@ libab_result _parse_if(struct parser_state* state, libab_tree** store_into) {
     if(_parser_is_type(state, TOKEN_KW_IF)) {
         result = _parser_construct_node_vec(state->current_match, store_into);
         if(result == LIBAB_SUCCESS) {
-            (*store_into)->variant = IF;
+            (*store_into)->variant = TREE_IF;
             _parser_state_step(state);
         }
     } else {
@@ -395,7 +395,7 @@ libab_result _parse_fun_param(struct parser_state* state, libab_tree** store_int
 
     if(result == LIBAB_SUCCESS) {
         _parser_state_step(state);
-        (*store_into)->variant = FUN_PARAM;
+        (*store_into)->variant = TREE_FUN_PARAM;
         (*store_into)->parse_type = NULL;
         result = _parser_consume_char(state, ':');
     }
@@ -426,7 +426,7 @@ libab_result _parse_fun(struct parser_state* state, libab_tree** store_into) {
     if(result == LIBAB_SUCCESS) {
         _parser_state_step(state);
         (*store_into)->parse_type = NULL;
-        (*store_into)->variant = FUN;
+        (*store_into)->variant = TREE_FUN;
         result = _parser_consume_char(state, '(');
     }
     while(result == LIBAB_SUCCESS && !_parser_eof(state) && !_parser_is_char(state, ')')) {
@@ -475,7 +475,7 @@ libab_result _parse_while(struct parser_state* state, libab_tree** store_into) {
     if(_parser_is_type(state, TOKEN_KW_WHILE)) {
         result = _parser_construct_node_vec(state->current_match, store_into);
         if(result == LIBAB_SUCCESS) {
-            (*store_into)->variant = WHILE;
+            (*store_into)->variant = TREE_WHILE;
             _parser_state_step(state);
         }
     } else {
@@ -514,7 +514,7 @@ libab_result _parse_dowhile(struct parser_state* state, libab_tree** store_into)
     if(_parser_is_type(state, TOKEN_KW_DO)) {
         result = _parser_construct_node_vec(state->current_match, store_into);
         if(result == LIBAB_SUCCESS) {
-            (*store_into)->variant = DOWHILE;
+            (*store_into)->variant = TREE_DOWHILE;
             _parser_state_step(state);
         }
     } else {
@@ -551,7 +551,7 @@ libab_result _parse_call(struct parser_state* state, libab_tree** store_into) {
     if(_parser_is_char(state, '(')) {
         result = _parser_construct_node_vec(state->current_match, store_into);
         if(result == LIBAB_SUCCESS) {
-            (*store_into)->variant = CALL;
+            (*store_into)->variant = TREE_CALL;
         }
         _parser_state_step(state);
     } else {
@@ -597,7 +597,7 @@ libab_result _parse_atom(struct parser_state* state, libab_tree** store_into) {
     if(_parser_is_type(state, TOKEN_NUM) || _parser_is_type(state, TOKEN_ID)) {
         result = _parser_construct_node_string(state, state->current_match, store_into);
         if(result == LIBAB_SUCCESS) {
-            (*store_into)->variant = (state->current_match->type == TOKEN_NUM) ? NUM : ID;
+            (*store_into)->variant = (state->current_match->type == TOKEN_NUM) ? TREE_NUM : TREE_ID;
         }
         _parser_state_step(state);
     } else if(_parser_is_type(state, TOKEN_KW_IF)) {
@@ -633,7 +633,7 @@ libab_result _parser_construct_op(struct parser_state* state, libab_lexer_match*
     libab_result result = _parser_construct_node_both(state, match, into);
 
     if(result == LIBAB_SUCCESS) {
-        (*into)->variant = (match->type == TOKEN_OP_INFIX) ? OP : UNARY_OP;
+        (*into)->variant = (match->type == TOKEN_OP_INFIX) ? TREE_OP : TREE_UNARY_OP;
     }
 
     return result;
@@ -709,7 +709,7 @@ libab_result _parser_expression_tree(struct parser_state* state, ll* source, lib
     libab_tree* top = ll_poptail(source);
     if(top == NULL) {
         result = LIBAB_UNEXPECTED;
-    } else if(top->variant == OP) {
+    } else if(top->variant == TREE_OP) {
         libab_tree* left = NULL;
         libab_tree* right = NULL;
 
@@ -732,7 +732,7 @@ libab_result _parser_expression_tree(struct parser_state* state, ll* source, lib
             free(top);
             top = NULL;
         }
-    } else if(top->variant == UNARY_OP || top->variant == CALL) {
+    } else if(top->variant == TREE_UNARY_OP || top->variant == TREE_CALL) {
         libab_tree* child = NULL;
 
         result = _parser_expression_tree(state, source, &child);
@@ -743,7 +743,7 @@ libab_result _parser_expression_tree(struct parser_state* state, ll* source, lib
 
         if(result != LIBAB_SUCCESS) {
             if(child) libab_tree_free_recursive(child);
-            if(top->variant == UNARY_OP) {
+            if(top->variant == TREE_UNARY_OP) {
                 libab_tree_free(top);
                 free(top);
             } else {
@@ -866,7 +866,7 @@ libab_result _parse_block(struct parser_state* state,
     libab_tree* temp = NULL;
     result = _parser_construct_node_vec(state->current_match, store_into);
     if(result == LIBAB_SUCCESS) {
-        (*store_into)->variant = BLOCK;
+        (*store_into)->variant = TREE_BLOCK;
     }
 
     if(expect_braces && result == LIBAB_SUCCESS) result = _parser_consume_char(state, '{');
@@ -906,7 +906,7 @@ libab_result libab_parser_parse(libab_parser* parser, ll* tokens,
 
     result = _parse_block(&state, store_into, 0);
     if(result == LIBAB_SUCCESS) {
-        (*store_into)->variant = BASE;
+        (*store_into)->variant = TREE_BASE;
     }
 
     return result;

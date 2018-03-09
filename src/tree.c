@@ -2,20 +2,20 @@
 #include <stdlib.h>
 
 int libab_tree_has_vector(libab_tree_variant variant) {
-    return variant == BASE || variant == OP ||
-            variant == UNARY_OP || variant == BLOCK ||
-            variant == IF || variant == CALL || variant == WHILE ||
-            variant == DOWHILE || variant == FUN;
+    return variant == TREE_BASE || variant == TREE_OP ||
+            variant == TREE_UNARY_OP || variant == TREE_BLOCK ||
+            variant == TREE_IF || variant == TREE_CALL || variant == TREE_WHILE ||
+            variant == TREE_DOWHILE || variant == TREE_FUN;
 }
 
 int libab_tree_has_string(libab_tree_variant variant) {
-    return variant == ID || variant == NUM ||
-            variant == OP || variant == UNARY_OP ||
-            variant == FUN || variant == FUN_PARAM;
+    return variant == TREE_ID || variant == TREE_NUM ||
+            variant == TREE_OP || variant == TREE_UNARY_OP ||
+            variant == TREE_FUN || variant == TREE_FUN_PARAM;
 }
 
 int libab_tree_has_type(libab_tree_variant variant) {
-    return variant == FUN_PARAM || variant == FUN;
+    return variant == TREE_FUN_PARAM || variant == TREE_FUN;
 }
 
 void libab_tree_free(libab_tree* tree) {

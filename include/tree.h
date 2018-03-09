@@ -9,20 +9,20 @@
  * Enum to represent the variant of a tree node.
  */
 enum libab_tree_variant_e {
-    NONE,
-    BASE,
-    ID,
-    NUM,
-    OP,
-    UNARY_OP,
-    BLOCK,
-    VOID,
-    IF,
-    WHILE,
-    DOWHILE,
-    CALL,
-    FUN,
-    FUN_PARAM
+    TREE_NONE,
+    TREE_BASE,
+    TREE_ID,
+    TREE_NUM,
+    TREE_OP,
+    TREE_UNARY_OP,
+    TREE_BLOCK,
+    TREE_VOID,
+    TREE_IF,
+    TREE_WHILE,
+    TREE_DOWHILE,
+    TREE_CALL,
+    TREE_FUN,
+    TREE_FUN_PARAM
 };
 
 /**
