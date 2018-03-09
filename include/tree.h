@@ -22,7 +22,8 @@ enum libab_tree_variant_e {
     TREE_DOWHILE,
     TREE_CALL,
     TREE_FUN,
-    TREE_FUN_PARAM
+    TREE_FUN_PARAM,
+    TREE_RETURN
 };
 
 /**

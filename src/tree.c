@@ -5,7 +5,8 @@ int libab_tree_has_vector(libab_tree_variant variant) {
     return variant == TREE_BASE || variant == TREE_OP ||
             variant == TREE_UNARY_OP || variant == TREE_BLOCK ||
             variant == TREE_IF || variant == TREE_CALL || variant == TREE_WHILE ||
-            variant == TREE_DOWHILE || variant == TREE_FUN;
+            variant == TREE_DOWHILE || variant == TREE_FUN ||
+            variant == TREE_RETURN;
 }
 
 int libab_tree_has_string(libab_tree_variant variant) {
