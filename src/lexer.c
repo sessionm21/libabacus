@@ -17,7 +17,9 @@ libab_result libab_lexer_init(libab_lexer* lexer) {
         "do",
         "->",
         "fun",
-        "return"
+        "return",
+        "let",
+        "be"
     };
     libab_lexer_token tokens[] = {
         TOKEN_CHAR,
@@ -29,7 +31,9 @@ libab_result libab_lexer_init(libab_lexer* lexer) {
         TOKEN_KW_DO,
         TOKEN_KW_ARROW,
         TOKEN_KW_FUN,
-        TOKEN_KW_RETURN
+        TOKEN_KW_RETURN,
+        TOKEN_KW_LET,
+        TOKEN_KW_BE
     };
     const size_t count = sizeof(tokens)/sizeof(libab_lexer_token);
 
