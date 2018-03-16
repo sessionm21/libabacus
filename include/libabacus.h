@@ -46,37 +46,41 @@ libab_result libab_init(libab* ab);
  * @param op the operator string to register.
  * @param precedence the precedence of the operator.
  * @param associativity the associativity of the operator.
+ * @param type the type of this operator.
  * @param func the function that describes the functionality of the operator.
  * @return the result of the initialization.
  */
-libab_result libab_register_operator_infix(libab* ab, const char* op, int precedence, int associativity, libab_function_ptr func);
+libab_result libab_register_operator_infix(libab* ab, const char* op, int precedence, int associativity, const char* type, libab_function_ptr func);
 /**
  * Registers an operation with libabacus that appears
  * before its operand.
  * @param ab the libabacus instance to register the operator with.
  * @param op the operator string to register.
+ * @param type the type of this operator.
  * @param func the function that describes the functionality of the operator.
  * @return the result of the registration.
  */
-libab_result libab_register_operator_prefix(libab* ab, const char* op, libab_function_ptr func);
+libab_result libab_register_operator_prefix(libab* ab, const char* op, const char* type, libab_function_ptr func);
 /**
  * Registers an operation with libabacus that appears
  * after its operand.
  * @param ab the libabacus instance to register the operator with.
  * @param op the operator string to register.
+ * @param type the type of this operator.
  * @param func the function that describes the functionality of the operator.
  * @return the result of the registration.
  */
-libab_result libab_register_operator_postfix(libab* ab, const char* op, libab_function_ptr func);
+libab_result libab_register_operator_postfix(libab* ab, const char* op, const char* type, libab_function_ptr func);
 
 /**
  * Registers a function with libabacus.
  * @param ab the libabacus instance used to keep state.
  * @param name the name of the function.
+ * @param type the type of this operator.
  * @param func the function that describes the functionality of the function.
  * @return the result of the initialization.
  */
-libab_result libab_register_function(libab* ab, const char* name, libab_function_ptr func);
+libab_result libab_register_function(libab* ab, const char* name, const char* type, libab_function_ptr func);
 /**
  * Releases all the resources allocated by libabacus.
  * @param ab the libabacus instance to release.

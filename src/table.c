@@ -43,5 +43,9 @@ void libab_table_free(libab_table* table) {
     ht_free(&table->table);
 }
 void libab_table_entry_free(libab_table_entry* entry) {
-    
+    if(entry->variant == ENTRY_OP) {
+        libab_parsetype_free_recursive(entry->data_u.op.behavior.type);
+    } else if(entry->variant == ENTRY_FUN) {
+        libab_parsetype_free_recursive(entry->data_u.function.behavior.type);
+    }
 }

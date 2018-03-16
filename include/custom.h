@@ -1,12 +1,28 @@
 #ifndef LIBABACUS_CUSTOM_H
 #define LIBABACUS_CUSTOM_H
 
+#include "parsetype.h"
+
 /**
  * A function pointer that is called
  * to execute a certain type of function.
  */
 typedef void(*libab_function_ptr)();
 
+/**
+ * The common information
+ * that both operators and functions shared.
+ */
+struct libab_behavior_s {
+    /**
+     * The function that handles the parameters.
+     */
+    libab_function_ptr function;
+    /**
+     * The type of the function.
+     */
+    libab_parsetype* type;
+};
 /**
  * A struct that holds informatiion
  * about an operator that has been
@@ -22,9 +38,9 @@ struct libab_operator_s {
      */
     int associativity;
     /**
-     * The functionality of the operator.
+     * The behavior of this operator.
      */
-    libab_function_ptr function;
+    struct libab_behavior_s behavior;
 };
 
 /**
@@ -34,11 +50,12 @@ struct libab_operator_s {
  */
 struct libab_function_s {
     /**
-     * The functionality of the function.
+     * The behavior of this function.
      */
-    libab_function_ptr function;
+    struct libab_behavior_s behavior;
 };
 
+typedef struct libab_behavior_s libab_behavior;
 typedef struct libab_operator_s libab_operator;
 typedef struct libab_function_s libab_function;
 
