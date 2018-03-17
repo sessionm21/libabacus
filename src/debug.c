@@ -9,6 +9,7 @@ const char* _debug_node_name(libab_tree_variant var) {
         "id",
         "num",
         "op",
+        "reserved_op",
         "unary_op",
         "block",
         "void",

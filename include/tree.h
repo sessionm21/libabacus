@@ -14,6 +14,7 @@ enum libab_tree_variant_e {
     TREE_ID,
     TREE_NUM,
     TREE_OP,
+    TREE_RESERVED_OP,
     TREE_UNARY_OP,
     TREE_BLOCK,
     TREE_VOID,

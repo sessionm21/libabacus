@@ -4,6 +4,7 @@
 #include "lexer.h"
 #include <stdlib.h>
 #include <string.h>
+#include "reserved.h"
 
 struct parser_state {
     ll_node* current_node;
@@ -11,6 +12,11 @@ struct parser_state {
     libab_lexer_match* last_match;
     const char* string;
     libab_table* base_table;
+};
+
+struct operator_data {
+    int associativity;
+    int precedence;
 };
 
 // Utilities
@@ -703,7 +709,13 @@ libab_result _parser_construct_op(struct parser_state* state, libab_lexer_match*
     libab_result result = _parser_construct_node_both(state, match, into);
 
     if(result == LIBAB_SUCCESS) {
-        (*into)->variant = (match->type == TOKEN_OP_INFIX) ? TREE_OP : TREE_UNARY_OP;
+        if(match->type == TOKEN_OP_INFIX) {
+            (*into)->variant = TREE_OP;
+        } else if(match->type == TOKEN_OP_RESERVED) {
+            (*into)->variant = TREE_RESERVED_OP;
+        } else {
+            (*into)->variant = TREE_UNARY_OP;
+        }
     }
 
     return result;
@@ -728,7 +740,8 @@ libab_result _parser_append_op_node(struct parser_state* state, libab_lexer_matc
 int _parser_match_is_op(libab_lexer_match* match) {
     return match->type == TOKEN_OP_INFIX ||
         match->type == TOKEN_OP_PREFIX ||
-        match->type == TOKEN_OP_POSTFIX;
+        match->type == TOKEN_OP_POSTFIX ||
+        match->type == TOKEN_OP_RESERVED;
 }
 
 libab_result _parser_pop_brackets(struct parser_state* state, ll* pop_from, ll* push_to, char bracket, int* success) {
@@ -765,13 +778,21 @@ int _parser_can_atom_follow(enum parser_expression_type type) {
     return !(type == EXPR_CLOSE_PARENTH || type == EXPR_OP_POSTFIX || type == EXPR_ATOM);
 }
 
-libab_operator* _parser_find_operator(struct parser_state* state, libab_lexer_match* match) {
+void _parser_find_operator(struct parser_state* state, libab_lexer_match* match, struct operator_data* data) {
     char op_buffer[8];
     size_t token_size = match->to - match->from;
     size_t buffer_length = (token_size < 7) ? token_size : 7;
     strncpy(op_buffer, state->string + match->from, buffer_length);
     op_buffer[buffer_length] = '\0';
-    return libab_table_search_operator(state->base_table, op_buffer);
+    if(match->type != TOKEN_OP_RESERVED) {
+        libab_operator* operator = libab_table_search_operator(state->base_table, op_buffer);
+        data->associativity = operator->associativity;
+        data->precedence = operator->precedence;
+    } else {
+        const libab_reserved_operator* operator = libab_find_reserved_operator(op_buffer);
+        data->associativity = operator->associativity;
+        data->precedence = operator->precedence;
+    }
 }
 
 libab_result _parser_expression_tree(struct parser_state* state, ll* source, libab_tree** into) {
@@ -779,7 +800,7 @@ libab_result _parser_expression_tree(struct parser_state* state, ll* source, lib
     libab_tree* top = ll_poptail(source);
     if(top == NULL) {
         result = LIBAB_UNEXPECTED;
-    } else if(top->variant == TREE_OP) {
+    } else if(top->variant == TREE_OP || top->variant == TREE_RESERVED_OP) {
         libab_tree* left = NULL;
         libab_tree* right = NULL;
 
@@ -828,6 +849,8 @@ libab_result _parser_expression_tree(struct parser_state* state, ll* source, lib
 
 libab_result _parse_expression(struct parser_state* state, libab_tree** store_into) {
     libab_result result = LIBAB_SUCCESS;
+    struct operator_data operator;
+    struct operator_data other_operator;
     ll out_stack;
     ll op_stack;
     int pop_success = 0;
@@ -869,19 +892,19 @@ libab_result _parse_expression(struct parser_state* state, libab_tree** store_in
             result = _parser_append_op_node(state, new_token, &out_stack);
             _parser_state_step(state);
             new_type = EXPR_OP_POSTFIX;
-        } else if(new_token->type == TOKEN_OP_INFIX) {
-            libab_operator* operator = _parser_find_operator(state, new_token);
+        } else if(new_token->type == TOKEN_OP_INFIX || new_token->type == TOKEN_OP_RESERVED) {
+            _parser_find_operator(state, new_token, &operator);
             _parser_state_step(state);
 
             while(result == LIBAB_SUCCESS && op_stack.tail &&
                     _parser_match_is_op(op_stack.tail->data)) {
-                libab_operator* other_operator = _parser_find_operator(state, op_stack.tail->data);
+                _parser_find_operator(state, op_stack.tail->data, &other_operator);
 
                 if(new_token->type == TOKEN_OP_PREFIX ||
-                        (operator->associativity == -1 &&
-                         operator->precedence <= other_operator->precedence) ||
-                        (operator->associativity == 1 &&
-                         operator->precedence < other_operator->precedence)) {
+                        (operator.associativity == -1 &&
+                         operator.precedence <= other_operator.precedence) ||
+                        (operator.associativity == 1 &&
+                         operator.precedence < other_operator.precedence)) {
                     libab_lexer_match* match = ll_poptail(&op_stack);
                     result = _parser_append_op_node(state, match, &out_stack);
                 } else {

@@ -6,13 +6,14 @@ int libab_tree_has_vector(libab_tree_variant variant) {
             variant == TREE_UNARY_OP || variant == TREE_BLOCK ||
             variant == TREE_IF || variant == TREE_CALL || variant == TREE_WHILE ||
             variant == TREE_DOWHILE || variant == TREE_FUN ||
-            variant == TREE_RETURN;
+            variant == TREE_RETURN || variant == TREE_RESERVED_OP;
 }
 
 int libab_tree_has_string(libab_tree_variant variant) {
     return variant == TREE_ID || variant == TREE_NUM ||
             variant == TREE_OP || variant == TREE_UNARY_OP ||
-            variant == TREE_FUN || variant == TREE_FUN_PARAM;
+            variant == TREE_FUN || variant == TREE_FUN_PARAM ||
+            variant == TREE_RESERVED_OP;
 }
 
 int libab_tree_has_type(libab_tree_variant variant) {
