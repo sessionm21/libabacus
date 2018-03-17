@@ -1,11 +1,25 @@
 #include "libabacus.h"
 #include <stdlib.h>
 #include "util.h"
+#include "reserved.h"
 
 libab_result libab_init(libab* ab) {
+    libab_result result;
     libab_table_init(&ab->table);
     libab_parser_init(&ab->parser, &ab->table);
-    return libab_lexer_init(&ab->lexer);
+    result = libab_lexer_init(&ab->lexer);
+
+    if(result == LIBAB_SUCCESS) {
+        result = libab_register_reserved_operators(&ab->lexer);
+    }
+
+    if(result != LIBAB_SUCCESS) {
+        libab_table_free(&ab->table);
+        libab_parser_free(&ab->parser);
+        libab_lexer_free(&ab->lexer);
+    }
+
+    return result;
 }
 
 void _sanitize(char* to, const char* from, size_t buffer_size) {

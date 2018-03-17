@@ -43,6 +43,10 @@ libab_result libab_lexer_init(libab_lexer* lexer) {
                 eval_config_add(&lexer->config, words[i], tokens[i]));
     }
 
+    if(result != LIBAB_SUCCESS) {
+        eval_config_free(&lexer->config);
+    }
+
     return result;
 }
 

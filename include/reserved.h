@@ -37,5 +37,17 @@ typedef struct libab_reserved_operator_s libab_reserved_operator;
  * @return the reserved operator, if it is found.
  */
 const libab_reserved_operator* libab_find_reserved_operator(const char* name);
+/**
+ * Registers the existing reserved operators into the given lexer.
+ * @param lexer the lexer to register into.
+ * @return the result of the registration.
+ */
+libab_result libab_register_reserved_operators(libab_lexer* lexer);
+/**
+ * Remove the existing reserved operators from the given lexer.
+ * @param lexer the lexer to remove from.
+ * @return the result of the removal.
+ */
+libab_result libab_remove_reserved_operators(libab_lexer* lexer);
 
 #endif
