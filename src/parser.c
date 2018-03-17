@@ -900,7 +900,7 @@ libab_result _parse_expression(struct parser_state* state, libab_tree** store_in
                     _parser_match_is_op(op_stack.tail->data)) {
                 _parser_find_operator(state, op_stack.tail->data, &other_operator);
 
-                if(new_token->type == TOKEN_OP_PREFIX ||
+                if(((libab_lexer_match*)op_stack.tail->data)->type == TOKEN_OP_PREFIX ||
                         (operator.associativity == -1 &&
                          operator.precedence <= other_operator.precedence) ||
                         (operator.associativity == 1 &&
