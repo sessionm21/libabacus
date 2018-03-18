@@ -30,6 +30,12 @@ struct libab_behavior_s {
  */
 struct libab_operator_s {
     /**
+     * The type of the operator (infix, prefix, postfix).
+     * Corresponds to token types associated with
+     * each operator.
+     */
+    int type;
+    /**
      * The precedence of the operator.
      */
     int precedence;

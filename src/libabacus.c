@@ -58,6 +58,7 @@ libab_result _register_operator(libab* ab, const char* op, int token_type, int p
         new_entry->data_u.op.behavior.type = NULL;
         new_entry->data_u.op.precedence = precedence;
         new_entry->data_u.op.associativity = associativity;
+        new_entry->data_u.op.type = token_type;
     } else {
         result = LIBAB_MALLOC;
     }
