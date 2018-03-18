@@ -1,12 +1,21 @@
 #include "table.h"
 #include <stdlib.h>
 #include "util.h"
+#include "lexer.h"
 
 void libab_table_init(libab_table* table) {
     ht_init(&table->table);
     table->parent = NULL;
 } 
-libab_table_entry* table_search(libab_table* table, const char* string) {
+libab_table_entry* libab_table_search_filter(libab_table* table, const char* string, void* data, compare_func compare) {
+    void* to_return = NULL;
+    do {
+        to_return = ht_get_filter(&table->table, string, data, compare);
+        table = table->parent;
+    } while(table && to_return == NULL);
+    return to_return;
+}
+libab_table_entry* libab_table_search(libab_table* table, const char* string) {
     void* to_return = NULL;
     do {
         to_return = ht_get(&table->table, string);
@@ -14,21 +23,36 @@ libab_table_entry* table_search(libab_table* table, const char* string) {
     } while(table && to_return == NULL);
     return to_return;
 }
-libab_operator* libab_table_search_operator(libab_table* table, const char* string) {
-    libab_table_entry* entry = table_search(table, string);
-    libab_operator* to_return = NULL;
-    if(entry && entry->variant == ENTRY_OP) {
-        to_return = &entry->data_u.op;
-    }
-    return to_return;
+
+#define OP_TYPE_COMPARATOR(NAME, TYPE) int NAME(const void* left, const void* right) {\
+    const libab_table_entry* entry = right;\
+    return entry->variant == ENTRY_OP && entry->data_u.op.type == TYPE;\
 }
-libab_function* libab_table_search_function(libab_table* table, const char* string) {
-    libab_table_entry* entry = table_search(table, string);
-    libab_function* to_return = NULL;
-    if(entry && entry->variant == ENTRY_FUN) {
-        to_return = &entry->data_u.function;
+
+OP_TYPE_COMPARATOR(_table_compare_prefix, TOKEN_OP_PREFIX)
+OP_TYPE_COMPARATOR(_table_compare_infix, TOKEN_OP_INFIX)
+OP_TYPE_COMPARATOR(_table_compare_postfix, TOKEN_OP_POSTFIX)
+
+libab_operator* libab_table_search_operator(libab_table* table, const char* string, int type) {
+    libab_table_entry* entry = NULL;
+    if(type == TOKEN_OP_PREFIX) {
+        entry = libab_table_search_filter(table, string, NULL, _table_compare_prefix);
+    } else if(type == TOKEN_OP_INFIX) {
+        entry = libab_table_search_filter(table, string, NULL, _table_compare_infix);
+    } else if(type == TOKEN_OP_POSTFIX) {
+        entry = libab_table_search_filter(table, string, NULL, _table_compare_postfix);
     }
-    return to_return;
+    return entry ? &entry->data_u.op : NULL;
+}
+
+int _table_compare_function(const void* left, const void* right) {
+    const libab_table_entry* entry = right;
+    return entry->variant == ENTRY_FUN;
+}
+
+libab_function* libab_table_search_function(libab_table* table, const char* string) {
+    libab_table_entry* entry = libab_table_search_filter(table, string, NULL, _table_compare_function);
+    return entry ? &entry->data_u.function : NULL;
 }
 libab_result libab_table_put(libab_table* table, const char* string, libab_table_entry* entry) {
     return libab_convert_ds_result(ht_put(&table->table, string, entry));

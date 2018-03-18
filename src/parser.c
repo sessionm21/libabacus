@@ -30,6 +30,14 @@ struct operator_data {
     }\
 } while(0);
 
+void _parser_extract_token_buffer(struct parser_state* state, char* buffer,
+        size_t length, libab_lexer_match* match) {
+    size_t token_size = match->to - match->from;
+    size_t buffer_length = (token_size < (length - 1)) ? token_size : (length - 1);
+    strncpy(buffer, state->string + match->from, buffer_length);
+    buffer[buffer_length] = '\0';
+}
+
 int _parser_foreach_free_tree(void* data, va_list args) {
     libab_tree_free(data);
     free(data);
@@ -778,14 +786,11 @@ int _parser_can_atom_follow(enum parser_expression_type type) {
     return !(type == EXPR_CLOSE_PARENTH || type == EXPR_OP_POSTFIX || type == EXPR_ATOM);
 }
 
-void _parser_find_operator(struct parser_state* state, libab_lexer_match* match, struct operator_data* data) {
+void _parser_find_operator_infix(struct parser_state* state, libab_lexer_match* match, struct operator_data* data) {
     char op_buffer[8];
-    size_t token_size = match->to - match->from;
-    size_t buffer_length = (token_size < 7) ? token_size : 7;
-    strncpy(op_buffer, state->string + match->from, buffer_length);
-    op_buffer[buffer_length] = '\0';
+    _parser_extract_token_buffer(state, op_buffer, 8, match);
     if(match->type != TOKEN_OP_RESERVED) {
-        libab_operator* operator = libab_table_search_operator(state->base_table, op_buffer);
+        libab_operator* operator = libab_table_search_operator(state->base_table, op_buffer, TOKEN_OP_INFIX);
         data->associativity = operator->associativity;
         data->precedence = operator->precedence;
     } else {
@@ -847,6 +852,20 @@ libab_result _parser_expression_tree(struct parser_state* state, ll* source, lib
     return result;
 }
 
+int _parser_match_is_infix_op(struct parser_state* state, libab_lexer_match* match) {
+    int is_infix = 0;
+    if(match->type == TOKEN_OP_INFIX || match->type == TOKEN_OP_RESERVED) {
+        is_infix = 1;
+    } else {
+        libab_operator* operator;
+        char op_buffer[8];
+        _parser_extract_token_buffer(state, op_buffer, 8, match);
+        operator = libab_table_search_operator(state->base_table, op_buffer, TOKEN_OP_INFIX);
+        if(operator) is_infix = 1;
+    }
+    return is_infix;
+}
+
 libab_result _parse_expression(struct parser_state* state, libab_tree** store_into) {
     libab_result result = LIBAB_SUCCESS;
     struct operator_data operator;
@@ -893,12 +912,12 @@ libab_result _parse_expression(struct parser_state* state, libab_tree** store_in
             _parser_state_step(state);
             new_type = EXPR_OP_POSTFIX;
         } else if(new_token->type == TOKEN_OP_INFIX || new_token->type == TOKEN_OP_RESERVED) {
-            _parser_find_operator(state, new_token, &operator);
+            _parser_find_operator_infix(state, new_token, &operator);
             _parser_state_step(state);
 
             while(result == LIBAB_SUCCESS && op_stack.tail &&
                     _parser_match_is_op(op_stack.tail->data)) {
-                _parser_find_operator(state, op_stack.tail->data, &other_operator);
+                _parser_find_operator_infix(state, op_stack.tail->data, &other_operator);
 
                 if(((libab_lexer_match*)op_stack.tail->data)->type == TOKEN_OP_PREFIX ||
                         (operator.associativity == -1 &&

@@ -62,6 +62,16 @@ typedef struct libab_table_entry_s libab_table_entry;
  */
 void libab_table_init(libab_table* table);
 /**
+ * Searches for the given string in the table, comparing
+ * values to a given reference as an extra filtering step.
+ * @param table the table to search.
+ * @param string the string to search for.
+ * @param data the data to compare against potential values.
+ * @param compare the comparison function to use.
+ * @return the table entry, or NULL if an entry was not found.
+ */
+libab_table_entry* libab_table_search_filter(libab_table* table, const char* string, void* data, compare_func compare);
+/**
  * Searches for the given string in the table.
  * @param table the table to search.
  * @param string the string to search for.
@@ -73,9 +83,10 @@ libab_table_entry* libab_table_search(libab_table* table, const char* string);
  * if it is an operator.
  * @param table the table to search.
  * @param string the string to search for.
+ * @param type the type of operator to search for (infix, prefix, postfix)
  * @return the found operator, or NULL if it was not found.
  */
-libab_operator* libab_table_search_operator(libab_table* table, const char* string);
+libab_operator* libab_table_search_operator(libab_table* table, const char* string, int type);
 /**
  * Searches for the given string in the table, returning a value only
  * if it is a function.
