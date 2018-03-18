@@ -748,7 +748,8 @@ libab_result _parser_append_op_node(struct parser_state* state, libab_lexer_matc
 // Expression-specific utility functions
 
 int _parser_match_is_op(libab_lexer_match* match) {
-    return match->type == TOKEN_OP_INFIX ||
+    return match->type == TOKEN_OP ||
+        match->type == TOKEN_OP_INFIX ||
         match->type == TOKEN_OP_PREFIX ||
         match->type == TOKEN_OP_POSTFIX ||
         match->type == TOKEN_OP_RESERVED;
@@ -792,7 +793,7 @@ void _parser_find_operator_infix(struct parser_state* state, libab_lexer_match* 
     char op_buffer[8];
     _parser_extract_token_buffer(state, op_buffer, 8, match);
     if(match->type != TOKEN_OP_RESERVED) {
-        libab_operator* operator = libab_table_search_operator(state->base_table, op_buffer, TOKEN_OP_INFIX);
+        libab_operator* operator = libab_table_search_operator(state->base_table, op_buffer, OPERATOR_INFIX);
         data->associativity = operator->associativity;
         data->precedence = operator->precedence;
     } else {
@@ -856,41 +857,33 @@ libab_result _parser_expression_tree(struct parser_state* state, ll* source, lib
 
 int _parser_match_is_postfix_op(struct parser_state* state, libab_lexer_match* match) {
     int is_postfix = 0;
-    if(match->type == TOKEN_OP_POSTFIX) {
-        is_postfix = 1;
-    } else {
-        libab_operator* operator;
-        char op_buffer[8];
-        _parser_extract_token_buffer(state, op_buffer, 8, match);
-        operator = libab_table_search_operator(state->base_table, op_buffer, TOKEN_OP_POSTFIX);
-        if(operator) is_postfix = 1;
-    }
+    libab_operator* operator;
+    char op_buffer[8];
+    _parser_extract_token_buffer(state, op_buffer, 8, match);
+    operator = libab_table_search_operator(state->base_table, op_buffer, OPERATOR_POSTFIX);
+    if(operator) is_postfix = 1;
     return is_postfix;
 }
 
 int _parser_match_is_prefix_op(struct parser_state* state, libab_lexer_match* match) {
     int is_prefix = 0;
-    if(match->type == TOKEN_OP_PREFIX) {
-        is_prefix = 1;
-    } else {
-        libab_operator* operator;
-        char op_buffer[8];
-        _parser_extract_token_buffer(state, op_buffer, 8, match);
-        operator = libab_table_search_operator(state->base_table, op_buffer, TOKEN_OP_PREFIX);
-        if(operator) is_prefix = 1;
-    }
+    libab_operator* operator;
+    char op_buffer[8];
+    _parser_extract_token_buffer(state, op_buffer, 8, match);
+    operator = libab_table_search_operator(state->base_table, op_buffer, OPERATOR_PREFIX);
+    if(operator) is_prefix = 1;
     return is_prefix;
 }
 
 int _parser_match_is_infix_op(struct parser_state* state, libab_lexer_match* match) {
     int is_infix = 0;
-    if(match->type == TOKEN_OP_INFIX || match->type == TOKEN_OP_RESERVED) {
+    if(match->type == TOKEN_OP_RESERVED) {
         is_infix = 1;
     } else {
         libab_operator* operator;
         char op_buffer[8];
         _parser_extract_token_buffer(state, op_buffer, 8, match);
-        operator = libab_table_search_operator(state->base_table, op_buffer, TOKEN_OP_INFIX);
+        operator = libab_table_search_operator(state->base_table, op_buffer, OPERATOR_INFIX);
         if(operator) is_infix = 1;
     }
     return is_infix;
@@ -946,7 +939,8 @@ libab_result _parse_expression(struct parser_state* state, libab_tree** store_in
             _parser_state_step(state);
             new_type = EXPR_OP_POSTFIX;
         } else if(_parser_match_is_infix_op(state, new_token)) {
-            new_token->type = TOKEN_OP_INFIX;
+            if(new_token->type == TOKEN_OP)
+                new_token->type = TOKEN_OP_INFIX;
             _parser_find_operator_infix(state, new_token, &operator);
             _parser_state_step(state);
 

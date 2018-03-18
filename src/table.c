@@ -29,17 +29,17 @@ libab_table_entry* libab_table_search(libab_table* table, const char* string) {
     return entry->variant == ENTRY_OP && entry->data_u.op.type == TYPE;\
 }
 
-OP_TYPE_COMPARATOR(_table_compare_prefix, TOKEN_OP_PREFIX)
-OP_TYPE_COMPARATOR(_table_compare_infix, TOKEN_OP_INFIX)
-OP_TYPE_COMPARATOR(_table_compare_postfix, TOKEN_OP_POSTFIX)
+OP_TYPE_COMPARATOR(_table_compare_prefix, OPERATOR_PREFIX)
+OP_TYPE_COMPARATOR(_table_compare_infix, OPERATOR_INFIX)
+OP_TYPE_COMPARATOR(_table_compare_postfix, OPERATOR_POSTFIX)
 
 libab_operator* libab_table_search_operator(libab_table* table, const char* string, int type) {
     libab_table_entry* entry = NULL;
-    if(type == TOKEN_OP_PREFIX) {
+    if(type == OPERATOR_PREFIX) {
         entry = libab_table_search_filter(table, string, NULL, _table_compare_prefix);
-    } else if(type == TOKEN_OP_INFIX) {
+    } else if(type == OPERATOR_INFIX) {
         entry = libab_table_search_filter(table, string, NULL, _table_compare_infix);
-    } else if(type == TOKEN_OP_POSTFIX) {
+    } else if(type == OPERATOR_PREFIX) {
         entry = libab_table_search_filter(table, string, NULL, _table_compare_postfix);
     }
     return entry ? &entry->data_u.op : NULL;

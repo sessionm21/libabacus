@@ -10,6 +10,16 @@
 typedef void(*libab_function_ptr)();
 
 /**
+ * The variant of the operator that
+ * has been registered with libabacus.
+ */
+enum libab_operator_variant_e {
+    OPERATOR_PREFIX,
+    OPERATOR_INFIX,
+    OPERATOR_POSTFIX
+};
+
+/**
  * The common information
  * that both operators and functions shared.
  */
@@ -34,7 +44,7 @@ struct libab_operator_s {
      * Corresponds to token types associated with
      * each operator.
      */
-    int type;
+    enum libab_operator_variant_e type;
     /**
      * The precedence of the operator.
      */
@@ -61,6 +71,7 @@ struct libab_function_s {
     struct libab_behavior_s behavior;
 };
 
+typedef enum libab_operator_variant_e libab_operator_variant;
 typedef struct libab_behavior_s libab_behavior;
 typedef struct libab_operator_s libab_operator;
 typedef struct libab_function_s libab_function;

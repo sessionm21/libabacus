@@ -55,6 +55,7 @@ enum libab_lexer_token_e {
     TOKEN_CHAR = 0,
     TOKEN_ID,
     TOKEN_NUM,
+    TOKEN_OP,
     TOKEN_OP_INFIX,
     TOKEN_OP_PREFIX,
     TOKEN_OP_POSTFIX,
