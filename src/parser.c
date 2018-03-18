@@ -854,6 +854,34 @@ libab_result _parser_expression_tree(struct parser_state* state, ll* source, lib
     return result;
 }
 
+int _parser_match_is_postfix_op(struct parser_state* state, libab_lexer_match* match) {
+    int is_postfix = 0;
+    if(match->type == TOKEN_OP_POSTFIX) {
+        is_postfix = 1;
+    } else {
+        libab_operator* operator;
+        char op_buffer[8];
+        _parser_extract_token_buffer(state, op_buffer, 8, match);
+        operator = libab_table_search_operator(state->base_table, op_buffer, TOKEN_OP_POSTFIX);
+        if(operator) is_postfix = 1;
+    }
+    return is_postfix;
+}
+
+int _parser_match_is_prefix_op(struct parser_state* state, libab_lexer_match* match) {
+    int is_prefix = 0;
+    if(match->type == TOKEN_OP_PREFIX) {
+        is_prefix = 1;
+    } else {
+        libab_operator* operator;
+        char op_buffer[8];
+        _parser_extract_token_buffer(state, op_buffer, 8, match);
+        operator = libab_table_search_operator(state->base_table, op_buffer, TOKEN_OP_PREFIX);
+        if(operator) is_prefix = 1;
+    }
+    return is_prefix;
+}
+
 int _parser_match_is_infix_op(struct parser_state* state, libab_lexer_match* match) {
     int is_infix = 0;
     if(match->type == TOKEN_OP_INFIX || match->type == TOKEN_OP_RESERVED) {
@@ -904,16 +932,21 @@ libab_result _parse_expression(struct parser_state* state, libab_tree** store_in
             } else {
                 break;
             }
-        } else if(new_token->type == TOKEN_OP_PREFIX && _parser_can_prefix_follow(last_type)) {
+        } else if(_parser_match_is_prefix_op(state, new_token) &&
+                _parser_can_prefix_follow(last_type)) {
+            new_token->type = TOKEN_OP_PREFIX;
             result = libab_convert_ds_result(ll_append(&op_stack, new_token));
             if(result != LIBAB_SUCCESS) break;
             _parser_state_step(state);
             new_type = EXPR_OP_PREFIX;
-        } else if(new_token->type == TOKEN_OP_POSTFIX && _parser_can_postfix_follow(last_type)) {
+        } else if(_parser_match_is_postfix_op(state, new_token) &&
+                _parser_can_postfix_follow(last_type)) {
+            new_token->type = TOKEN_OP_POSTFIX;
             result = _parser_append_op_node(state, new_token, &out_stack);
             _parser_state_step(state);
             new_type = EXPR_OP_POSTFIX;
-        } else if(new_token->type == TOKEN_OP_INFIX || new_token->type == TOKEN_OP_RESERVED) {
+        } else if(_parser_match_is_infix_op(state, new_token)) {
+            new_token->type = TOKEN_OP_INFIX;
             _parser_find_operator_infix(state, new_token, &operator);
             _parser_state_step(state);
 
