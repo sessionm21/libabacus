@@ -721,8 +721,10 @@ libab_result _parser_construct_op(struct parser_state* state, libab_lexer_match*
             (*into)->variant = TREE_OP;
         } else if(match->type == TOKEN_OP_RESERVED) {
             (*into)->variant = TREE_RESERVED_OP;
+        } else if(match->type == TOKEN_OP_PREFIX) {
+            (*into)->variant = TREE_PREFIX_OP;
         } else {
-            (*into)->variant = TREE_UNARY_OP;
+            (*into)->variant = TREE_POSTFIX_OP;
         }
     }
 
@@ -828,7 +830,7 @@ libab_result _parser_expression_tree(struct parser_state* state, ll* source, lib
             free(top);
             top = NULL;
         }
-    } else if(top->variant == TREE_UNARY_OP || top->variant == TREE_CALL) {
+    } else if(top->variant == TREE_PREFIX_OP || top->variant == TREE_POSTFIX_OP || top->variant == TREE_CALL) {
         libab_tree* child = NULL;
 
         result = _parser_expression_tree(state, source, &child);
@@ -839,7 +841,7 @@ libab_result _parser_expression_tree(struct parser_state* state, ll* source, lib
 
         if(result != LIBAB_SUCCESS) {
             if(child) libab_tree_free_recursive(child);
-            if(top->variant == TREE_UNARY_OP) {
+            if(top->variant == TREE_PREFIX_OP || top->variant == TREE_POSTFIX_OP) {
                 libab_tree_free(top);
                 free(top);
             } else {
