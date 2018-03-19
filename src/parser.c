@@ -652,7 +652,7 @@ libab_result _parse_call(struct parser_state* state, libab_tree** store_into) {
     }
 
     if(result != LIBAB_SUCCESS) {
-        libab_tree_free_recursive(*store_into);
+        if(*store_into) libab_tree_free_recursive(*store_into);
         *store_into = NULL;
     }
 
