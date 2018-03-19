@@ -63,7 +63,7 @@ int _lexer_foreach_convert_match(void* data, va_list args) {
     struct lexer_state* state = va_arg(args, struct lexer_state*);
     char first_char = state->source[match->from];
     if(isspace(first_char)) {
-        // Skip
+        /* Skip */
     } else if(first_char == '\n') { 
         state->line++;
         state->line_from = match->to;

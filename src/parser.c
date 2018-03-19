@@ -19,7 +19,7 @@ struct operator_data {
     int precedence;
 };
 
-// Utilities
+/* Utilities */
 #define PARSE_CHILD(result, state, parse_function, parse_into, into) do {\
     result = parse_function(state, &parse_into);\
     if(result == LIBAB_SUCCESS) {\
@@ -48,7 +48,7 @@ libab_result _parser_extract_token(struct parser_state* state, char** into, liba
     return libab_copy_string_range(into, state->string, match->from, match->to);
 }
 
-// State functions
+/* State functions */
 void _parser_state_update(struct parser_state* state) {
     state->current_match = state->current_node ? state->current_node->data : NULL;
     if(state->current_match) state->last_match = state->current_match;
@@ -109,7 +109,7 @@ libab_result _parser_consume_type(struct parser_state* state,
     return result;
 }
 
-// Basic Tree Constructors
+/* Basic Tree Constructors */
 
 libab_result _parse_block(struct parser_state*, libab_tree**, int);
 libab_result _parse_expression(struct parser_state* state, libab_tree** store_into);
@@ -745,7 +745,7 @@ libab_result _parser_append_op_node(struct parser_state* state, libab_lexer_matc
 }
 
 
-// Expression-specific utility functions
+/* Expression-specific utility functions */
 
 int _parser_match_is_op(libab_lexer_match* match) {
     return match->type == TOKEN_OP ||
