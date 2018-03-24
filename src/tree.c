@@ -16,6 +16,12 @@ int libab_tree_has_string(libab_tree_variant variant) {
             variant == TREE_RESERVED_OP;
 }
 
+int libab_tree_has_scope(libab_tree_variant variant) {
+    return variant == TREE_BASE || variant == TREE_BLOCK ||
+        variant == TREE_IF || variant == TREE_WHILE ||
+        variant == TREE_DOWHILE || variant == TREE_FUN;
+}
+
 int libab_tree_has_type(libab_tree_variant variant) {
     return variant == TREE_FUN_PARAM || variant == TREE_FUN;
 }

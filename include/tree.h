@@ -99,6 +99,13 @@ int libab_tree_has_string(libab_tree_variant var);
  */
 int libab_tree_has_type(libab_tree_variant var);
 /**
+ * Determines if the given tree node
+ * variant contains a scope.
+ * @param var the variant of the tree node.
+ * @return true if the node variant contains a scope.
+ */
+int libab_tree_has_scope(libab_tree_variant var);
+/**
  * Determines if the given tree node variant
  * should contain a vector.
  * @param var the variant of the tree node.
