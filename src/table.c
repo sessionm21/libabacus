@@ -10,7 +10,7 @@ void libab_table_init(libab_table* table) {
 libab_table_entry* libab_table_search_filter(libab_table* table, const char* string, void* data, compare_func compare) {
     void* to_return = NULL;
     do {
-        to_return = ht_get_filter(&table->table, string, data, compare);
+        to_return = ht_find(&table->table, string, data, compare);
         table = table->parent;
     } while(table && to_return == NULL);
     return to_return;
