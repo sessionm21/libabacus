@@ -1,9 +1,9 @@
 #ifndef LIBABACUS_TABLE_H
 #define LIBABACUS_TABLE_H
 
-#include "ht.h"
 #include "result.h"
 #include "custom.h"
+#include "trie.h"
 
 /**
  * A struct that represents a structure
@@ -20,7 +20,7 @@ struct libab_table_s {
     /**
      * The hash table used to store the data.
      */
-    ht table;
+    libab_trie trie;
 };
 
 /**

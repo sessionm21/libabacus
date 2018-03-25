@@ -4,13 +4,14 @@
 #include "lexer.h"
 
 void libab_table_init(libab_table* table) {
-    ht_init(&table->table);
+    libab_trie_init(&table->trie);
     table->parent = NULL;
 } 
 libab_table_entry* libab_table_search_filter(libab_table* table, const char* string, void* data, compare_func compare) {
     void* to_return = NULL;
     do {
-        to_return = ht_find(&table->table, string, data, compare);
+        const ll* matches = libab_trie_get(&table->trie, string);
+        to_return = ll_find(matches, data, compare);
         table = table->parent;
     } while(table && to_return == NULL);
     return to_return;
@@ -18,7 +19,7 @@ libab_table_entry* libab_table_search_filter(libab_table* table, const char* str
 libab_table_entry* libab_table_search(libab_table* table, const char* string) {
     void* to_return = NULL;
     do {
-        to_return = ht_get(&table->table, string);
+        to_return = ll_head(libab_trie_get(&table->trie, string));
         table = table->parent;
     } while(table && to_return == NULL);
     return to_return;
@@ -55,7 +56,7 @@ libab_function* libab_table_search_function(libab_table* table, const char* stri
     return entry ? &entry->data_u.function : NULL;
 }
 libab_result libab_table_put(libab_table* table, const char* string, libab_table_entry* entry) {
-    return libab_convert_ds_result(ht_put(&table->table, string, entry));
+    return libab_trie_put(&table->trie, string, entry);
 }
 int _table_foreach_entry_free(void* data, va_list args) {
     libab_table_entry_free(data);
@@ -63,8 +64,8 @@ int _table_foreach_entry_free(void* data, va_list args) {
     return 0;
 }
 void libab_table_free(libab_table* table) {
-    ht_foreach(&table->table, NULL, compare_always, _table_foreach_entry_free);
-    ht_free(&table->table);
+    libab_trie_foreach(&table->trie, NULL, compare_always, _table_foreach_entry_free);
+    libab_trie_free(&table->trie);
 }
 void libab_table_entry_free(libab_table_entry* entry) {
     if(entry->variant == ENTRY_OP) {
