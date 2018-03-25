@@ -68,7 +68,7 @@ libab_result libab_trie_put(libab_trie* trie, const char* key, void* value) {
     return result;
 }
 
-const ll* libab_trie_get(libab_trie* trie, const char* key) {
+const ll* libab_trie_get(const libab_trie* trie, const char* key) {
     libab_trie_node* current = trie->head;
     while(current && *key) {
         while(current && current->key != *key) {
@@ -84,6 +84,23 @@ const ll* libab_trie_get(libab_trie* trie, const char* key) {
         }
     }
     return &trie->empty_list;
+}
+
+int _libab_trie_foreach(libab_trie_node* node, void* data, compare_func compare, foreach_func foreach) {
+    int return_code;
+    if(node == NULL) return 0;
+    return_code = ll_foreach(&node->values, data, compare, foreach);
+    if(return_code == 0) {
+        return_code = _libab_trie_foreach(node->child, data, compare, foreach);  
+    }
+    if(return_code == 0) {
+        return_code = _libab_trie_foreach(node->next, data, compare, foreach);
+    }
+    return return_code;
+}
+
+int libab_trie_foreach(const libab_trie* trie, void* data, compare_func compare, foreach_func foreach) {
+    return _libab_trie_foreach(trie->head, data, compare, foreach);
 }
 
 void libab_trie_free(libab_trie* trie) {

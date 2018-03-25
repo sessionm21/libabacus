@@ -57,7 +57,8 @@ typedef struct libab_trie_node_s libab_trie_node;
 
 void libab_trie_init(libab_trie* trie);
 libab_result libab_trie_put(libab_trie* trie, const char* key, void* value);
-const ll* libab_trie_get(libab_trie* trie, const char* key);
+const ll* libab_trie_get(const libab_trie* trie, const char* key);
+int libab_trie_foreach(const libab_trie* trie, void* data, compare_func compare, foreach_func foreach);
 void libab_trie_free(libab_trie* trie);
 
 #endif
