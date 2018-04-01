@@ -42,13 +42,13 @@ void libab_ref_free(libab_ref* ref) {
     _libab_ref_changed(ref);
 }
 
-void libab_ref_copy(libab_ref* ref, libab_ref* into) {
+void libab_ref_copy(const libab_ref* ref, libab_ref* into) {
     ref->count->strong++;
     ref->count->weak++;
     memcpy(into, ref, sizeof(*ref));
 }
 
-void* libab_ref_get(libab_ref* ref) {
+void* libab_ref_get(const libab_ref* ref) {
     void* to_return = NULL;
     if(ref->count->strong > 0) {
         to_return = ref->data;

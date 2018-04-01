@@ -70,10 +70,10 @@ void libab_ref_free(libab_ref* ref);
 /**
  * Copies this reference, thereby increasing the reference count.
  */
-void libab_ref_copy(libab_ref* ref, libab_ref* into);
+void libab_ref_copy(const libab_ref* ref, libab_ref* into);
 /**
  * Gets the value of the reference.
  */
-void* libab_ref_get(libab_ref* ref);
+void* libab_ref_get(const libab_ref* ref);
 
 #endif
