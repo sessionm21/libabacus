@@ -172,23 +172,41 @@ libab_result _parse_type_list(struct parser_state* state, vec* into, char end_ch
 }
 
 libab_result _parse_type_id(struct parser_state* state, libab_parsetype** into) {
-    libab_result result = _parser_allocate_type(into, state->string, 
-            state->current_match->from, state->current_match->to); 
+    libab_result result;
+    int placeholder_flag = 0;
+    *into = NULL;
+
+    if(_parser_is_char(state, '\'')) {
+        placeholder_flag = 1;
+        _parser_state_step(state);
+    }
+
+    if(_parser_is_type(state, TOKEN_ID)) {
+        result = _parser_allocate_type(into, state->string, 
+                state->current_match->from, state->current_match->to); 
+    } else {
+        result = _parser_consume_type(state, TOKEN_ID);
+    }
+
     if(result == LIBAB_SUCCESS) {
-        (*into)->variant = PT_STRING;
+        (*into)->variant = placeholder_flag ? PT_PLACEHOLDER : PT_STRING;
         _parser_state_step(state);
     }
 
     if(result == LIBAB_SUCCESS && _parser_is_char(state, '(')) {
-        result = libab_convert_ds_result(vec_init(&(*into)->children));
-        if(result != LIBAB_SUCCESS) {
-            free((*into)->name);
-            free(*into);
-            *into = NULL;
+        if(placeholder_flag) {
+            result = LIBAB_UNEXPECTED;
         } else {
-            (*into)->variant = PT_PARENT;
-            _parser_state_step(state);
-            result = _parse_type_list(state, &(*into)->children, ')');
+            result = libab_convert_ds_result(vec_init(&(*into)->children));
+            if(result != LIBAB_SUCCESS) {
+                free((*into)->name);
+                free(*into);
+                *into = NULL;
+            } else {
+                (*into)->variant = PT_PARENT;
+                _parser_state_step(state);
+                result = _parse_type_list(state, &(*into)->children, ')');
+            }
         }
     }
 
@@ -267,7 +285,7 @@ libab_result _parse_type_array(struct parser_state* state,
 
 libab_result _parse_type(struct parser_state* state, libab_parsetype** into) {
     libab_result result;
-    if(_parser_is_type(state, TOKEN_ID)) {
+    if(_parser_is_type(state, TOKEN_ID) || _parser_is_char(state, '\'')) {
         result = _parse_type_id(state, into);
     } else if(_parser_is_char(state, '(')) {
         result = _parse_type_function(state, into);

@@ -9,6 +9,7 @@
  */
 enum libab_parsetype_variant_e {
     PT_STRING,
+    PT_PLACEHOLDER,
     PT_PARENT
 };
 
