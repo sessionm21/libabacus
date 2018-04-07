@@ -15,6 +15,19 @@ libab_result libab_ref_new(libab_ref* ref, void* data, void (*free_func)(void* d
     return result;
 }
 
+static libab_ref_count null_count = {
+    NULL,
+    0,
+    1
+};
+
+void libab_ref_null(libab_ref* ref) {
+    ref->strong = 0;
+    ref->data = NULL;
+    ref->count = &null_count;
+    null_count.weak++;
+}
+
 void _libab_ref_changed(libab_ref* ref) {
     if(ref->count->strong == 0) {
         ref->count->strong--;

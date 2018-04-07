@@ -58,6 +58,12 @@ typedef struct libab_ref_count_s libab_ref_count;
  */
 libab_result libab_ref_new(libab_ref* ref, void* data, void (*free_func)(void* data));
 /**
+ * Creates a reference to NULL. This does
+ * not require a memory allocation.
+ * @param ref the reference to initialize with null.
+ */
+void libab_ref_null(libab_ref* ref);
+/**
  * Turns the given reference into a weak reference,
  * making it not keep the data allocated.
  */
