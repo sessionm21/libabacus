@@ -6,10 +6,12 @@ int _foreach_free_child(void* data, va_list args) {
     return 0;
 }
 void libab_parsetype_free(libab_parsetype* type) {
-    free(type->name);
+    if(!(type->variant & LIBABACUS_TYPE_F_RESOLVED)) {
+        free(type->data_u.name);
+    }
 }
 void libab_parsetype_free_recursive(libab_parsetype* type) {
-    if(type->variant == PT_PARENT) {
+    if(type->variant & LIBABACUS_TYPE_F_PARENT) {
         vec_foreach(&(type->children), NULL, compare_always, _foreach_free_child);
         vec_free(&(type->children));
     }

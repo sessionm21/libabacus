@@ -122,7 +122,8 @@ libab_result _parse_braced_block(struct parser_state* state, libab_tree** store_
 libab_result _parser_allocate_type(libab_parsetype** into, const char* source, size_t from, size_t to) {
     libab_result result = LIBAB_SUCCESS;
     if((*into = malloc(sizeof(**into)))) {
-        result = libab_copy_string_range(&(*into)->name, source, from, to);
+        (*into)->variant = 0;
+        result = libab_copy_string_range(&(*into)->data_u.name, source, from, to);
     } else {
         result = LIBAB_MALLOC;
     }
@@ -177,7 +178,7 @@ libab_result _parse_type_id(struct parser_state* state, libab_parsetype** into) 
     *into = NULL;
 
     if(_parser_is_char(state, '\'')) {
-        placeholder_flag = 1;
+        placeholder_flag = LIBABACUS_TYPE_F_PLACE;
         _parser_state_step(state);
     }
 
@@ -189,7 +190,7 @@ libab_result _parse_type_id(struct parser_state* state, libab_parsetype** into) 
     }
 
     if(result == LIBAB_SUCCESS) {
-        (*into)->variant = placeholder_flag ? PT_PLACEHOLDER : PT_STRING;
+        (*into)->variant |= placeholder_flag;
         _parser_state_step(state);
     }
 
@@ -199,11 +200,11 @@ libab_result _parse_type_id(struct parser_state* state, libab_parsetype** into) 
         } else {
             result = libab_convert_ds_result(vec_init(&(*into)->children));
             if(result != LIBAB_SUCCESS) {
-                free((*into)->name);
+                free((*into)->data_u.name);
                 free(*into);
                 *into = NULL;
             } else {
-                (*into)->variant = PT_PARENT;
+                (*into)->variant |= LIBABACUS_TYPE_F_PARENT;
                 _parser_state_step(state);
                 result = _parse_type_list(state, &(*into)->children, ')');
             }
@@ -222,10 +223,10 @@ libab_result _parse_type_function(struct parser_state* state,
         libab_parsetype** into) {
     libab_result result = _parser_allocate_type(into, "function", 0, 8);
     if(result == LIBAB_SUCCESS) {
-        (*into)->variant = PT_PARENT;
+        (*into)->variant |= LIBABACUS_TYPE_F_PARENT;
         result = libab_convert_ds_result(vec_init(&(*into)->children));
         if(result != LIBAB_SUCCESS) {
-            free((*into)->name);
+            free((*into)->data_u.name);
             free(*into);
             *into = NULL;
         } else {
@@ -257,10 +258,10 @@ libab_result _parse_type_array(struct parser_state* state,
         libab_parsetype** into) {
     libab_result result = _parser_allocate_type(into, "array", 0, 5);
     if(result == LIBAB_SUCCESS) {
-        (*into)->variant = PT_PARENT;
+        (*into)->variant |= LIBABACUS_TYPE_F_PARENT;
         result = libab_convert_ds_result(vec_init(&(*into)->children));
         if(result != LIBAB_SUCCESS) {
-            free((*into)->name);
+            free((*into)->data_u.name);
             free(*into);
             *into = NULL;
         } else {

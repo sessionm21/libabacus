@@ -3,15 +3,11 @@
 
 #include "result.h"
 #include "vec.h"
+#include "basetype.h"
 
-/**
- * The variant of the given parse type.
- */
-enum libab_parsetype_variant_e {
-    PT_STRING,
-    PT_PLACEHOLDER,
-    PT_PARENT
-};
+#define LIBABACUS_TYPE_F_PARENT (1)
+#define LIBABACUS_TYPE_F_PLACE (1 << 1)
+#define LIBABACUS_TYPE_F_RESOLVED (1 << 2)
 
 /**
  * A parse type.
@@ -26,11 +22,20 @@ struct libab_parsetype_s {
     /**
      * The variant of the given parse type.
      */
-    enum libab_parsetype_variant_e variant;
+    int variant;
     /**
-     * The name of the type that this parse type describes.
+     * Union that represents the data carried by this type.
      */
-    char* name;
+    union {
+        /**
+         * The name of the type that this parse type describes.
+         */
+        char* name;
+        /**
+         * The pointer to the base of this type.
+         */
+        libab_basetype* base;
+    } data_u;
     /**
      * A vector of children that this parse type contains.
      * The children are effectively type parameters.
@@ -38,7 +43,6 @@ struct libab_parsetype_s {
     vec children;
 };
 
-typedef enum libab_parsetype_variant_e libab_parsetype_variant;
 typedef struct libab_parsetype_s libab_parsetype;
 
 /**

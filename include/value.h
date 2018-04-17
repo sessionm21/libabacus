@@ -1,8 +1,8 @@
 #ifndef LIBABACUS_VALUE_H
 #define LIBABACUS_VALUE_H
 
-#include "type.h"
 #include "result.h"
+#include "refcount.h"
 
 /**
  * A struct that represents a value.
