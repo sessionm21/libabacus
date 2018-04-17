@@ -61,5 +61,10 @@ typedef struct libab_basetype_s libab_basetype;
  */
 void libab_basetype_init(libab_basetype* basetype, int n, 
         const libab_basetype_param params[]);
+/**
+ * Frees the given basetype.
+ * @param basetype the type to free.
+ */
+void libab_basetype_free(libab_basetype* basetype);
 
 #endif

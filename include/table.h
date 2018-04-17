@@ -4,6 +4,7 @@
 #include "result.h"
 #include "custom.h"
 #include "trie.h"
+#include "basetype.h"
 
 /**
  * A struct that represents a structure
@@ -29,7 +30,7 @@ struct libab_table_s {
  */
 enum libab_table_entry_variant_e {
     ENTRY_VALUE,
-    ENTRY_TYPE,
+    ENTRY_BASETYPE,
     ENTRY_OP,
     ENTRY_FUN
 };
@@ -49,6 +50,7 @@ struct libab_table_entry_s {
     union {
         libab_operator op;
         libab_function function;
+        libab_basetype* basetype;
     } data_u;
 };
 
@@ -95,6 +97,14 @@ libab_operator* libab_table_search_operator(libab_table* table, const char* stri
  * @return the found function, or NULL if it was not found.
  */
 libab_function* libab_table_search_function(libab_table* table, const char* string);
+/**
+ * Searches for the given basetype in the table, returning a value
+ * only if it's a basetype.
+ * @param table the table to search.
+ * @param string the string to search for.
+ * @return the found basetype, or NULL if it was not found.
+ */
+libab_basetype* libab_table_search_basetype(libab_table* table, const char* string);
 /**
  * Stores the given entry in the table under the given key.
  * @param table the table to store the entry into.

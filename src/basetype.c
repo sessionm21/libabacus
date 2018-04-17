@@ -7,4 +7,6 @@ void libab_basetype_init(libab_basetype* basetype,
     basetype->params = params;
     basetype->count = n;
 }
+void libab_basetype_free(libab_basetype* basetype) {
 
+}

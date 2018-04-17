@@ -126,6 +126,25 @@ libab_result libab_register_function(libab* ab, const char* name, const char* ty
     return result;
 }
 
+libab_result libab_register_basetype(libab* ab, const char* name, libab_basetype* basetype) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_table_entry* new_entry;
+    if((new_entry = malloc(sizeof(*new_entry)))) {
+        new_entry->variant = ENTRY_BASETYPE;
+        new_entry->data_u.basetype = basetype;
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = libab_table_put(&ab->table, name, new_entry);
+    }
+
+    if(result != LIBAB_SUCCESS) {
+        free(new_entry);
+    }
+
+    return result;
+}
+
 libab_result libab_free(libab* ab) {
     libab_table_free(&ab->table);
     libab_parser_free(&ab->parser);

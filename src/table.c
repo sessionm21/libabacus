@@ -55,6 +55,18 @@ libab_function* libab_table_search_function(libab_table* table, const char* stri
     libab_table_entry* entry = libab_table_search_filter(table, string, NULL, _table_compare_function);
     return entry ? &entry->data_u.function : NULL;
 }
+
+int _table_compare_basetype(const void* left, const void* right) {
+    const libab_table_entry* entry = right;
+    return entry->variant == ENTRY_BASETYPE;
+}
+
+libab_basetype* libab_table_search_basetype(libab_table* table, const char* string) {
+    libab_table_entry* entry = libab_table_search_filter(table, string, NULL, _table_compare_basetype);
+    return entry ? entry->data_u.basetype : NULL;
+}
+
+
 libab_result libab_table_put(libab_table* table, const char* string, libab_table_entry* entry) {
     return libab_trie_put(&table->trie, string, entry);
 }
@@ -72,5 +84,7 @@ void libab_table_entry_free(libab_table_entry* entry) {
         libab_operator_free(&entry->data_u.op);
     } else if(entry->variant == ENTRY_FUN) {
         libab_function_free(&entry->data_u.function);
+    } else if(entry->variant == ENTRY_BASETYPE) {
+        libab_basetype_free(entry->data_u.basetype);
     }
 }

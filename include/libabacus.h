@@ -78,9 +78,17 @@ libab_result libab_register_operator_postfix(libab* ab, const char* op, const ch
  * @param name the name of the function.
  * @param type the type of this operator.
  * @param func the function that describes the functionality of the function.
- * @return the result of the initialization.
+ * @return the result of the registration.
  */
 libab_result libab_register_function(libab* ab, const char* name, const char* type, libab_function_ptr func);
+/**
+ * Registers a base type with abacus.
+ * @param ab the libabacus instance used to keep state.
+ * @param name the name to register the basetype under.
+ * @param basetype the basetype to register.
+ * @return the result of the registration.
+ */
+libab_result libab_register_basetype(libab* ab, const char* name, libab_basetype* basetype);
 /**
  * Releases all the resources allocated by libabacus.
  * @param ab the libabacus instance to release.
