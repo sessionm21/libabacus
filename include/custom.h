@@ -76,4 +76,20 @@ typedef struct libab_behavior_s libab_behavior;
 typedef struct libab_operator_s libab_operator;
 typedef struct libab_function_s libab_function;
 
+/**
+ * Frees the given behavior.
+ * @param behavior the behavior to free.
+ */
+void libab_behavior_free(libab_behavior* behavior);
+/**
+ * Frees the given operator.
+ * @param op the operator to free.
+ */
+void libab_operator_free(libab_operator* op);
+/**
+ * Frees the given function.
+ * @param fun the function to free.
+ */
+void libab_function_free(libab_function* fun);
+
 #endif
