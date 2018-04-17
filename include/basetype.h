@@ -9,7 +9,6 @@
  * types of the basetype parameters.
  */
 enum libab_basetype_variant_e {
-    BT_EMPTY,
     BT_NAME,
     BT_LIST
 };
