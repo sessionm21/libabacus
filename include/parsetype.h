@@ -2,7 +2,7 @@
 #define LIBABACUS_PARSETYPE_H
 
 #include "result.h"
-#include "vec.h"
+#include "ref_vec.h"
 #include "basetype.h"
 
 #define LIBABACUS_TYPE_F_PARENT (1)
@@ -10,13 +10,7 @@
 #define LIBABACUS_TYPE_F_RESOLVED (1 << 2)
 
 /**
- * A parse type.
- * A parse type is a type as it was parsed, not
- * resolved. Effectively, it doesn't have to be valid,
- * or it can contain references to types whose adresses
- * are not yet known. The parse type is recursive,
- * with PT_STRING being the "base case", and PT_PARENT
- * meaning an initialized children vector with the sub-parse types.
+ * A type, either parsed or resolved.
  */
 struct libab_parsetype_s {
     /**
@@ -40,7 +34,7 @@ struct libab_parsetype_s {
      * A vector of children that this parse type contains.
      * The children are effectively type parameters.
      */
-    vec children;
+    libab_ref_vec children;
 };
 
 typedef struct libab_parsetype_s libab_parsetype;
@@ -51,11 +45,5 @@ typedef struct libab_parsetype_s libab_parsetype;
  * @param type the type to free.
  */
 void libab_parsetype_free(libab_parsetype* type);
-/**
- * Recursively frees the given parse type, calling free
- * on every single type (including the one passed in).
- * @param type the type to free.
- */
-void libab_parsetype_free_recursive(libab_parsetype* type);
 
 #endif

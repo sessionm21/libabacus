@@ -1,7 +1,7 @@
 #include "custom.h"
 
 void libab_behavior_free(libab_behavior* behavior) {
-    libab_parsetype_free_recursive(behavior->type);
+    libab_ref_free(&behavior->type);
 }
 
 void libab_operator_free(libab_operator* op) {

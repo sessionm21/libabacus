@@ -33,7 +33,7 @@ void libab_parser_init(libab_parser* parser, libab_table* table);
 libab_result libab_parser_parse(libab_parser* parser, ll* tokens,
         const char* string, libab_tree** store_into);
 libab_result libab_parser_parse_type(libab_parser* parser, ll* tokens,
-        const char* string, libab_parsetype** store_into);
+        const char* string, libab_ref* store_into);
 /**
  * Releases the resources allocated by the parser.
  * @param parser the parser to release.

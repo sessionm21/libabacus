@@ -35,7 +35,7 @@ struct libab_tree_s {
     /**
      * The parse type of this node, if applicable.
      */
-    libab_parsetype* parse_type;
+    libab_ref type;
     /**
      * The variant of tree node.
      */

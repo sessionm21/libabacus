@@ -35,8 +35,8 @@ void libab_tree_free(libab_tree* tree) {
     free_type = libab_tree_has_type(tree->variant);
     if(free_string) free(tree->string_value);
     if(free_vector) vec_free(&tree->children);
-    if(free_type && tree->parse_type)
-        libab_parsetype_free_recursive(tree->parse_type);
+    if(free_type)
+        libab_ref_free(&tree->type);
 }
 
 int _tree_foreach_free(void* data, va_list args) {

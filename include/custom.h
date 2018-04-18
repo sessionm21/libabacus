@@ -31,7 +31,7 @@ struct libab_behavior_s {
     /**
      * The type of the function.
      */
-    libab_parsetype* type;
+    libab_ref type;
 };
 /**
  * A struct that holds informatiion
