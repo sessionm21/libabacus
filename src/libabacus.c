@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "util.h"
 #include "reserved.h"
+#include "lexer.h"
 
 libab_result libab_init(libab* ab) {
     libab_result result;
@@ -31,43 +32,25 @@ void _sanitize(char* to, const char* from, size_t buffer_size) {
     to[index] = '\0';
 }
 
-libab_result _initialize_behavior(libab* ab, libab_behavior* behavior, 
-        const char* type, libab_function_ptr func) {
-    libab_result result = LIBAB_SUCCESS;
-    ll tokens;
-
-    ll_init(&tokens);
-
+void _initialize_behavior(libab* ab, libab_behavior* behavior, 
+        libab_ref* type, libab_function_ptr func) {
     behavior->impl.variant = BIMPL_INTERNAL;
     behavior->impl.data_u.internal = func;
-    result = libab_lexer_lex(&ab->lexer, type, &tokens);
-    if(result == LIBAB_SUCCESS) {
-        result = libab_parser_parse_type(&ab->parser, &tokens, type, &behavior->type);
-    }
-
-    ll_foreach(&tokens, NULL, compare_always, libab_lexer_foreach_match_free);
-    ll_free(&tokens);
-
-    return result;
+    libab_ref_copy(type, &behavior->type);
 }
 
-libab_result _register_operator(libab* ab, const char* op, libab_operator_variant token_type, int precedence, int associativity, const char* type, libab_function_ptr func) {
+libab_result _register_operator(libab* ab, const char* op, libab_operator_variant token_type, int precedence, int associativity, libab_ref* type, libab_function_ptr func) {
     char op_buffer[8];
     libab_result result = LIBAB_SUCCESS;
     libab_table_entry* new_entry;
     if((new_entry = malloc(sizeof(*new_entry)))) {
         new_entry->variant = ENTRY_OP;
-        libab_ref_null(&new_entry->data_u.op.behavior.type);
         new_entry->data_u.op.precedence = precedence;
         new_entry->data_u.op.associativity = associativity;
         new_entry->data_u.op.type = token_type;
+        _initialize_behavior(ab, &(new_entry->data_u.op.behavior), type, func);
     } else {
         result = LIBAB_MALLOC;
-    }
-
-    if(result == LIBAB_SUCCESS) {
-        libab_ref_free(&new_entry->data_u.op.behavior.type);
-        result = _initialize_behavior(ab, &(new_entry->data_u.op.behavior), type, func);
     }
 
     if(result == LIBAB_SUCCESS) {
@@ -89,32 +72,26 @@ libab_result _register_operator(libab* ab, const char* op, libab_operator_varian
     return result;
 }
 
-libab_result libab_register_operator_infix(libab* ab, const char* op, int precedence, int associativity, const char* type, libab_function_ptr func) {
+libab_result libab_register_operator_infix(libab* ab, const char* op, int precedence, int associativity, libab_ref* type, libab_function_ptr func) {
     return _register_operator(ab, op, OPERATOR_INFIX, precedence, associativity, type, func);
 }
 
-libab_result libab_register_operator_prefix(libab* ab, const char* op, const char* type, libab_function_ptr func) {
+libab_result libab_register_operator_prefix(libab* ab, const char* op, libab_ref* type, libab_function_ptr func) {
     return _register_operator(ab, op, OPERATOR_PREFIX, 0, 0, type, func);
 }
 
-libab_result libab_register_operator_postfix(libab* ab, const char* op, const char* type, libab_function_ptr func) {
+libab_result libab_register_operator_postfix(libab* ab, const char* op, libab_ref* type, libab_function_ptr func) {
     return _register_operator(ab, op, OPERATOR_POSTFIX, 0, 0, type, func);
 }
 
-libab_result libab_register_function(libab* ab, const char* name, const char* type, libab_function_ptr func) {
+libab_result libab_register_function(libab* ab, const char* name, libab_ref* type, libab_function_ptr func) {
     libab_result result = LIBAB_SUCCESS;
     libab_table_entry* new_entry;
     if((new_entry = malloc(sizeof(*new_entry)))) {
         new_entry->variant = ENTRY_FUN;
-        libab_ref_null(&new_entry->data_u.function.behavior.type);
+        _initialize_behavior(ab, &(new_entry->data_u.function.behavior), type, func);
     } else {
         result = LIBAB_MALLOC;
-    }
-
-    if(result == LIBAB_SUCCESS) {
-        libab_ref_free(&new_entry->data_u.function.behavior.type);
-        result = _initialize_behavior(ab, 
-                &(new_entry->data_u.function.behavior), type, func);
     }
 
     if(result == LIBAB_SUCCESS) {
