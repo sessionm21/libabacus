@@ -20,14 +20,42 @@ enum libab_operator_variant_e {
 };
 
 /**
+ * The variant of the implementation of a behavior.
+ */
+enum libab_behavior_variant_e {
+    BIMPL_INTERNAL,
+    BIMPL_TREE
+};
+
+/**
+ * A struct that represents the implementation of a behavior.
+ */
+struct libab_behavior_impl_s {
+    /**
+     * The variant of this implementation.
+     */
+    enum libab_behavior_variant_e variant;
+    union {
+        /**
+         * The internal function used for an internal implementation.
+         */
+        libab_function_ptr internal;
+        /**
+         * The tree-based implementation.
+         */
+        libab_ref tree;
+    } data_u;
+};
+
+/**
  * The common information
  * that both operators and functions shared.
  */
 struct libab_behavior_s {
     /**
-     * The function that handles the parameters.
+     * The implementation of this behavior.
      */
-    libab_function_ptr function;
+    struct libab_behavior_impl_s impl;
     /**
      * The type of the function.
      */
@@ -72,6 +100,8 @@ struct libab_function_s {
 };
 
 typedef enum libab_operator_variant_e libab_operator_variant;
+typedef enum libab_behavior_variant_e libab_behavior_variant;
+typedef struct libab_behavior_impl_s libab_behavior_impl;
 typedef struct libab_behavior_s libab_behavior;
 typedef struct libab_operator_s libab_operator;
 typedef struct libab_function_s libab_function;

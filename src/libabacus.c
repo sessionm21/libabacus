@@ -38,6 +38,8 @@ libab_result _initialize_behavior(libab* ab, libab_behavior* behavior,
 
     ll_init(&tokens);
 
+    behavior->impl.variant = BIMPL_INTERNAL;
+    behavior->impl.data_u.internal = func;
     result = libab_lexer_lex(&ab->lexer, type, &tokens);
     if(result == LIBAB_SUCCESS) {
         result = libab_parser_parse_type(&ab->parser, &tokens, type, &behavior->type);

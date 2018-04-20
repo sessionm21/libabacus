@@ -2,6 +2,9 @@
 
 void libab_behavior_free(libab_behavior* behavior) {
     libab_ref_free(&behavior->type);
+    if(behavior->impl.variant == BIMPL_TREE) {
+        libab_ref_free(&behavior->impl.data_u.tree);
+    }
 }
 
 void libab_operator_free(libab_operator* op) {
