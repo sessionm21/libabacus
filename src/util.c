@@ -36,3 +36,41 @@ libab_result libab_copy_string_size(char** destination, const char* source, size
 libab_result libab_copy_string(char** destination, const char* source) {
     return libab_copy_string_range(destination, source, 0, strlen(source));
 }
+libab_result _libab_check_parsetype(libab_parsetype* to_check) {
+    libab_result result = LIBAB_SUCCESS;
+    return result;
+}
+libab_result libab_resolve_parsetype(libab_parsetype* to_resolve, libab_table* scope) {
+    libab_result result = LIBAB_SUCCESS;
+    int resolve_name, check_parents;
+    size_t index = 0;
+    resolve_name = !(to_resolve->variant & (LIBABACUS_TYPE_F_RESOLVED | LIBABACUS_TYPE_F_PLACE));
+    check_parents = !(to_resolve->variant & LIBABACUS_TYPE_F_PLACE);
+    if(resolve_name) {
+        libab_basetype* basetype = libab_table_search_basetype(scope, to_resolve->data_u.name);
+        if(basetype) {
+            free(to_resolve->data_u.name);
+            to_resolve->data_u.base = basetype;
+            to_resolve->variant |= LIBABACUS_TYPE_F_RESOLVED;
+        } else {
+            result = LIBAB_BAD_TYPE;
+        }
+    }
+
+    if(check_parents && result == LIBAB_SUCCESS) {
+        if(to_resolve->variant & LIBABACUS_TYPE_F_PARENT) {
+            result = _libab_check_parsetype(to_resolve);
+        } else if(to_resolve->data_u.base->count) {
+            result = LIBAB_BAD_TYPE;
+        }
+    }
+
+    if(to_resolve->variant & LIBABACUS_TYPE_F_PARENT) {
+        while(result == LIBAB_SUCCESS && index < to_resolve->children.size) {
+            result = libab_resolve_parsetype(libab_ref_get(&to_resolve->children.data[index]), scope);
+            index++;
+        }
+    }
+
+    return result;
+}

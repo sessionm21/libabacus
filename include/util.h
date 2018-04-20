@@ -4,6 +4,8 @@
 #include "libds.h"
 #include "liblex.h"
 #include "result.h"
+#include "parsetype.h"
+#include "table.h"
 #include <string.h>
 
 /**
@@ -44,5 +46,12 @@ libab_result libab_copy_string_size(char** destination, const char* source, size
  * @return the result of the operation.
  */
 libab_result libab_copy_string(char** destination, const char* source);
+/**
+ * Resolves the given parsetype, looking through the scope to find all the
+ * referenced base types, if applicable.
+ * @param to_resolve the parsetype to resolve.
+ * @param scope the scope to use for resolving the type info.
+ */
+libab_result libab_resolve_parsetype(libab_parsetype* to_resolve, libab_table* scope);
 
 #endif
