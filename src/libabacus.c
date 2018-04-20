@@ -149,6 +149,19 @@ libab_result libab_register_basetype(libab* ab, const char* name, libab_basetype
     return result;
 }
 
+libab_result libab_create_type(libab* ab, libab_ref* into, const char* type) {
+    libab_result result;
+    ll tokens;
+    ll_init(&tokens);
+    result = libab_lexer_lex(&ab->lexer, type, &tokens);
+    if(result == LIBAB_SUCCESS) {
+        result = libab_parser_parse_type(&ab->parser, &tokens, type, into);
+    }
+    ll_foreach(&tokens, NULL, compare_always, libab_lexer_foreach_match_free);
+    ll_free(&tokens);
+    return result;
+}
+
 libab_result libab_free(libab* ab) {
     libab_table_free(&ab->table);
     libab_parser_free(&ab->parser);
