@@ -1,9 +1,9 @@
 #ifndef LIBABACUS_PARSETYPE_H
 #define LIBABACUS_PARSETYPE_H
 
-#include "result.h"
-#include "ref_vec.h"
 #include "basetype.h"
+#include "ref_vec.h"
+#include "result.h"
 
 #define LIBABACUS_TYPE_F_PARENT (1)
 #define LIBABACUS_TYPE_F_PLACE (1 << 1)

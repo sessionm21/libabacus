@@ -12,5 +12,6 @@ void libab_value_free(libab_value* value) {
     libab_ref_free(&value->type);
     value_type = libab_ref_get(&value->type);
     free_function = value_type->data_u.base->free_function;
-    if(free_function) free_function(value->data);
+    if (free_function)
+        free_function(value->data);
 }

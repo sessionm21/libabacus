@@ -1,10 +1,10 @@
 #ifndef LIBABACUS_PARSER_H
 #define LIBABACUS_PARSER_H
 
-#include "table.h"
 #include "ll.h"
-#include "tree.h"
 #include "parsetype.h"
+#include "table.h"
+#include "tree.h"
 
 /**
  * The parser that is used by libabacus
@@ -31,9 +31,9 @@ void libab_parser_init(libab_parser* parser, libab_table* table);
  * @param store_into tree pointer to store the new data into.
  */
 libab_result libab_parser_parse(libab_parser* parser, ll* tokens,
-        const char* string, libab_tree** store_into);
+                                const char* string, libab_tree** store_into);
 libab_result libab_parser_parse_type(libab_parser* parser, ll* tokens,
-        const char* string, libab_ref* store_into);
+                                     const char* string, libab_ref* store_into);
 /**
  * Releases the resources allocated by the parser.
  * @param parser the parser to release.

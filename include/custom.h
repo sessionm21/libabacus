@@ -7,7 +7,7 @@
  * A function pointer that is called
  * to execute a certain type of function.
  */
-typedef void(*libab_function_ptr)();
+typedef void (*libab_function_ptr)();
 
 /**
  * The variant of the operator that
@@ -22,10 +22,7 @@ enum libab_operator_variant_e {
 /**
  * The variant of the implementation of a behavior.
  */
-enum libab_behavior_variant_e {
-    BIMPL_INTERNAL,
-    BIMPL_TREE
-};
+enum libab_behavior_variant_e { BIMPL_INTERNAL, BIMPL_TREE };
 
 /**
  * A struct that represents the implementation of a behavior.

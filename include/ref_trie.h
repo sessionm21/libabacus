@@ -62,14 +62,16 @@ void libab_ref_trie_init(libab_ref_trie* trie);
  * @param ref the reference to insert.
  * @return the result of the insertion.
  */
-libab_result libab_ref_trie_put(libab_ref_trie* trie, const char* key, libab_ref* ref);
+libab_result libab_ref_trie_put(libab_ref_trie* trie, const char* key,
+                                libab_ref* ref);
 /**
  * Retreives a reference under the given key in the trie.
  * @param trie the trie to retreive from.
  * @param key the key to look under.
  * @return a reference stored under the given key. This can be a NULL reference.
  */
-const libab_ref* libab_ref_trie_get(const libab_ref_trie* trie, const char* key);
+const libab_ref* libab_ref_trie_get(const libab_ref_trie* trie,
+                                    const char* key);
 /**
  * Releases the trie, decrementing the refcounts of all
  * the values stored inside.

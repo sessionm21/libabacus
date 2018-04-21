@@ -3,8 +3,8 @@
 
 #include "libds.h"
 #include "liblex.h"
-#include "result.h"
 #include "parsetype.h"
+#include "result.h"
 #include "table.h"
 #include <string.h>
 
@@ -21,15 +21,16 @@ libab_result libab_convert_lex_result(liblex_result to_convert);
  */
 libab_result libab_convert_ds_result(libds_result to_convert);
 /**
- * Copies a range of the given string into a new, null-terminated string allocated
- * on the heap.
+ * Copies a range of the given string into a new, null-terminated string
+ * allocated on the heap.
  * @param destination the pointer to populate with the newly created string.
  * @param source the source from which to pull character information from.
  * @param from the index (inclusive) at which to begin copying.
  * @param to the index (exclusive) at which to end copying.
  * @return the result of the operation.
  */
-libab_result libab_copy_string_range(char** destination, const char* source, size_t from, size_t to);
+libab_result libab_copy_string_range(char** destination, const char* source,
+                                     size_t from, size_t to);
 /**
  * Copies the given string, starting at 0 and copying length bytes.
  * @param destination the pointer to populate with the newly created string.
@@ -37,7 +38,8 @@ libab_result libab_copy_string_range(char** destination, const char* source, siz
  * @param length the number of bytes to copy.
  * @return the result of the operation.
  */
-libab_result libab_copy_string_size(char** destination, const char* source, size_t length);
+libab_result libab_copy_string_size(char** destination, const char* source,
+                                    size_t length);
 /**
  * Copies the entire string into a null-terminated string allocated
  * on the heap.
@@ -52,6 +54,7 @@ libab_result libab_copy_string(char** destination, const char* source);
  * @param to_resolve the parsetype to resolve.
  * @param scope the scope to use for resolving the type info.
  */
-libab_result libab_resolve_parsetype(libab_parsetype* to_resolve, libab_table* scope);
+libab_result libab_resolve_parsetype(libab_parsetype* to_resolve,
+                                     libab_table* scope);
 
 #endif

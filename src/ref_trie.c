@@ -6,13 +6,14 @@ void libab_ref_trie_init(libab_ref_trie* trie) {
     trie->head = NULL;
 }
 
-libab_result _libab_ref_trie_put(libab_ref_trie_node** node, const char* key, libab_ref* ref) {
+libab_result _libab_ref_trie_put(libab_ref_trie_node** node, const char* key,
+                                 libab_ref* ref) {
     libab_result result = LIBAB_SUCCESS;
-    if((*node = malloc(sizeof(**node)))) {
+    if ((*node = malloc(sizeof(**node)))) {
         (*node)->key = *key;
         (*node)->next = NULL;
 
-        if(*(key + 1)) {
+        if (*(key + 1)) {
             libab_ref_null(&(*node)->ref);
             result = _libab_ref_trie_put(&(*node)->child, key + 1, ref);
         } else {
@@ -23,8 +24,9 @@ libab_result _libab_ref_trie_put(libab_ref_trie_node** node, const char* key, li
         result = LIBAB_MALLOC;
     }
 
-    if(result != LIBAB_SUCCESS) {
-        if(*node) libab_ref_free(&(*node)->ref);
+    if (result != LIBAB_SUCCESS) {
+        if (*node)
+            libab_ref_free(&(*node)->ref);
         free(*node);
         *node = NULL;
     }
@@ -32,17 +34,18 @@ libab_result _libab_ref_trie_put(libab_ref_trie_node** node, const char* key, li
     return result;
 }
 
-libab_result libab_ref_trie_put(libab_ref_trie* trie, const char* key, libab_ref* ref) {
+libab_result libab_ref_trie_put(libab_ref_trie* trie, const char* key,
+                                libab_ref* ref) {
     libab_result result = LIBAB_SUCCESS;
     libab_ref_trie_node** current = &trie->head;
     char search;
-    while(*key) {
+    while (*key) {
         search = *key;
-        while(*current && (*current)->key != search) {
+        while (*current && (*current)->key != search) {
             current = &(*current)->next;
         }
-        if(*current) {
-            if(*(key + 1)) {
+        if (*current) {
+            if (*(key + 1)) {
                 current = &(*current)->child;
             } else {
                 libab_ref_free(&(*current)->ref);
@@ -57,15 +60,17 @@ libab_result libab_ref_trie_put(libab_ref_trie* trie, const char* key, libab_ref
     return result;
 }
 
-const libab_ref* libab_ref_trie_get(const libab_ref_trie* trie, const char* key) {
+const libab_ref* libab_ref_trie_get(const libab_ref_trie* trie,
+                                    const char* key) {
     libab_ref_trie_node* current = trie->head;
-    while(current && *key) {
-        while(current && current->key != *key) {
+    while (current && *key) {
+        while (current && current->key != *key) {
             current = current->next;
         }
-        if(current == NULL) break;
+        if (current == NULL)
+            break;
 
-        if(*(key + 1)) {
+        if (*(key + 1)) {
             current = current->child;
             key++;
         } else {
@@ -76,7 +81,8 @@ const libab_ref* libab_ref_trie_get(const libab_ref_trie* trie, const char* key)
 }
 
 void _libab_ref_trie_free(libab_ref_trie_node* node) {
-    if(node == NULL) return;
+    if (node == NULL)
+        return;
     _libab_ref_trie_free(node->next);
     _libab_ref_trie_free(node->child);
     libab_ref_free(&node->ref);

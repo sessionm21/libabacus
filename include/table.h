@@ -1,10 +1,10 @@
 #ifndef LIBABACUS_TABLE_H
 #define LIBABACUS_TABLE_H
 
-#include "result.h"
-#include "custom.h"
-#include "trie.h"
 #include "basetype.h"
+#include "custom.h"
+#include "result.h"
+#include "trie.h"
 
 /**
  * A struct that represents a structure
@@ -72,7 +72,9 @@ void libab_table_init(libab_table* table);
  * @param compare the comparison function to use.
  * @return the table entry, or NULL if an entry was not found.
  */
-libab_table_entry* libab_table_search_filter(libab_table* table, const char* string, void* data, compare_func compare);
+libab_table_entry* libab_table_search_filter(libab_table* table,
+                                             const char* string, void* data,
+                                             compare_func compare);
 /**
  * Searches for the given string in the table.
  * @param table the table to search.
@@ -88,7 +90,8 @@ libab_table_entry* libab_table_search(libab_table* table, const char* string);
  * @param type the type of operator to search for (infix, prefix, postfix)
  * @return the found operator, or NULL if it was not found.
  */
-libab_operator* libab_table_search_operator(libab_table* table, const char* string, int type);
+libab_operator* libab_table_search_operator(libab_table* table,
+                                            const char* string, int type);
 /**
  * Searches for the given string in the table, returning a value only
  * if it is a function.
@@ -96,7 +99,8 @@ libab_operator* libab_table_search_operator(libab_table* table, const char* stri
  * @param string the string to search for.
  * @return the found function, or NULL if it was not found.
  */
-libab_function* libab_table_search_function(libab_table* table, const char* string);
+libab_function* libab_table_search_function(libab_table* table,
+                                            const char* string);
 /**
  * Searches for the given basetype in the table, returning a value
  * only if it's a basetype.
@@ -104,7 +108,8 @@ libab_function* libab_table_search_function(libab_table* table, const char* stri
  * @param string the string to search for.
  * @return the found basetype, or NULL if it was not found.
  */
-libab_basetype* libab_table_search_basetype(libab_table* table, const char* string);
+libab_basetype* libab_table_search_basetype(libab_table* table,
+                                            const char* string);
 /**
  * Stores the given entry in the table under the given key.
  * @param table the table to store the entry into.
@@ -112,7 +117,8 @@ libab_basetype* libab_table_search_basetype(libab_table* table, const char* stri
  * @param entry the new entry to put into the table.
  * @return the result of the insertion, which could be LIBAB_MALLOC.
  */
-libab_result libab_table_put(libab_table* table, const char* string, libab_table_entry* entry);
+libab_result libab_table_put(libab_table* table, const char* string,
+                             libab_table_entry* entry);
 /**
  * Frees the resources allocated by the
  * given table.

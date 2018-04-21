@@ -1,49 +1,37 @@
 #include "lexer.h"
 #include "ll.h"
 #include "util.h"
-#include <stdlib.h>
 #include <ctype.h>
+#include <stdlib.h>
 
 libab_result libab_lexer_init(libab_lexer* lexer) {
     size_t i;
     libab_result result = LIBAB_SUCCESS;
-    const char* words[] = {
-        ".",
-        "[a-zA-Z][a-zA-Z0-9_]*",
-        "[0-9]+(\\.[0-9]*)?",
-        "if",
-        "else",
-        "while",
-        "do",
-        "->",
-        "fun",
-        "return",
-        "let",
-        "be"
-    };
+    const char* words[] = {".",
+                           "[a-zA-Z][a-zA-Z0-9_]*",
+                           "[0-9]+(\\.[0-9]*)?",
+                           "if",
+                           "else",
+                           "while",
+                           "do",
+                           "->",
+                           "fun",
+                           "return",
+                           "let",
+                           "be"};
     libab_lexer_token tokens[] = {
-        TOKEN_CHAR,
-        TOKEN_ID,
-        TOKEN_NUM,
-        TOKEN_KW_IF,
-        TOKEN_KW_ELSE,
-        TOKEN_KW_WHILE,
-        TOKEN_KW_DO,
-        TOKEN_KW_ARROW,
-        TOKEN_KW_FUN,
-        TOKEN_KW_RETURN,
-        TOKEN_KW_LET,
-        TOKEN_KW_BE
-    };
-    const size_t count = sizeof(tokens)/sizeof(libab_lexer_token);
+        TOKEN_CHAR,    TOKEN_ID,        TOKEN_NUM,    TOKEN_KW_IF,
+        TOKEN_KW_ELSE, TOKEN_KW_WHILE,  TOKEN_KW_DO,  TOKEN_KW_ARROW,
+        TOKEN_KW_FUN,  TOKEN_KW_RETURN, TOKEN_KW_LET, TOKEN_KW_BE};
+    const size_t count = sizeof(tokens) / sizeof(libab_lexer_token);
 
     eval_config_init(&lexer->config);
-    for(i = 0; i < count && result == LIBAB_SUCCESS; i++) {
+    for (i = 0; i < count && result == LIBAB_SUCCESS; i++) {
         result = libab_convert_lex_result(
-                eval_config_add(&lexer->config, words[i], tokens[i]));
+            eval_config_add(&lexer->config, words[i], tokens[i]));
     }
 
-    if(result != LIBAB_SUCCESS) {
+    if (result != LIBAB_SUCCESS) {
         eval_config_free(&lexer->config);
     }
 
@@ -62,19 +50,19 @@ int _lexer_foreach_convert_match(void* data, va_list args) {
     match* match = data;
     struct lexer_state* state = va_arg(args, struct lexer_state*);
     char first_char = state->source[match->from];
-    if(isspace(first_char)) {
+    if (isspace(first_char)) {
         /* Skip */
-    } else if(first_char == '\n') { 
+    } else if (first_char == '\n') {
         state->line++;
         state->line_from = match->to;
-    } else if((new_match = malloc(sizeof(*new_match)))) {
+    } else if ((new_match = malloc(sizeof(*new_match)))) {
         new_match->type = match->pattern;
         new_match->from = match->from;
         new_match->to = match->to;
         new_match->line_from = state->line_from;
         new_match->line = state->line;
         result = libab_convert_ds_result(ll_append(state->matches, new_match));
-        if(result != LIBAB_SUCCESS) {
+        if (result != LIBAB_SUCCESS) {
             free(new_match);
         }
     } else {
@@ -83,7 +71,8 @@ int _lexer_foreach_convert_match(void* data, va_list args) {
     return result;
 }
 
-libab_result libab_lexer_lex(libab_lexer* lexer, const char* string, ll* lex_into) {
+libab_result libab_lexer_lex(libab_lexer* lexer, const char* string,
+                             ll* lex_into) {
     libab_result result;
     ll raw_matches;
     struct lexer_state state;
@@ -96,15 +85,16 @@ libab_result libab_lexer_lex(libab_lexer* lexer, const char* string, ll* lex_int
     state.source = string;
 
     result = libab_convert_lex_result(
-            eval_all(string, 0, &lexer->config, &raw_matches));
+        eval_all(string, 0, &lexer->config, &raw_matches));
 
-    if(result == LIBAB_SUCCESS) {
-        result = (libab_result) ll_foreach(&raw_matches, NULL, compare_always,
-                                           _lexer_foreach_convert_match, &state);
+    if (result == LIBAB_SUCCESS) {
+        result = (libab_result)ll_foreach(&raw_matches, NULL, compare_always,
+                                          _lexer_foreach_convert_match, &state);
     }
 
-    if(result != LIBAB_SUCCESS) {
-        ll_foreach(lex_into, NULL, compare_always, libab_lexer_foreach_match_free);
+    if (result != LIBAB_SUCCESS) {
+        ll_foreach(lex_into, NULL, compare_always,
+                   libab_lexer_foreach_match_free);
     }
 
     ll_foreach(&raw_matches, NULL, compare_always, eval_foreach_match_free);
@@ -116,6 +106,6 @@ libab_result libab_lexer_free(libab_lexer* lexer) {
     return libab_convert_lex_result(eval_config_free(&lexer->config));
 }
 int libab_lexer_foreach_match_free(void* data, va_list args) {
-    free((libab_lexer_match*) data);
+    free((libab_lexer_match*)data);
     return 0;
 }

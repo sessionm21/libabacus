@@ -8,6 +8,4 @@ libab_result libab_array_insert(libab_array* array, libab_ref* value) {
     return libab_ref_vec_insert(&array->elems, value);
 }
 
-void libab_array_free(libab_array* array) {
-    libab_ref_vec_free(&array->elems);
-}
+void libab_array_free(libab_array* array) { libab_ref_vec_free(&array->elems); }

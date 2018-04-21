@@ -53,10 +53,12 @@ typedef struct libab_ref_count_s libab_ref_count;
  * Creates a new referene, using the given data and free function.
  * @param ref the reference to initialize with the given data.
  * @param data the data to reference count.
- * @param free_func the function to use to realease the data when refcount reaches 0.
+ * @param free_func the function to use to realease the data when refcount
+ * reaches 0.
  * @return the result of the construction of the reference.
  */
-libab_result libab_ref_new(libab_ref* ref, void* data, void (*free_func)(void* data));
+libab_result libab_ref_new(libab_ref* ref, void* data,
+                           void (*free_func)(void* data));
 /**
  * Creates a reference to NULL. This does
  * not require a memory allocation.

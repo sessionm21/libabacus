@@ -1,17 +1,14 @@
 #ifndef LIBABACUS_BASETYPE_H
 #define LIBABACUS_BASETYPE_H
 
-#include "vec.h"
 #include "result.h"
+#include "vec.h"
 
 /**
  * An enum that represents the various
  * types of the basetype parameters.
  */
-enum libab_basetype_variant_e {
-    BT_NAME,
-    BT_LIST
-};
+enum libab_basetype_variant_e { BT_NAME, BT_LIST };
 
 /**
  * A struct that holds information about the basetype
@@ -58,8 +55,8 @@ typedef struct libab_basetype_s libab_basetype;
  * @param n the number of type parameters it has.
  * @param params the parameters this basetype accepts.
  */
-void libab_basetype_init(libab_basetype* basetype, int n, 
-        const libab_basetype_param params[]);
+void libab_basetype_init(libab_basetype* basetype, int n,
+                         const libab_basetype_param params[]);
 /**
  * Frees the given basetype.
  * @param basetype the type to free.

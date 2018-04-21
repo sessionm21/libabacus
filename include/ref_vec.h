@@ -1,8 +1,8 @@
 #ifndef LIBABACUS_REF_VEC_H
 #define LIBABACUS_REF_VEC_H
 
-#include "result.h"
 #include "refcount.h"
+#include "result.h"
 #include <stdlib.h>
 
 #define LIBABACUS_REF_VEC_INITIAL_SIZE 4
@@ -50,10 +50,11 @@ libab_result libab_ref_vec_insert(libab_ref_vec* vec, libab_ref* data);
  * @param free_func the function called to release the value (besides free)
  * @return the result of the insertion.
  */
-libab_result libab_ref_vec_insert_value(libab_ref_vec* vec, void* data, void (*free_func)(void*));
+libab_result libab_ref_vec_insert_value(libab_ref_vec* vec, void* data,
+                                        void (*free_func)(void*));
 /**
- * Returns the value at the given index in the vector, or null or the value doesn't
- * exist.
+ * Returns the value at the given index in the vector, or null or the value
+ * doesn't exist.
  * @param vec the vector to get a value from.
  * @param index the index to look at.
  * @return the reference stored at the given index.

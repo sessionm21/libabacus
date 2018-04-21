@@ -90,7 +90,8 @@ libab_result libab_lexer_init(libab_lexer* lexer);
  * @param lex_into the list which should be populated with matches.
  * @return the result of the operation.
  */
-libab_result libab_lexer_lex(libab_lexer* lexer, const char* string, ll* lext_into);
+libab_result libab_lexer_lex(libab_lexer* lexer, const char* string,
+                             ll* lext_into);
 /**
  * Releases the memory associated with the given lexer,
  * removing all registered patterns from it.

@@ -39,12 +39,12 @@ struct libab_trie_s {
     /**
      * The first search node in this trie.
      */
-    struct libab_trie_node_s* head;   
+    struct libab_trie_node_s* head;
     /**
      * The empty list returned if no value is found.
      * Note that existing nodes return their own linked
      * list of values, even if empty. However, for keys
-     * that don't exist as prefixes in the trie, 
+     * that don't exist as prefixes in the trie,
      * this list is returned to maintain consistency:
      * a list is always returned containing the values
      * of the trie associated with the given key.
@@ -58,7 +58,8 @@ typedef struct libab_trie_node_s libab_trie_node;
 void libab_trie_init(libab_trie* trie);
 libab_result libab_trie_put(libab_trie* trie, const char* key, void* value);
 const ll* libab_trie_get(const libab_trie* trie, const char* key);
-int libab_trie_foreach(const libab_trie* trie, void* data, compare_func compare, foreach_func foreach);
+int libab_trie_foreach(const libab_trie* trie, void* data, compare_func compare,
+                       foreach_func foreach);
 void libab_trie_free(libab_trie* trie);
 
 #endif

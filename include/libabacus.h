@@ -1,12 +1,12 @@
 #ifndef LIBABACUS_H
 #define LIBABACUS_H
 
+#include "custom.h"
 #include "ht.h"
 #include "lexer.h"
-#include "table.h"
 #include "parser.h"
 #include "result.h"
-#include "custom.h"
+#include "table.h"
 
 /**
  * The main struct of libabacus,
@@ -50,7 +50,10 @@ libab_result libab_init(libab* ab);
  * @param func the function that describes the functionality of the operator.
  * @return the result of the initialization.
  */
-libab_result libab_register_operator_infix(libab* ab, const char* op, int precedence, int associativity, libab_ref* type, libab_function_ptr func);
+libab_result libab_register_operator_infix(libab* ab, const char* op,
+                                           int precedence, int associativity,
+                                           libab_ref* type,
+                                           libab_function_ptr func);
 /**
  * Registers an operation with libabacus that appears
  * before its operand.
@@ -60,7 +63,9 @@ libab_result libab_register_operator_infix(libab* ab, const char* op, int preced
  * @param func the function that describes the functionality of the operator.
  * @return the result of the registration.
  */
-libab_result libab_register_operator_prefix(libab* ab, const char* op, libab_ref* type, libab_function_ptr func);
+libab_result libab_register_operator_prefix(libab* ab, const char* op,
+                                            libab_ref* type,
+                                            libab_function_ptr func);
 /**
  * Registers an operation with libabacus that appears
  * after its operand.
@@ -70,7 +75,9 @@ libab_result libab_register_operator_prefix(libab* ab, const char* op, libab_ref
  * @param func the function that describes the functionality of the operator.
  * @return the result of the registration.
  */
-libab_result libab_register_operator_postfix(libab* ab, const char* op, libab_ref* type, libab_function_ptr func);
+libab_result libab_register_operator_postfix(libab* ab, const char* op,
+                                             libab_ref* type,
+                                             libab_function_ptr func);
 
 /**
  * Registers a function with libabacus.
@@ -80,7 +87,8 @@ libab_result libab_register_operator_postfix(libab* ab, const char* op, libab_re
  * @param func the function that describes the functionality of the function.
  * @return the result of the registration.
  */
-libab_result libab_register_function(libab* ab, const char* name, libab_ref* type, libab_function_ptr func);
+libab_result libab_register_function(libab* ab, const char* name,
+                                     libab_ref* type, libab_function_ptr func);
 /**
  * Registers a base type with abacus.
  * @param ab the libabacus instance used to keep state.
@@ -88,7 +96,8 @@ libab_result libab_register_function(libab* ab, const char* name, libab_ref* typ
  * @param basetype the basetype to register.
  * @return the result of the registration.
  */
-libab_result libab_register_basetype(libab* ab, const char* name, libab_basetype* basetype);
+libab_result libab_register_basetype(libab* ab, const char* name,
+                                     libab_basetype* basetype);
 /**
  * Constructs and resolves a parse type, similarly to how it's done in the
  * parser.

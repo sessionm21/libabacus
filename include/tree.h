@@ -1,8 +1,8 @@
 #ifndef LIBABACUS_TREE_H
 #define LIBABACUS_TREE_H
 
-#include "result.h"
 #include "parsetype.h"
+#include "result.h"
 #include "vec.h"
 
 /**
@@ -115,7 +115,7 @@ int libab_tree_has_vector(libab_tree_variant var);
 /**
  * Frees the given tree recursively,
  * deleting the children first and the moving on
- * to the parents. 
+ * to the parents.
  * @param tree the tree to free.
  */
 void libab_tree_free_recursive(libab_tree* tree);
