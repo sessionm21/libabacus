@@ -31,7 +31,6 @@ void _libab_ref_changed(libab_ref* ref) {
         if (ref->count->free_func) {
             ref->count->free_func(ref->data);
         }
-        free(ref->data);
     }
     if (ref->count->weak == 0) {
         free(ref->count);
@@ -57,6 +56,8 @@ void libab_ref_copy(const libab_ref* ref, libab_ref* into) {
     ref->count->weak++;
     memcpy(into, ref, sizeof(*ref));
 }
+
+void libab_ref_data_free(void* data) { free(data); }
 
 void* libab_ref_get(const libab_ref* ref) {
     void* to_return = NULL;

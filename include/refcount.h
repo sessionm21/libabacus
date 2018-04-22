@@ -80,6 +80,11 @@ void libab_ref_free(libab_ref* ref);
  */
 void libab_ref_copy(const libab_ref* ref, libab_ref* into);
 /**
+ * Function that can be passed in to refcount to simply use free
+ * when the refcount reaches 0.
+ */
+void libab_ref_data_free(void*);
+/**
  * Gets the value of the reference.
  */
 void* libab_ref_get(const libab_ref* ref);

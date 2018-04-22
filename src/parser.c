@@ -312,7 +312,10 @@ libab_result _parse_type_raw(struct parser_state* state,
     return result;
 }
 
-void _parse_type_free(void* data) { libab_parsetype_free(data); }
+void _parse_type_free(void* data) {
+    libab_parsetype_free(data);
+    free(data);
+}
 
 libab_result _parse_type(struct parser_state* state, libab_ref* into) {
     libab_parsetype* store_into;
