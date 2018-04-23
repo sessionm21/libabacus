@@ -56,5 +56,14 @@ libab_result libab_copy_string(char** destination, const char* source);
  */
 libab_result libab_resolve_parsetype(libab_parsetype* to_resolve,
                                      libab_table* scope);
+/**
+ * Creates a new type instance, and stores it into the given reference.
+ * @param to_instantiate the basetype to instantiate.
+ * @param into the reference to store the new type into.
+ * @param n the number of type parameters.
+ * @return the result of the instantiation.
+ */
+libab_result libab_instantiate_basetype(libab_basetype* to_instantiate,
+        libab_ref* into, size_t n, ...);
 
 #endif

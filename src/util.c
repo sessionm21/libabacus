@@ -1,5 +1,6 @@
 #include "util.h"
 #include <stdlib.h>
+#include <stdarg.h>
 
 libab_result libab_convert_lex_result(liblex_result to_convert) {
     libab_result result = LIBAB_SUCCESS;
@@ -77,6 +78,46 @@ libab_result libab_resolve_parsetype(libab_parsetype* to_resolve,
             index++;
         }
     }
+
+    return result;
+}
+
+void _libab_free_parsetype(void* parsetype) {
+    libab_parsetype_free(parsetype);
+    free(parsetype);
+}
+
+void _libab_parsetype_free(void* parsetype) {
+    libab_parsetype_free(parsetype);
+    free(parsetype);
+}
+
+libab_result libab_instantiate_basetype(libab_basetype* to_instantiate,
+        libab_ref* into, size_t n, ...) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_parsetype* parsetype;
+    va_list params;
+
+    va_start(params, n);
+
+    if((parsetype = malloc(sizeof(*parsetype)))) {
+        result = libab_parsetype_init_va(parsetype, to_instantiate, n, params);
+    } else {
+        result = LIBAB_MALLOC;
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = libab_ref_new(into, parsetype, _libab_parsetype_free);
+        if(result != LIBAB_SUCCESS) {
+            libab_parsetype_free(parsetype);
+        }
+    }
+
+    if(result != LIBAB_SUCCESS) {
+        free(parsetype);
+    }
+
+    va_end(params);
 
     return result;
 }
