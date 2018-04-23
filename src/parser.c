@@ -324,9 +324,13 @@ libab_result _parse_type(struct parser_state* state, libab_ref* into) {
         result = libab_ref_new(into, store_into, _parse_type_free);
         if (result != LIBAB_SUCCESS) {
             libab_parsetype_free(store_into);
-            libab_ref_null(into);
         }
     }
+
+    if(result != LIBAB_SUCCESS) {
+        libab_ref_null(into);
+    }
+
     return result;
 }
 

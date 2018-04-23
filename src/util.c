@@ -114,6 +114,7 @@ libab_result libab_instantiate_basetype(libab_basetype* to_instantiate,
     }
 
     if(result != LIBAB_SUCCESS) {
+        libab_ref_null(into);
         free(parsetype);
     }
 
