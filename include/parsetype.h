@@ -40,6 +40,26 @@ struct libab_parsetype_s {
 typedef struct libab_parsetype_s libab_parsetype;
 
 /**
+ * Creates a new type instance.
+ * @param into the reference to store the new type into.
+ * @param from the basetype to instantiate.
+ * @param n the number of type parameters.
+ * @return the result of the instantiation.
+ */
+libab_result libab_parsetype_init(libab_parsetype* into, libab_basetype* from,
+        size_t n, ...);
+/**
+ * Same as _init, but using a pre-initialized va_list.
+ * @param into the reference to store the new type into.
+ * @param from the basetype to instantiate.
+ * @param n the number of type parameters.
+ * @param args the list of parameters to this parsetype.
+ * @return the result of the instantiation.
+ */
+libab_result libab_parsetype_init_va(libab_parsetype* into, libab_basetype* from,
+        size_t n, va_list args);
+
+/**
  * Frees the data associated with this type, ignoring
  * its children.
  * @param type the type to free.
