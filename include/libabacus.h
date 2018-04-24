@@ -29,7 +29,7 @@ struct libab_s {
      * The table used to store top-level
      * things like functions and operators.
      */
-    libab_table table;
+    libab_ref table;
     /**
      * The number implementation used by this instance.
      */

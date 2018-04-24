@@ -65,5 +65,12 @@ libab_result libab_resolve_parsetype(libab_parsetype* to_resolve,
  */
 libab_result libab_instantiate_basetype(libab_basetype* to_instantiate,
         libab_ref* into, size_t n, ...);
+/**
+ * Creates a new libab_table, and stores it into the given reference.
+ * @param into the reference to store the table into.
+ * @param parent the parent reference to store.
+ * @return the result of the instantiation.
+ */
+libab_result libab_create_table(libab_ref* into, libab_ref* parent);
 
 #endif

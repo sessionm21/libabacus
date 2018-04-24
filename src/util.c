@@ -122,3 +122,29 @@ libab_result libab_instantiate_basetype(libab_basetype* to_instantiate,
 
     return result;
 }
+
+void _free_table(void* data) {
+    libab_table_free(data);
+    free(data);
+}
+
+libab_result libab_create_table(libab_ref* into, libab_ref* parent) {
+    libab_table* table;
+    libab_result result = LIBAB_SUCCESS;
+    if((table = malloc(sizeof(*table)))) {
+        libab_table_init(table);
+        libab_table_set_parent(table, parent);
+        result = libab_ref_new(into, table, _free_table);
+
+        if(result != LIBAB_SUCCESS) {
+            _free_table(table);
+        }
+    } else {
+        result = LIBAB_MALLOC; 
+    }
+
+    if(result != LIBAB_SUCCESS) {
+        libab_ref_null(into);
+    }
+    return result;
+}

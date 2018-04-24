@@ -5,20 +5,26 @@
 #include <stdlib.h>
 
 libab_result libab_init(libab* ab) {
+    libab_ref null_ref;
     libab_result result;
-    libab_table_init(&ab->table);
-    libab_parser_init(&ab->parser, &ab->table);
-    result = libab_lexer_init(&ab->lexer);
+    libab_ref_null(&null_ref);
+    result = libab_create_table(&ab->table, &null_ref);
+
+    if(result == LIBAB_SUCCESS) {
+        libab_parser_init(&ab->parser, &ab->table);
+        result = libab_lexer_init(&ab->lexer);
+    }
 
     if (result == LIBAB_SUCCESS) {
         result = libab_register_reserved_operators(&ab->lexer);
     }
 
     if (result != LIBAB_SUCCESS) {
-        libab_table_free(&ab->table);
+        libab_ref_free(&ab->table);
         libab_parser_free(&ab->parser);
         libab_lexer_free(&ab->lexer);
     }
+    libab_ref_free(&null_ref);
 
     return result;
 }
@@ -64,7 +70,7 @@ libab_result _register_operator(libab* ab, const char* op,
     }
 
     if (result == LIBAB_SUCCESS) {
-        result = libab_table_put(&ab->table, op, new_entry);
+        result = libab_table_put(libab_ref_get(&ab->table), op, new_entry);
     }
 
     if (result != LIBAB_SUCCESS) {
@@ -110,7 +116,7 @@ libab_result libab_register_function(libab* ab, const char* name,
     }
 
     if (result == LIBAB_SUCCESS) {
-        result = libab_table_put(&ab->table, name, new_entry);
+        result = libab_table_put(libab_ref_get(&ab->table), name, new_entry);
     }
 
     if (result != LIBAB_SUCCESS) {
@@ -132,7 +138,7 @@ libab_result libab_register_basetype(libab* ab, const char* name,
     }
 
     if (result == LIBAB_SUCCESS) {
-        result = libab_table_put(&ab->table, name, new_entry);
+        result = libab_table_put(libab_ref_get(&ab->table), name, new_entry);
     }
 
     if (result != LIBAB_SUCCESS) {
@@ -156,7 +162,7 @@ libab_result libab_create_type(libab* ab, libab_ref* into, const char* type) {
 }
 
 libab_result libab_free(libab* ab) {
-    libab_table_free(&ab->table);
+    libab_ref_free(&ab->table);
     libab_parser_free(&ab->parser);
     return libab_lexer_free(&ab->lexer);
 }

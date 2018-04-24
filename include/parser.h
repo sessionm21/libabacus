@@ -12,7 +12,7 @@
  * tokens into trees.
  */
 struct libab_parser_s {
-    libab_table* base_table;
+    libab_ref base_table;
 };
 
 typedef struct libab_parser_s libab_parser;
@@ -22,7 +22,7 @@ typedef struct libab_parser_s libab_parser;
  * @param parser the parser to intialize.
  * @param table the table of "reserved" entries like operators.
  */
-void libab_parser_init(libab_parser* parser, libab_table* table);
+void libab_parser_init(libab_parser* parser, libab_ref* table);
 /**
  * Parses the given list of tokens into the given tree pointer.
  * @param parser the parser to use for parsing text.

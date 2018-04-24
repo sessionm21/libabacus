@@ -2,13 +2,12 @@
 #include "util.h"
 
 void libab_interpreter_init(libab_interpreter* intr,
-                            libab_table* table, libab_number_impl* impl) {
-    intr->base_table = table;
+                            libab_ref* table, libab_number_impl* impl) {
+    libab_ref_copy(table, &intr->base_table);
     intr->impl = impl;
 }
 
 struct interpreter_state {
-    libab_table* base_table;
     libab_number_impl* impl;
     libab_ref num_ref;
 };
@@ -16,11 +15,10 @@ struct interpreter_state {
 libab_result _interpreter_init(struct interpreter_state* state, libab_interpreter* intr) {
     libab_result result = LIBAB_SUCCESS;
     libab_basetype* num_type;
-    state->base_table = intr->base_table;
     state->impl = intr->impl;
     libab_ref_null(&state->num_ref);
 
-    num_type = libab_table_search_basetype(state->base_table, "num");
+    num_type = libab_table_search_basetype(libab_ref_get(&intr->base_table), "num");
     if(num_type != NULL) {
         libab_ref_free(&state->num_ref);
         result = libab_instantiate_basetype(num_type, &state->num_ref, 0);
@@ -37,32 +35,6 @@ void _interpreter_free(struct interpreter_state* state) {
     libab_ref_free(&state->num_ref);
 }
 
-void _free_table(void* data) {
-    libab_table_free(data);
-    free(data);
-}
-
-libab_result _make_scope(libab_ref* into, libab_ref* parent) {
-    libab_table* table;
-    libab_result result = LIBAB_SUCCESS;
-    if((table = malloc(sizeof(*table)))) {
-        libab_table_init(table);
-        result = libab_ref_new(into, table, _free_table);
-
-        if(result != LIBAB_SUCCESS) {
-            _free_table(table);
-        }
-    } else {
-        result = LIBAB_MALLOC;
-    }
-
-    if(result != LIBAB_SUCCESS) {
-        libab_ref_null(into);
-    }
-
-    return result;
-}
-
 libab_result _interpreter_run(struct interpreter_state* state,
                                     libab_tree* tree, libab_ref* into, 
                                     libab_ref* scope, int force_scope) {
@@ -71,7 +43,7 @@ libab_result _interpreter_run(struct interpreter_state* state,
     int needs_scope = libab_tree_has_scope(tree->variant) || force_scope;
     
     if(needs_scope) {
-        result = _make_scope(&new_scope, scope);
+        result = libab_create_table(&new_scope, scope);
         scope = &new_scope;
     }
 
@@ -99,7 +71,7 @@ libab_result libab_interpreter_run(libab_interpreter* intr,
     libab_result result = _interpreter_init(&state, intr);
 
     if(result == LIBAB_SUCCESS) {
-        result = _interpreter_run(&state, tree, into, NULL, 1);
+        result = _interpreter_run(&state, tree, into, &intr->base_table, 1);
         if(result != LIBAB_SUCCESS) {
             _interpreter_free(&state);
         }
@@ -111,5 +83,5 @@ libab_result libab_interpreter_run(libab_interpreter* intr,
 }
 
 void libab_interpreter_free(libab_interpreter* intr) {
-    
+    libab_ref_free(&intr->base_table);
 }
