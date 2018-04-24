@@ -5,7 +5,7 @@
 
 void libab_table_init(libab_table* table) {
     libab_trie_init(&table->trie);
-    table->parent = NULL;
+    libab_ref_null(&table->parent);
 }
 libab_table_entry* libab_table_search_filter(libab_table* table,
                                              const char* string, void* data,
@@ -14,7 +14,7 @@ libab_table_entry* libab_table_search_filter(libab_table* table,
     do {
         const ll* matches = libab_trie_get(&table->trie, string);
         to_return = ll_find(matches, data, compare);
-        table = table->parent;
+        table = libab_ref_get(&table->parent);
     } while (table && to_return == NULL);
     return to_return;
 }
@@ -22,7 +22,7 @@ libab_table_entry* libab_table_search(libab_table* table, const char* string) {
     void* to_return = NULL;
     do {
         to_return = ll_head(libab_trie_get(&table->trie, string));
-        table = table->parent;
+        table = libab_ref_get(&table->parent);
     } while (table && to_return == NULL);
     return to_return;
 }
@@ -86,10 +86,15 @@ int _table_foreach_entry_free(void* data, va_list args) {
     free(data);
     return 0;
 }
+void libab_table_set_parent(libab_table* table, libab_ref* parent) {
+    libab_ref_free(&table->parent);
+    libab_ref_copy(parent, &table->parent);
+}
 void libab_table_free(libab_table* table) {
     libab_trie_foreach(&table->trie, NULL, compare_always,
                        _table_foreach_entry_free);
     libab_trie_free(&table->trie);
+    libab_ref_free(&table->parent);
 }
 void libab_table_entry_free(libab_table_entry* entry) {
     if (entry->variant == ENTRY_OP) {

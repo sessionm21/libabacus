@@ -5,6 +5,7 @@
 #include "custom.h"
 #include "result.h"
 #include "trie.h"
+#include "refcount.h"
 
 /**
  * A struct that represents a structure
@@ -17,7 +18,7 @@ struct libab_table_s {
     /**
      * The "parent" scope of this table.
      */
-    struct libab_table_s* parent;
+    libab_ref parent;
     /**
      * The hash table used to store the data.
      */
@@ -119,6 +120,12 @@ libab_basetype* libab_table_search_basetype(libab_table* table,
  */
 libab_result libab_table_put(libab_table* table, const char* string,
                              libab_table_entry* entry);
+/**
+ * Sets the parent of the given table.
+ * @param table the table whose parent to set.
+ * @param parent a valid reference to a parent table.
+ */
+void libab_table_set_parent(libab_table* table, libab_ref* parent);
 /**
  * Frees the resources allocated by the
  * given table.
