@@ -2,18 +2,22 @@
 #include "util.h"
 
 void libab_interpreter_init(libab_interpreter* intr,
-                            libab_ref* table) {
+                            libab_ref* table,
+                            libab_impl* impl) {
     libab_ref_copy(table, &intr->base_table);
+    intr->impl = impl;
 }
 
 struct interpreter_state {
     libab_ref num_ref;
+    libab_impl* impl;
 };
 
 libab_result _interpreter_init(struct interpreter_state* state, libab_interpreter* intr) {
     libab_result result = LIBAB_SUCCESS;
     libab_basetype* num_type;
     libab_ref_null(&state->num_ref);
+    state->impl = intr->impl;
 
     num_type = libab_table_search_basetype(libab_ref_get(&intr->base_table), "num");
     if(num_type != NULL) {
