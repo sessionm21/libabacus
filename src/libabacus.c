@@ -12,7 +12,7 @@ libab_result libab_init(libab* ab) {
 
     if(result == LIBAB_SUCCESS) {
         libab_parser_init(&ab->parser, &ab->table);
-        libab_interpreter_init(&ab->intr, &ab->table, &ab->impl);
+        libab_interpreter_init(&ab->intr, &ab->table);
         result = libab_lexer_init(&ab->lexer);
     }
 

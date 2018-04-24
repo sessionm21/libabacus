@@ -8,7 +8,6 @@
 #include "interpreter.h"
 #include "result.h"
 #include "table.h"
-#include "number.h"
 
 /**
  * The main struct of libabacus,
@@ -36,10 +35,6 @@ struct libab_s {
      * things like functions and operators.
      */
     libab_ref table;
-    /**
-     * The number implementation used by this instance.
-     */
-    libab_number_impl impl;
 };
 
 typedef struct libab_s libab;
