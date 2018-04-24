@@ -55,6 +55,7 @@ libab_result _interpreter_run(struct interpreter_state* state,
         while(result == LIBAB_SUCCESS && index < tree->children.size) {
             libab_ref_free(into);
             result = _interpreter_run(state, vec_index(&tree->children, index), into, scope, 0);
+            index++;
         }
     }
 
@@ -72,9 +73,7 @@ libab_result libab_interpreter_run(libab_interpreter* intr,
 
     if(result == LIBAB_SUCCESS) {
         result = _interpreter_run(&state, tree, into, &intr->base_table, 1);
-        if(result != LIBAB_SUCCESS) {
-            _interpreter_free(&state);
-        }
+        _interpreter_free(&state);
     } else {
         libab_ref_null(into);
     }
