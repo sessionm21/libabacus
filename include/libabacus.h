@@ -5,6 +5,7 @@
 #include "ht.h"
 #include "lexer.h"
 #include "parser.h"
+#include "interpreter.h"
 #include "result.h"
 #include "table.h"
 #include "number.h"
@@ -25,6 +26,11 @@ struct libab_s {
      * tokens to a tree.
      */
     libab_parser parser;
+    /**
+     * The interpreter used
+     * to run a tree.
+     */
+    libab_interpreter intr;
     /**
      * The table used to store top-level
      * things like functions and operators.

@@ -12,6 +12,7 @@ libab_result libab_init(libab* ab) {
 
     if(result == LIBAB_SUCCESS) {
         libab_parser_init(&ab->parser, &ab->table);
+        libab_interpreter_init(&ab->intr, &ab->table, &ab->impl);
         result = libab_lexer_init(&ab->lexer);
     }
 
@@ -164,5 +165,6 @@ libab_result libab_create_type(libab* ab, libab_ref* into, const char* type) {
 libab_result libab_free(libab* ab) {
     libab_ref_free(&ab->table);
     libab_parser_free(&ab->parser);
+    libab_interpreter_free(&ab->intr);
     return libab_lexer_free(&ab->lexer);
 }
