@@ -1,4 +1,5 @@
 #include "util.h"
+#include "value.h"
 #include <stdlib.h>
 #include <stdarg.h>
 
@@ -141,6 +142,31 @@ libab_result libab_create_table(libab_ref* into, libab_ref* parent) {
         }
     } else {
         result = LIBAB_MALLOC; 
+    }
+
+    if(result != LIBAB_SUCCESS) {
+        libab_ref_null(into);
+    }
+    return result;
+}
+
+void _free_value(void* value) {
+    libab_value_free(value);
+    free(value);
+}
+
+libab_result libab_create_value(libab_ref* into, void* data, libab_ref* type) {
+    libab_value* value;
+    libab_result result = LIBAB_SUCCESS;
+    if((value = malloc(sizeof(*value)))) {
+        libab_value_init(value, data, type);
+        result = libab_ref_new(into, value, _free_value);
+
+        if(result != LIBAB_SUCCESS) {
+            _free_value(value);
+        }
+    } else {
+        result = LIBAB_MALLOC;
     }
 
     if(result != LIBAB_SUCCESS) {

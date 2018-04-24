@@ -72,5 +72,13 @@ libab_result libab_instantiate_basetype(libab_basetype* to_instantiate,
  * @return the result of the instantiation.
  */
 libab_result libab_create_table(libab_ref* into, libab_ref* parent);
+/**
+ * Allocates a new reference counted value with the given type and data.
+ * @param into the reference to store the allocated data into.
+ * @param data the type-specific data this value holds.
+ * @param type the type to give the value.
+ * @return the result of necessary allocations.
+ */
+libab_result libab_create_value(libab_ref* into, void* data, libab_ref* type);
 
 #endif
