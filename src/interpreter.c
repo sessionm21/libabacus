@@ -36,6 +36,28 @@ void _interpreter_free(struct interpreter_state* state) {
     libab_ref_free(&state->num_ref);
 }
 
+libab_result _interpreter_create_num_val(struct interpreter_state* state,
+                                         libab_ref* into, const char* from) {
+    void* data;
+    libab_result result = LIBAB_SUCCESS;
+
+    if((data = state->impl->parse_num(from))) {
+        result = libab_create_value(into, data, &state->num_ref);
+
+        if(result != LIBAB_SUCCESS) {
+            ((libab_parsetype*) libab_ref_get(&state->num_ref))->data_u.base->free_function(data);
+        }
+    } else {
+        result = LIBAB_MALLOC;
+    }
+
+    if(result != LIBAB_SUCCESS) {
+        libab_ref_null(into);
+    }
+
+    return result;
+}
+
 libab_result _interpreter_run(struct interpreter_state* state,
                                     libab_tree* tree, libab_ref* into, 
                                     libab_ref* scope, int force_scope) {
@@ -58,6 +80,10 @@ libab_result _interpreter_run(struct interpreter_state* state,
             result = _interpreter_run(state, vec_index(&tree->children, index), into, scope, 0);
             index++;
         }
+    } else if(tree->variant == TREE_NUM) {
+        result = _interpreter_create_num_val(state, into, tree->string_value);
+    } else if(tree->variant == TREE_VOID) {
+        libab_ref_null(into);
     }
 
     if(needs_scope) {
