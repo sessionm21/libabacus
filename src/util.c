@@ -200,3 +200,25 @@ libab_result libab_create_function_list(libab_ref* into, libab_ref* type) {
 
     return result;
 }
+
+libab_result libab_put_table_value(libab_table* table, 
+                                      const char* key, libab_ref* value) {
+    libab_table_entry* entry;
+    libab_result result = LIBAB_SUCCESS;
+    if((entry = malloc(sizeof(*entry)))) {
+        entry->variant = ENTRY_VALUE;
+        libab_ref_copy(value, &entry->data_u.value);
+    } else {
+        result = LIBAB_MALLOC;
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = libab_table_put(table, key, entry);
+        if(result != LIBAB_SUCCESS) {
+            libab_ref_free(&entry->data_u.value);
+            free(entry);
+        }
+    }
+
+    return result;
+}

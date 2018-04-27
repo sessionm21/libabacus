@@ -88,5 +88,14 @@ libab_result libab_create_value(libab_ref* into, void* data, libab_ref* type);
  * @return the result of the allocations.
  */
 libab_result libab_create_function_list(libab_ref* into, libab_ref* type);
+/**
+ * Creates a new table entry that holds the given value.
+ * @param table the table to store the entry into.
+ * @param key the key under which to store the value.
+ * @param value the value to store into the table.
+ * @param result the result of the operation.
+ */
+libab_result libab_put_table_value(libab_table* table, 
+                                      const char* key, libab_ref* value);
 
 #endif
