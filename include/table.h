@@ -52,6 +52,7 @@ struct libab_table_entry_s {
         libab_operator op;
         libab_function function;
         libab_basetype* basetype;
+        libab_ref value;
     } data_u;
 };
 
@@ -111,6 +112,15 @@ libab_function* libab_table_search_function(libab_table* table,
  */
 libab_basetype* libab_table_search_basetype(libab_table* table,
                                             const char* string);
+/**
+ * Searches for the given value in the table.
+ * @param table the table to search.
+ * @param string the table entry key.
+ * @param ref the reference to store the result into.
+ */
+void libab_table_search_value(libab_table* table,
+                                          const char* string,
+                                          libab_ref* ref);
 /**
  * Stores the given entry in the table under the given key.
  * @param table the table to store the entry into.
