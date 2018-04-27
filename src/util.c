@@ -174,3 +174,29 @@ libab_result libab_create_value(libab_ref* into, void* data, libab_ref* type) {
     }
     return result;
 }
+
+libab_result libab_create_function_list(libab_ref* into, libab_ref* type) {
+    libab_function_list* list;
+    libab_result result = LIBAB_SUCCESS;
+
+    if((list = malloc(sizeof(*list)))) {
+        result = libab_function_list_init(list);
+    } else {
+        result = LIBAB_MALLOC;
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = libab_create_value(into, list, type);
+        if(result != LIBAB_SUCCESS) {
+            libab_function_list_free(list);
+            libab_ref_free(into);
+        }
+    }
+
+    if(result != LIBAB_SUCCESS) {
+        free(list);
+        libab_ref_null(into);
+    }
+
+    return result;
+}

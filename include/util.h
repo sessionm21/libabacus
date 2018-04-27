@@ -6,6 +6,7 @@
 #include "parsetype.h"
 #include "result.h"
 #include "table.h"
+#include "function_list.h"
 #include <string.h>
 
 /**
@@ -80,5 +81,12 @@ libab_result libab_create_table(libab_ref* into, libab_ref* parent);
  * @return the result of necessary allocations.
  */
 libab_result libab_create_value(libab_ref* into, void* data, libab_ref* type);
+/**
+ * Creates a function list object, storing it in to the given reference.
+ * @param into the reference to store into.
+ * @param the function_list type.
+ * @return the result of the allocations.
+ */
+libab_result libab_create_function_list(libab_ref* into, libab_ref* type);
 
 #endif
