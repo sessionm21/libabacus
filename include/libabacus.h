@@ -31,6 +31,7 @@ struct libab_s {
      * to run a tree.
      */
     libab_interpreter intr;
+
     /**
      * The table used to store top-level
      * things like functions and operators.
@@ -41,6 +42,22 @@ struct libab_s {
      * The allocator used to construct number instances.
      */
     libab_impl impl;
+
+    /**
+     * The number type instance.
+     */
+    libab_ref type_num;
+    /**
+     * The function list type instance.
+     */
+    libab_ref type_function_list;
+
+    /**
+     * Internal; the number basetype. This cannot be a static
+     * variable like other built-in types because it has a free function
+     * specified by the user.
+     */
+    libab_basetype basetype_num;
 };
 
 typedef struct libab_s libab;
@@ -49,9 +66,12 @@ typedef struct libab_s libab;
  * Initializes the libabacus struct as well
  * as all its internal structures such as the lexer.
  * @param ab the libabacus instance used to keep state.
+ * @param parse_function function used to parse a number.
+ * @param free_function function used to free the parsed number.
  * @return the result of the initialization.
  */
-libab_result libab_init(libab* ab);
+libab_result libab_init(libab* ab, void* (*parse_function)(const char*),
+                        void (*free_function)(void*));
 /**
  * Registers an operator with libabacus.
  * @param ab the libabacus instance to reigster the operator with.
