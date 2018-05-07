@@ -26,7 +26,7 @@ libab_result libab_init(libab* ab, void* (*parse_function)(const char*),
     if(result == LIBAB_SUCCESS) {
         parser_initialized = 1;
         libab_parser_init(&ab->parser, &ab->table);
-        libab_interpreter_init(&ab->intr, &ab->table, &ab->impl);
+        libab_interpreter_init(&ab->intr, &ab->table, &ab->type_num, &ab->impl);
         result = libab_lexer_init(&ab->lexer);
     }
 

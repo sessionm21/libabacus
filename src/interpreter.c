@@ -3,37 +3,25 @@
 
 void libab_interpreter_init(libab_interpreter* intr,
                             libab_ref* table,
+                            libab_ref* type_num,
                             libab_impl* impl) {
+    libab_ref_copy(type_num, &intr->type_num);
     libab_ref_copy(table, &intr->base_table);
     intr->impl = impl;
 }
 
 struct interpreter_state {
-    libab_ref num_ref;
+    libab_ref type_num;
     libab_impl* impl;
 };
 
-libab_result _interpreter_init(struct interpreter_state* state, libab_interpreter* intr) {
-    libab_result result = LIBAB_SUCCESS;
-    libab_basetype* num_type;
-    libab_ref_null(&state->num_ref);
+void _interpreter_init(struct interpreter_state* state, libab_interpreter* intr) {
     state->impl = intr->impl;
-
-    num_type = libab_table_search_basetype(libab_ref_get(&intr->base_table), "num");
-    if(num_type != NULL) {
-        libab_ref_free(&state->num_ref);
-        result = libab_instantiate_basetype(num_type, &state->num_ref, 0);
-    }
-
-    if(result != LIBAB_SUCCESS) {
-        libab_ref_free(&state->num_ref);
-    }
-
-    return result;
+    libab_ref_copy(&intr->type_num, &state->type_num);
 }
 
 void _interpreter_free(struct interpreter_state* state) {
-    libab_ref_free(&state->num_ref);
+    libab_ref_free(&state->type_num);
 }
 
 libab_result _interpreter_create_num_val(struct interpreter_state* state,
@@ -42,10 +30,10 @@ libab_result _interpreter_create_num_val(struct interpreter_state* state,
     libab_result result = LIBAB_SUCCESS;
 
     if((data = state->impl->parse_num(from))) {
-        result = libab_create_value(into, data, &state->num_ref);
+        result = libab_create_value(into, data, &state->type_num);
 
         if(result != LIBAB_SUCCESS) {
-            ((libab_parsetype*) libab_ref_get(&state->num_ref))->data_u.base->free_function(data);
+            ((libab_parsetype*) libab_ref_get(&state->type_num))->data_u.base->free_function(data);
         }
     } else {
         result = LIBAB_MALLOC;
@@ -96,18 +84,16 @@ libab_result _interpreter_run(struct interpreter_state* state,
 libab_result libab_interpreter_run(libab_interpreter* intr,
                                    libab_tree* tree, libab_ref* into) {
     struct interpreter_state state;
-    libab_result result = _interpreter_init(&state, intr);
+    libab_result result;
 
-    if(result == LIBAB_SUCCESS) {
-        result = _interpreter_run(&state, tree, into, &intr->base_table, 1);
-        _interpreter_free(&state);
-    } else {
-        libab_ref_null(into);
-    }
+    _interpreter_init(&state, intr);
+    result = _interpreter_run(&state, tree, into, &intr->base_table, 1);
+    _interpreter_free(&state);
 
     return result;
 }
 
 void libab_interpreter_free(libab_interpreter* intr) {
     libab_ref_free(&intr->base_table);
+    libab_ref_free(&intr->type_num);
 }
