@@ -78,12 +78,12 @@ libab_result _register_operator(libab* ab, const char* op,
     char op_buffer[8];
     libab_result result = LIBAB_SUCCESS;
     libab_table_entry* new_entry;
+    libab_operator* new_operator = NULL;
     if ((new_entry = malloc(sizeof(*new_entry)))) {
         new_entry->variant = ENTRY_OP;
-        new_entry->data_u.op.precedence = precedence;
-        new_entry->data_u.op.associativity = associativity;
-        new_entry->data_u.op.type = token_type;
-        _initialize_behavior(&(new_entry->data_u.op.behavior), type, func);
+        new_operator = &(new_entry->data_u.op);
+        libab_operator_init(new_operator, token_type,
+                            precedence, associativity, type, func);
     } else {
         result = LIBAB_MALLOC;
     }
@@ -99,8 +99,8 @@ libab_result _register_operator(libab* ab, const char* op,
     }
 
     if (result != LIBAB_SUCCESS) {
-        if (new_entry)
-            libab_ref_free(&new_entry->data_u.op.behavior.type);
+        if (new_operator)
+            libab_operator_free(new_operator);
         eval_config_remove(&ab->lexer.config, op, TOKEN_OP);
         free(new_entry);
     }
@@ -131,11 +131,12 @@ libab_result libab_register_operator_postfix(libab* ab, const char* op,
 libab_result libab_register_function(libab* ab, const char* name,
                                      libab_ref* type, libab_function_ptr func) {
     libab_result result = LIBAB_SUCCESS;
+    libab_function* new_function = NULL;
     libab_table_entry* new_entry;
     if ((new_entry = malloc(sizeof(*new_entry)))) {
         new_entry->variant = ENTRY_FUN;
-        _initialize_behavior(&(new_entry->data_u.function.behavior), type,
-                             func);
+        new_function = &new_entry->data_u.function;
+        result = libab_function_init_internal(new_function, type, func);
     } else {
         result = LIBAB_MALLOC;
     }
@@ -145,8 +146,8 @@ libab_result libab_register_function(libab* ab, const char* name,
     }
 
     if (result != LIBAB_SUCCESS) {
-        if (new_entry)
-            libab_ref_free(&new_entry->data_u.function.behavior.type);
+        if(new_function)
+            libab_function_free(new_function);
         free(new_entry);
     }
 

@@ -2,6 +2,7 @@
 #define LIBABACUS_CUSTOM_H
 
 #include "parsetype.h"
+#include "tree.h"
 
 /**
  * A function pointer that is called
@@ -40,7 +41,7 @@ struct libab_behavior_impl_s {
         /**
          * The tree-based implementation.
          */
-        libab_ref tree;
+        libab_tree* tree;
     } data_u;
 };
 
@@ -104,15 +105,62 @@ typedef struct libab_operator_s libab_operator;
 typedef struct libab_function_s libab_function;
 
 /**
+ * Initializes a behavior that uses an internal function.
+ * @param behavior the behavior to initialize.
+ * @param type the type of the behavior.
+ * @param func the function that this behavior calls.
+ */
+void libab_behavior_init_internal(libab_behavior* behavior, 
+                                  libab_ref* type, libab_function_ptr func);
+/**
+ * Initializes a behavior that uses a tree that has been
+ * parsed from the user.
+ * @param behavior the behavior to initialize.
+ * @param type the type of the behavior.
+ * @param tree the tree that this behavior uses.
+ */
+void libab_behavior_init_tree(libab_behavior* behavior, libab_ref* type,
+                                  libab_tree* tree);
+/**
  * Frees the given behavior.
  * @param behavior the behavior to free.
  */
 void libab_behavior_free(libab_behavior* behavior);
 /**
+ * Initializes an operator with the given info.
+ * @param op the operator to initialize.
+ * @param variant the variant of the operator (infix, prefix, etc)
+ * @param precedence the precedence of the operator.
+ * @param associativity the associativity (left = -1, right = 1) of the operator.
+ * @param type the type of the operator.
+ * @param func the function used to implement the operator.
+ */
+void libab_operator_init(libab_operator* op, libab_operator_variant variant, 
+                         int precedence, int associativity, libab_ref* type,
+                        libab_function_ptr func);
+/**
  * Frees the given operator.
  * @param op the operator to free.
  */
 void libab_operator_free(libab_operator* op);
+/**
+ * Initializes a function with the given internal behavior.
+ * @param function the function to initialize.
+ * @param type the type of the function.
+ * @param fun the function implementation.
+ * @return the result of the initialization.
+ */
+libab_result libab_function_init_internal(libab_function* function, libab_ref* type,
+                                          libab_function_ptr fun);
+/**
+ * Initializes a function with the given tree behavior.
+ * @param function the function to initialize.
+ * @param type the type of the function.
+ * @param tree the tree that represents the function's behavior.
+ * @return the result of the initialization.
+ */
+libab_result libab_function_init_tree(libab_function* function, libab_ref* type,
+                                      libab_tree* tree);
 /**
  * Frees the given function.
  * @param fun the function to free.
