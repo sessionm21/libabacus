@@ -54,6 +54,14 @@ typedef struct libab_ref_trie_s libab_ref_trie;
  */
 void libab_ref_trie_init(libab_ref_trie* trie);
 /**
+ * Initializes a new trie with a shallow copy of another.
+ * @param trie the trie to initialize.
+ * @param copy_of the trie to copy.
+ * @return the result of the initialization.
+ */
+libab_result libab_ref_trie_init_copy(libab_ref_trie* trie, 
+                                      const libab_ref_trie* copy_of);
+/**
  * Stores a reference counted value into the trie.
  * This releases the reference for the given key, if one
  * already exists. This increments the refcoutn.
