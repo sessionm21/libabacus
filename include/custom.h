@@ -3,6 +3,7 @@
 
 #include "parsetype.h"
 #include "tree.h"
+#include "ref_trie.h"
 
 /**
  * A function pointer that is called
@@ -58,6 +59,10 @@ struct libab_behavior_s {
      * The type of the function.
      */
     libab_ref type;
+    /**
+     * The type parameters for the given behavior.
+     */
+    libab_ref_trie type_params;
 };
 /**
  * A struct that holds informatiion

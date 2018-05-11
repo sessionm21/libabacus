@@ -5,6 +5,7 @@ void libab_behavior_init_internal(libab_behavior* behavior, libab_ref* type,
     behavior->impl.variant = BIMPL_INTERNAL;
     behavior->impl.data_u.internal = func;
     libab_ref_copy(type, &behavior->type);
+    libab_ref_trie_init(&behavior->type_params);
 }
 
 void libab_behavior_init_tree(libab_behavior* behavior, libab_ref* type,
@@ -12,10 +13,12 @@ void libab_behavior_init_tree(libab_behavior* behavior, libab_ref* type,
     behavior->impl.variant = BIMPL_TREE;
     behavior->impl.data_u.tree = tree;
     libab_ref_copy(type, &behavior->type);
+    libab_ref_trie_init(&behavior->type_params);
 }
 
 void libab_behavior_free(libab_behavior* behavior) {
     libab_ref_free(&behavior->type);
+    libab_ref_trie_free(&behavior->type_params);
     if (behavior->impl.variant == BIMPL_TREE) {
         libab_tree_free_recursive(behavior->impl.data_u.tree);
     }
