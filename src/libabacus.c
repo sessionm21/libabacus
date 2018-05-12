@@ -258,6 +258,18 @@ libab_result libab_create_type(libab* ab, libab_ref* into, const char* type) {
     return result;
 }
 
+libab_basetype* libab_get_basetype_num(libab* ab) {
+    return &ab->basetype_num;
+}
+
+libab_basetype* libab_get_basetype_function(libab* ab) {
+    return &_basetype_function;
+}
+
+libab_basetype* libab_get_basetype_function_list(libab* ab) {
+    return &_basetype_function_list;
+}
+
 libab_result libab_free(libab* ab) {
     libab_ref_free(&ab->table);
     libab_ref_free(&ab->type_num);

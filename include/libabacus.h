@@ -139,6 +139,26 @@ libab_result libab_register_basetype(libab* ab, const char* name,
  * @return the result of the operation.
  */
 libab_result libab_create_type(libab* ab, libab_ref* into, const char* type);
+
+/**
+ * Finds and returns the built-in libabacus number type.
+ * @param ab the ab instance for which to return a type.
+ * @return the num basetype.
+ */
+libab_basetype* libab_get_basetype_num(libab* ab);
+/**
+ * Finds and returns the built-in libabacus function type.
+ * @param ab the ab instance for which to return a type.
+ * @return the function basetype.
+ */
+libab_basetype* libab_get_basetype_function(libab* ab);
+/**
+ * Finds and returns the built-in libabacus function list type.
+ * @param ab the ab instance for which to return a type.
+ * @return the function list basetype.
+ */
+libab_basetype* libab_get_basetype_function_list(libab* ab);
+
 /**
  * Releases all the resources allocated by libabacus.
  * @param ab the libabacus instance to release.
