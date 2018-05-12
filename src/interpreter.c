@@ -1,27 +1,22 @@
-#include "interpreter.h"
+#include "libabacus.h"
 #include "util.h"
 
-void libab_interpreter_init(libab_interpreter* intr,
-                            libab_ref* table,
-                            libab_ref* type_num,
-                            libab_impl* impl) {
-    libab_ref_copy(type_num, &intr->type_num);
-    libab_ref_copy(table, &intr->base_table);
-    intr->impl = impl;
+void libab_interpreter_init(libab_interpreter* intr, libab* ab) {
+    intr->ab = ab;
 }
 
 struct interpreter_state {
-    libab_ref type_num;
-    libab_impl* impl;
+    libab* ab;
+    libab_table* base_table;
 };
 
 void _interpreter_init(struct interpreter_state* state, libab_interpreter* intr) {
-    state->impl = intr->impl;
-    libab_ref_copy(&intr->type_num, &state->type_num);
+    state->ab = intr->ab;
+    state->base_table = libab_ref_get(&intr->ab->table);
 }
 
 void _interpreter_free(struct interpreter_state* state) {
-    libab_ref_free(&state->type_num);
+
 }
 
 libab_result _interpreter_create_num_val(struct interpreter_state* state,
@@ -29,11 +24,11 @@ libab_result _interpreter_create_num_val(struct interpreter_state* state,
     void* data;
     libab_result result = LIBAB_SUCCESS;
 
-    if((data = state->impl->parse_num(from))) {
-        result = libab_create_value(into, data, &state->type_num);
+    if((data = state->ab->impl.parse_num(from))) {
+        result = libab_create_value(into, data, &state->ab->type_num);
 
         if(result != LIBAB_SUCCESS) {
-            ((libab_parsetype*) libab_ref_get(&state->type_num))->data_u.base->free_function(data);
+            ((libab_parsetype*) libab_ref_get(&state->ab->type_num))->data_u.base->free_function(data);
         }
     } else {
         result = LIBAB_MALLOC;
@@ -87,13 +82,12 @@ libab_result libab_interpreter_run(libab_interpreter* intr,
     libab_result result;
 
     _interpreter_init(&state, intr);
-    result = _interpreter_run(&state, tree, into, &intr->base_table, 1);
+    result = _interpreter_run(&state, tree, into, &state.ab->table, 1);
     _interpreter_free(&state);
 
     return result;
 }
 
 void libab_interpreter_free(libab_interpreter* intr) {
-    libab_ref_free(&intr->base_table);
-    libab_ref_free(&intr->type_num);
+
 }

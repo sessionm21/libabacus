@@ -1,11 +1,11 @@
 #ifndef LIBABACUS_H
 #define LIBABACUS_H
 
+#include "interpreter.h"
 #include "custom.h"
 #include "ht.h"
 #include "lexer.h"
 #include "parser.h"
-#include "interpreter.h"
 #include "result.h"
 #include "table.h"
 #include "impl.h"

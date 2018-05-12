@@ -6,13 +6,15 @@
 #include "table.h"
 #include "tree.h"
 
+struct libab_s;
+
 /**
  * The parser that is used by libabacus
  * to store information for converting
  * tokens into trees.
  */
 struct libab_parser_s {
-    libab_ref base_table;
+    struct libab_s* ab;
 };
 
 typedef struct libab_parser_s libab_parser;
@@ -22,7 +24,7 @@ typedef struct libab_parser_s libab_parser;
  * @param parser the parser to intialize.
  * @param table the table of "reserved" entries like operators.
  */
-void libab_parser_init(libab_parser* parser, libab_ref* table);
+void libab_parser_init(libab_parser* parser, struct libab_s* ab);
 /**
  * Parses the given list of tokens into the given tree pointer.
  * @param parser the parser to use for parsing text.
