@@ -264,16 +264,16 @@ libab_result libab_create_function_list(libab_ref* into, libab_ref* type) {
     }
 
     if(result == LIBAB_SUCCESS) {
-        result = libab_create_value_raw(into, list, type);
+        result = libab_ref_new(into, list, 
+                ((libab_parsetype*) libab_ref_get(type))->data_u.base->free_function);
         if(result != LIBAB_SUCCESS) {
             libab_function_list_free(list);
-            libab_ref_free(into);
         }
     }
 
     if(result != LIBAB_SUCCESS) {
-        free(list);
         libab_ref_null(into);
+        free(list);
     }
 
     return result;
