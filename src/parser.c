@@ -1186,4 +1186,4 @@ libab_result libab_parser_parse_type(libab_parser* parser, ll* tokens,
 
     return _parse_type(&state, store_into);
 }
-void libab_parser_free(libab_parser* parser) { libab_ref_free(&parser->ab->table); }
+void libab_parser_free(libab_parser* parser) {}
