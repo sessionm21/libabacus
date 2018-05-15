@@ -57,6 +57,13 @@ void libab_ref_copy(const libab_ref* ref, libab_ref* into) {
     memcpy(into, ref, sizeof(*ref));
 }
 
+void libab_ref_swap(libab_ref* left, libab_ref* right) {
+    libab_ref tmp;
+    tmp = *left;
+    *left = *right;
+    *right = tmp;
+}
+
 void libab_ref_data_free(void* data) { free(data); }
 
 void* libab_ref_get(const libab_ref* ref) {

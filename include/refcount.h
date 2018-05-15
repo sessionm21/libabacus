@@ -84,6 +84,10 @@ void libab_ref_free(libab_ref* ref);
  */
 void libab_ref_copy(const libab_ref* ref, libab_ref* into);
 /**
+ * Swaps the contents of two references.
+ */
+void libab_ref_swap(libab_ref* left, libab_ref* right);
+/**
  * Function that can be passed in to refcount to simply use free
  * when the refcount reaches 0.
  */
