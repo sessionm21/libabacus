@@ -155,11 +155,11 @@ void _free_value(void* value) {
     free(value);
 }
 
-libab_result libab_create_value(libab_ref* into, void* data, libab_ref* type) {
+libab_result libab_create_value_ref(libab_ref* into, libab_ref* data, libab_ref* type) {
     libab_value* value;
     libab_result result = LIBAB_SUCCESS;
     if((value = malloc(sizeof(*value)))) {
-        libab_value_init(value, data, type);
+        libab_value_init_ref(value, data, type);
         result = libab_ref_new(into, value, _free_value);
 
         if(result != LIBAB_SUCCESS) {
@@ -175,6 +175,31 @@ libab_result libab_create_value(libab_ref* into, void* data, libab_ref* type) {
     return result;
 }
 
+libab_result libab_create_value_raw(libab_ref* into, void* data, libab_ref* type) {
+    libab_value* value;
+    libab_result result = LIBAB_SUCCESS;
+
+    if((value = malloc(sizeof(*value)))) {
+        result = libab_value_init_raw(value, data, type);
+    } else {
+        result = LIBAB_MALLOC;
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = libab_ref_new(into, value, _free_value);
+        if(result != LIBAB_SUCCESS) {
+            libab_value_free(value);
+        }
+    }
+
+    if(result != LIBAB_SUCCESS) {
+        libab_ref_null(into);
+        free(value);
+    }
+
+    return result;
+}
+
 libab_result libab_create_function_list(libab_ref* into, libab_ref* type) {
     libab_function_list* list;
     libab_result result = LIBAB_SUCCESS;
@@ -186,7 +211,7 @@ libab_result libab_create_function_list(libab_ref* into, libab_ref* type) {
     }
 
     if(result == LIBAB_SUCCESS) {
-        result = libab_create_value(into, list, type);
+        result = libab_create_value_raw(into, list, type);
         if(result != LIBAB_SUCCESS) {
             libab_function_list_free(list);
             libab_ref_free(into);

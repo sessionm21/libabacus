@@ -25,7 +25,7 @@ libab_result _interpreter_create_num_val(struct interpreter_state* state,
     libab_result result = LIBAB_SUCCESS;
 
     if((data = state->ab->impl.parse_num(from))) {
-        result = libab_create_value(into, data, &state->ab->type_num);
+        result = libab_create_value_raw(into, data, &state->ab->type_num);
 
         if(result != LIBAB_SUCCESS) {
             ((libab_parsetype*) libab_ref_get(&state->ab->type_num))->data_u.base->free_function(data);
