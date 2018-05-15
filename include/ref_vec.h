@@ -57,9 +57,10 @@ libab_result libab_ref_vec_insert_value(libab_ref_vec* vec, void* data,
  * doesn't exist.
  * @param vec the vector to get a value from.
  * @param index the index to look at.
+ * @param into the reference to store the result value into.
  * @return the reference stored at the given index.
  */
-const libab_ref* libab_ref_vec_index(libab_ref_vec* vec, size_t index);
+void libab_ref_vec_index(libab_ref_vec* vec, size_t index, libab_ref* into);
 /**
  * Releases the memory allocated by the vector.
  * The references stored in the vector have their refcount decreased.

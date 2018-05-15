@@ -50,12 +50,12 @@ libab_result libab_ref_vec_insert_value(libab_ref_vec* vec, void* data,
     return result;
 }
 
-const libab_ref* libab_ref_vec_index(libab_ref_vec* vec, size_t index) {
-    const libab_ref* to_return = NULL;
+void libab_ref_vec_index(libab_ref_vec* vec, size_t index, libab_ref* into) {
     if (index < vec->size) {
-        to_return = &vec->data[index];
+        libab_ref_copy(&vec->data[index], into);
+    } else {
+        libab_ref_null(into);
     }
-    return to_return;
 }
 
 void libab_ref_vec_free(libab_ref_vec* vec) {

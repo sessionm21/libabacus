@@ -2,7 +2,6 @@
 #include <stdlib.h>
 
 void libab_ref_trie_init(libab_ref_trie* trie) {
-    libab_ref_null(&trie->null_ref);
     trie->head = NULL;
 }
 
@@ -116,8 +115,8 @@ libab_result libab_ref_trie_put(libab_ref_trie* trie, const char* key,
     return result;
 }
 
-const libab_ref* libab_ref_trie_get(const libab_ref_trie* trie,
-                                    const char* key) {
+void libab_ref_trie_get(const libab_ref_trie* trie,
+                                    const char* key, libab_ref* into) {
     libab_ref_trie_node* current = trie->head;
     while (current && *key) {
         while (current && current->key != *key) {
@@ -130,13 +129,13 @@ const libab_ref* libab_ref_trie_get(const libab_ref_trie* trie,
             current = current->child;
             key++;
         } else {
-            return &current->ref;
+            libab_ref_copy(&current->ref, into);
+            return;
         }
     }
-    return &trie->null_ref;
+    libab_ref_null(into);
 }
 
 void libab_ref_trie_free(libab_ref_trie* trie) {
     _libab_ref_trie_free(trie->head);
-    libab_ref_free(&trie->null_ref);
 }

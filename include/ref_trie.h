@@ -38,11 +38,6 @@ struct libab_ref_trie_s {
      * The first node in the trie.
      */
     struct libab_ref_trie_node_s* head;
-    /**
-     * Reference (initialized to NULL) returned
-     * if no key is found.
-     */
-    libab_ref null_ref;
 };
 
 typedef struct libab_ref_trie_node_s libab_ref_trie_node;
@@ -78,8 +73,8 @@ libab_result libab_ref_trie_put(libab_ref_trie* trie, const char* key,
  * @param key the key to look under.
  * @return a reference stored under the given key. This can be a NULL reference.
  */
-const libab_ref* libab_ref_trie_get(const libab_ref_trie* trie,
-                                    const char* key);
+void libab_ref_trie_get(const libab_ref_trie* trie,
+                                    const char* key, libab_ref* into);
 /**
  * Releases the trie, decrementing the refcounts of all
  * the values stored inside.
