@@ -53,18 +53,6 @@ libab_operator* libab_table_search_operator(libab_table* table,
     return entry ? &entry->data_u.op : NULL;
 }
 
-int _table_compare_function(const void* left, const void* right) {
-    const libab_table_entry* entry = right;
-    return entry->variant == ENTRY_FUN;
-}
-
-libab_function* libab_table_search_function(libab_table* table,
-                                            const char* string) {
-    libab_table_entry* entry =
-        libab_table_search_filter(table, string, NULL, _table_compare_function);
-    return entry ? &entry->data_u.function : NULL;
-}
-
 int _table_compare_basetype(const void* left, const void* right) {
     const libab_table_entry* entry = right;
     return entry->variant == ENTRY_BASETYPE;
@@ -116,8 +104,6 @@ void libab_table_free(libab_table* table) {
 void libab_table_entry_free(libab_table_entry* entry) {
     if (entry->variant == ENTRY_OP) {
         libab_operator_free(&entry->data_u.op);
-    } else if (entry->variant == ENTRY_FUN) {
-        libab_function_free(&entry->data_u.function);
     } else if (entry->variant == ENTRY_BASETYPE) {
         libab_basetype_free(entry->data_u.basetype);
     } else if (entry->variant == ENTRY_VALUE) {

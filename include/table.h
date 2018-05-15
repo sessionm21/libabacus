@@ -32,8 +32,7 @@ struct libab_table_s {
 enum libab_table_entry_variant_e {
     ENTRY_VALUE,
     ENTRY_BASETYPE,
-    ENTRY_OP,
-    ENTRY_FUN
+    ENTRY_OP
 };
 
 /**
@@ -50,7 +49,6 @@ struct libab_table_entry_s {
      */
     union {
         libab_operator op;
-        libab_function function;
         libab_basetype* basetype;
         libab_ref value;
     } data_u;
@@ -94,15 +92,6 @@ libab_table_entry* libab_table_search(libab_table* table, const char* string);
  */
 libab_operator* libab_table_search_operator(libab_table* table,
                                             const char* string, int type);
-/**
- * Searches for the given string in the table, returning a value only
- * if it is a function.
- * @param table the table to search.
- * @param string the string to search for.
- * @return the found function, or NULL if it was not found.
- */
-libab_function* libab_table_search_function(libab_table* table,
-                                            const char* string);
 /**
  * Searches for the given basetype in the table, returning a value
  * only if it's a basetype.
