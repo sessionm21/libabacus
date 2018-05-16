@@ -67,7 +67,11 @@ struct libab_operator_s {
      * Corresponds to token types associated with
      * each operator.
      */
-    enum libab_operator_variant_e type;
+    enum libab_operator_variant_e variant;
+    /**
+     * The type of this operator.
+     */
+    libab_ref type;
     /**
      * The precedence of the operator.
      */

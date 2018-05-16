@@ -30,7 +30,7 @@ libab_table_entry* libab_table_search(libab_table* table, const char* string) {
 #define OP_TYPE_COMPARATOR(NAME, TYPE)                                         \
     int NAME(const void* left, const void* right) {                            \
         const libab_table_entry* entry = right;                                \
-        return entry->variant == ENTRY_OP && entry->data_u.op.type == TYPE;    \
+        return entry->variant == ENTRY_OP && entry->data_u.op.variant == TYPE;    \
     }
 
 OP_TYPE_COMPARATOR(libab_table_compare_op_prefix, OPERATOR_PREFIX)

@@ -21,13 +21,15 @@ void libab_behavior_free(libab_behavior* behavior) {
 void libab_operator_init(libab_operator* op, libab_operator_variant variant, 
                          int precedence, int associativity, libab_ref* type,
                         libab_function_ptr func) {
-    op->type = variant;
+    op->variant = variant;
     op->precedence = precedence;
     op->associativity = associativity;
+    libab_ref_copy(type, &op->type);
     libab_behavior_init_internal(&op->behavior, func);
 }
 
 void libab_operator_free(libab_operator* op) {
+    libab_ref_free(&op->type);
     libab_behavior_free(&op->behavior);
 }
 
