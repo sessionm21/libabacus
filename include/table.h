@@ -132,6 +132,26 @@ void libab_table_set_parent(libab_table* table, libab_ref* parent);
  */
 void libab_table_free(libab_table* table);
 /**
+ * Comparison function used to search the table for a prefix operator.
+ */
+int libab_table_compare_op_prefix(const void* left, const void* right);
+/**
+ * Comparison function used to search the table for a infix operator.
+ */
+int libab_table_compare_op_infix(const void* left, const void* right);
+/**
+ * Comparison function used to search the table for a postfix operator.
+ */
+int libab_table_compare_op_postfix(const void* left, const void* right);
+/**
+ * Comparison function used to search the table for a value.
+ */
+int libab_table_compare_value(const void* left, const void* right);
+/**
+ * Comparison function used to search the table for a basetype.
+ */
+int libab_table_compare_basetype(const void* left, const void* right);
+/**
  * Frees the given table entry.
  * @param entry the entry to free.
  */

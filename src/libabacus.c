@@ -180,11 +180,6 @@ libab_result _create_value_function_list(libab_ref* into, libab_ref* type) {
     return result;
 }
 
-static int _table_compare_value(const void* left, const void* right) {
-    const libab_table_entry* entry = right;
-    return entry->variant == ENTRY_VALUE;
-}
-
 libab_result _libab_register_function_existing(libab* ab, libab_table_entry* entry, libab_ref* function_val) {
     libab_value* old_value;
     libab_parsetype* old_type;
@@ -245,7 +240,7 @@ libab_result libab_register_function(libab* ab, const char* name,
     
     if(result == LIBAB_SUCCESS) {
         existing_entry = 
-            libab_table_search_filter(libab_ref_get(&ab->table), name, NULL, _table_compare_value);
+            libab_table_search_filter(libab_ref_get(&ab->table), name, NULL, libab_table_compare_value);
         if(existing_entry) {
             result = _libab_register_function_existing(ab, existing_entry, &function_value);
         } else {

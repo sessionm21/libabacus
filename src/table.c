@@ -33,48 +33,48 @@ libab_table_entry* libab_table_search(libab_table* table, const char* string) {
         return entry->variant == ENTRY_OP && entry->data_u.op.type == TYPE;    \
     }
 
-OP_TYPE_COMPARATOR(_table_compare_prefix, OPERATOR_PREFIX)
-OP_TYPE_COMPARATOR(_table_compare_infix, OPERATOR_INFIX)
-OP_TYPE_COMPARATOR(_table_compare_postfix, OPERATOR_POSTFIX)
+OP_TYPE_COMPARATOR(libab_table_compare_op_prefix, OPERATOR_PREFIX)
+OP_TYPE_COMPARATOR(libab_table_compare_op_infix, OPERATOR_INFIX)
+OP_TYPE_COMPARATOR(libab_table_compare_op_postfix, OPERATOR_POSTFIX)
+
+int libab_table_compare_value(const void* left, const void* right) {
+    const libab_table_entry* entry = right;
+    return entry->variant == ENTRY_VALUE;
+}
+
+int libab_table_compare_basetype(const void* left, const void* right) {
+    const libab_table_entry* entry = right;
+    return entry->variant == ENTRY_BASETYPE;
+}
 
 libab_operator* libab_table_search_operator(libab_table* table,
                                             const char* string, int type) {
     libab_table_entry* entry = NULL;
     if (type == OPERATOR_PREFIX) {
         entry = libab_table_search_filter(table, string, NULL,
-                                          _table_compare_prefix);
+                                          libab_table_compare_op_prefix);
     } else if (type == OPERATOR_INFIX) {
         entry = libab_table_search_filter(table, string, NULL,
-                                          _table_compare_infix);
+                                          libab_table_compare_op_infix);
     } else if (type == OPERATOR_PREFIX) {
         entry = libab_table_search_filter(table, string, NULL,
-                                          _table_compare_postfix);
+                                          libab_table_compare_op_postfix);
     }
     return entry ? &entry->data_u.op : NULL;
-}
-
-int _table_compare_basetype(const void* left, const void* right) {
-    const libab_table_entry* entry = right;
-    return entry->variant == ENTRY_BASETYPE;
 }
 
 libab_basetype* libab_table_search_basetype(libab_table* table,
                                             const char* string) {
     libab_table_entry* entry =
-        libab_table_search_filter(table, string, NULL, _table_compare_basetype);
+        libab_table_search_filter(table, string, NULL, libab_table_compare_basetype);
     return entry ? entry->data_u.basetype : NULL;
-}
-
-int _table_compare_value(const void* left, const void* right) {
-    const libab_table_entry* entry = right;
-    return entry->variant == ENTRY_VALUE;
 }
 
 void libab_table_search_value(libab_table* table,
                                           const char* string,
                                           libab_ref* ref) {
     libab_table_entry* entry = 
-        libab_table_search_filter(table, string, NULL, _table_compare_value);
+        libab_table_search_filter(table, string, NULL, libab_table_compare_value);
     if(entry) {
         libab_ref_copy(&entry->data_u.value, ref);
     } else {
