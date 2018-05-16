@@ -200,20 +200,19 @@ libab_result libab_create_value_raw(libab_ref* into, void* data, libab_ref* type
     return result;
 }
 
-libab_result libab_create_function_internal(libab_ref* into, libab_ref* type,
+libab_result libab_create_function_internal(libab_ref* into, void (*free_function)(void*),
                                             libab_function_ptr fun) {
     libab_function* new_function;
     libab_result result = LIBAB_SUCCESS;
 
     if((new_function = malloc(sizeof(*new_function)))) {
-        result = libab_function_init_internal(new_function, type, fun);
+        result = libab_function_init_internal(new_function, fun);
     } else {
         result = LIBAB_MALLOC;
     }
 
     if(result == LIBAB_SUCCESS) {
-        result = libab_ref_new(into, new_function,
-                ((libab_parsetype*) libab_ref_get(type))->data_u.base->free_function);
+        result = libab_ref_new(into, new_function, free_function);
         if(result != LIBAB_SUCCESS) {
             libab_function_free(new_function);
         }
@@ -227,19 +226,19 @@ libab_result libab_create_function_internal(libab_ref* into, libab_ref* type,
     return result;
 }
 
-libab_result libab_create_function_tree(libab_ref* into, libab_ref* type,
+libab_result libab_create_function_tree(libab_ref* into, void (*free_function)(void*),
                                         libab_tree* tree) {
     libab_function* new_function;
     libab_result result = LIBAB_SUCCESS;
 
     if((new_function = malloc(sizeof(*new_function)))) {
-        result = libab_function_init_tree(new_function, type, tree);
+        result = libab_function_init_tree(new_function, tree);
     } else {
         result = LIBAB_MALLOC;
     }
 
     if(result == LIBAB_SUCCESS) {
-        result = libab_ref_new(into, new_function, ((libab_parsetype*) libab_ref_get(type))->data_u.base->free_function);
+        result = libab_ref_new(into, new_function, free_function);
         if(result != LIBAB_SUCCESS) {
             libab_function_free(new_function);
         }

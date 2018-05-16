@@ -92,20 +92,20 @@ libab_result libab_create_value_raw(libab_ref* into, void* data, libab_ref* type
 /**
  * Allocates a function that uses internal code to run.
  * @param into the reference into which to store the new function.
- * @param type the type of the function.
+ * @param free_function the free function used to free function instances.
  * @param fun the function implementation.
  * @return libab_result the result of any necessary allocations.
  */
-libab_result libab_create_function_internal(libab_ref* into, libab_ref* type,
+libab_result libab_create_function_internal(libab_ref* into, void (*free_function)(void*),
                                             libab_function_ptr fun);
 /**
  * Allocates a function that uses a tree to run.
  * @param into the reference into which to store the new function.
- * @param type the type of the function.
+ * @param free_function the free function used to free function instances.
  * @param tree the function implementation.
  * @return libab_result the result of any necessary allocations.
  */
-libab_result libab_create_function_tree(libab_ref* into, libab_ref* type,
+libab_result libab_create_function_tree(libab_ref* into, void (*free_function)(void*),
                                         libab_tree* tree);
 /**
  * Creates a function list object, storing it in to the given reference.

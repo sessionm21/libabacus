@@ -55,14 +55,6 @@ struct libab_behavior_s {
      * The implementation of this behavior.
      */
     struct libab_behavior_impl_s impl;
-    /**
-     * The type of the function.
-     */
-    libab_ref type;
-    /**
-     * The type parameters for the given behavior.
-     */
-    libab_ref_trie type_params;
 };
 /**
  * A struct that holds informatiion
@@ -116,7 +108,7 @@ typedef struct libab_function_s libab_function;
  * @param func the function that this behavior calls.
  */
 void libab_behavior_init_internal(libab_behavior* behavior, 
-                                  libab_ref* type, libab_function_ptr func);
+                                  libab_function_ptr func);
 /**
  * Initializes a behavior that uses a tree that has been
  * parsed from the user.
@@ -124,8 +116,8 @@ void libab_behavior_init_internal(libab_behavior* behavior,
  * @param type the type of the behavior.
  * @param tree the tree that this behavior uses.
  */
-void libab_behavior_init_tree(libab_behavior* behavior, libab_ref* type,
-                                  libab_tree* tree);
+void libab_behavior_init_tree(libab_behavior* behavior,
+                              libab_tree* tree);
 /**
  * Frees the given behavior.
  * @param behavior the behavior to free.
@@ -155,7 +147,7 @@ void libab_operator_free(libab_operator* op);
  * @param fun the function implementation.
  * @return the result of the initialization.
  */
-libab_result libab_function_init_internal(libab_function* function, libab_ref* type,
+libab_result libab_function_init_internal(libab_function* function,
                                           libab_function_ptr fun);
 /**
  * Initializes a function with the given tree behavior.
@@ -164,7 +156,7 @@ libab_result libab_function_init_internal(libab_function* function, libab_ref* t
  * @param tree the tree that represents the function's behavior.
  * @return the result of the initialization.
  */
-libab_result libab_function_init_tree(libab_function* function, libab_ref* type,
+libab_result libab_function_init_tree(libab_function* function,
                                       libab_tree* tree);
 /**
  * Frees the given function.

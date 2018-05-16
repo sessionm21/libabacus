@@ -1,24 +1,18 @@
 #include "custom.h"
 
-void libab_behavior_init_internal(libab_behavior* behavior, libab_ref* type,
+void libab_behavior_init_internal(libab_behavior* behavior,
                                   libab_function_ptr func) {
     behavior->impl.variant = BIMPL_INTERNAL;
     behavior->impl.data_u.internal = func;
-    libab_ref_copy(type, &behavior->type);
-    libab_ref_trie_init(&behavior->type_params);
 }
 
-void libab_behavior_init_tree(libab_behavior* behavior, libab_ref* type,
+void libab_behavior_init_tree(libab_behavior* behavior,
                               libab_tree* tree) {
     behavior->impl.variant = BIMPL_TREE;
     behavior->impl.data_u.tree = tree;
-    libab_ref_copy(type, &behavior->type);
-    libab_ref_trie_init(&behavior->type_params);
 }
 
 void libab_behavior_free(libab_behavior* behavior) {
-    libab_ref_free(&behavior->type);
-    libab_ref_trie_free(&behavior->type_params);
     if (behavior->impl.variant == BIMPL_TREE) {
         libab_tree_free_recursive(behavior->impl.data_u.tree);
     }
@@ -30,7 +24,7 @@ void libab_operator_init(libab_operator* op, libab_operator_variant variant,
     op->type = variant;
     op->precedence = precedence;
     op->associativity = associativity;
-    libab_behavior_init_internal(&op->behavior, type, func);
+    libab_behavior_init_internal(&op->behavior, func);
 }
 
 void libab_operator_free(libab_operator* op) {
@@ -40,16 +34,16 @@ void libab_operator_free(libab_operator* op) {
 libab_result _function_init(libab_function* function) {
     return LIBAB_SUCCESS;
 }
-libab_result libab_function_init_internal(libab_function* function, libab_ref* type,
+libab_result libab_function_init_internal(libab_function* function,
                                           libab_function_ptr fun) {
     libab_result result = _function_init(function);
-    libab_behavior_init_internal(&function->behavior, type, fun);
+    libab_behavior_init_internal(&function->behavior, fun);
     return result;
 }
-libab_result libab_function_init_tree(libab_function* function, libab_ref* type,
+libab_result libab_function_init_tree(libab_function* function,
                                       libab_tree* tree) {
     libab_result result = _function_init(function);
-    libab_behavior_init_tree(&function->behavior, type, tree);
+    libab_behavior_init_tree(&function->behavior, tree);
     return result;
 }
 void libab_function_free(libab_function* fun) {

@@ -95,7 +95,6 @@ void _initialize_behavior(libab_behavior* behavior, libab_ref* type,
                           libab_function_ptr func) {
     behavior->impl.variant = BIMPL_INTERNAL;
     behavior->impl.data_u.internal = func;
-    libab_ref_copy(type, &behavior->type);
 }
 
 libab_result _register_operator(libab* ab, const char* op,
@@ -158,7 +157,7 @@ libab_result libab_register_operator_postfix(libab* ab, const char* op,
 libab_result _create_value_function_internal(libab_ref* into, libab_ref* type,
                                              libab_function_ptr func) {
     libab_ref function_ref;
-    libab_result result = libab_create_function_internal(&function_ref, type, func);
+    libab_result result = libab_create_function_internal(&function_ref, _free_function, func);
     libab_ref_null(into);
     if(result == LIBAB_SUCCESS) {
         libab_ref_free(into);
