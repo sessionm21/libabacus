@@ -2,8 +2,8 @@
 #define LIBABACUS_CUSTOM_H
 
 #include "parsetype.h"
-#include "tree.h"
 #include "ref_trie.h"
+#include "tree.h"
 
 /**
  * A function pointer that is called
@@ -101,7 +101,7 @@ typedef struct libab_function_s libab_function;
  * @param type the type of the behavior.
  * @param func the function that this behavior calls.
  */
-void libab_behavior_init_internal(libab_behavior* behavior, 
+void libab_behavior_init_internal(libab_behavior* behavior,
                                   libab_function_ptr func);
 /**
  * Initializes a behavior that uses a tree that has been
@@ -110,8 +110,7 @@ void libab_behavior_init_internal(libab_behavior* behavior,
  * @param type the type of the behavior.
  * @param tree the tree that this behavior uses.
  */
-void libab_behavior_init_tree(libab_behavior* behavior,
-                              libab_tree* tree);
+void libab_behavior_init_tree(libab_behavior* behavior, libab_tree* tree);
 /**
  * Frees the given behavior.
  * @param behavior the behavior to free.
@@ -122,13 +121,14 @@ void libab_behavior_free(libab_behavior* behavior);
  * @param op the operator to initialize.
  * @param variant the variant of the operator (infix, prefix, etc)
  * @param precedence the precedence of the operator.
- * @param associativity the associativity (left = -1, right = 1) of the operator.
+ * @param associativity the associativity (left = -1, right = 1) of the
+ * operator.
  * @param type the type of the operator.
  * @param func the function used to implement the operator.
  */
-void libab_operator_init(libab_operator* op, libab_operator_variant variant, 
+void libab_operator_init(libab_operator* op, libab_operator_variant variant,
                          int precedence, int associativity, libab_ref* type,
-                        libab_function_ptr func);
+                         libab_function_ptr func);
 /**
  * Frees the given operator.
  * @param op the operator to free.

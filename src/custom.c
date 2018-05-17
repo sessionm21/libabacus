@@ -6,8 +6,7 @@ void libab_behavior_init_internal(libab_behavior* behavior,
     behavior->data_u.internal = func;
 }
 
-void libab_behavior_init_tree(libab_behavior* behavior,
-                              libab_tree* tree) {
+void libab_behavior_init_tree(libab_behavior* behavior, libab_tree* tree) {
     behavior->variant = BIMPL_TREE;
     behavior->data_u.tree = tree;
 }
@@ -18,9 +17,9 @@ void libab_behavior_free(libab_behavior* behavior) {
     }
 }
 
-void libab_operator_init(libab_operator* op, libab_operator_variant variant, 
+void libab_operator_init(libab_operator* op, libab_operator_variant variant,
                          int precedence, int associativity, libab_ref* type,
-                        libab_function_ptr func) {
+                         libab_function_ptr func) {
     op->variant = variant;
     op->precedence = precedence;
     op->associativity = associativity;
@@ -33,9 +32,7 @@ void libab_operator_free(libab_operator* op) {
     libab_behavior_free(&op->behavior);
 }
 
-libab_result _function_init(libab_function* function) {
-    return LIBAB_SUCCESS;
-}
+libab_result _function_init(libab_function* function) { return LIBAB_SUCCESS; }
 libab_result libab_function_init_internal(libab_function* function,
                                           libab_function_ptr fun) {
     libab_result result = _function_init(function);

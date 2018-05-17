@@ -1,12 +1,12 @@
 #ifndef LIBABACUS_UTIL_H
 #define LIBABACUS_UTIL_H
 
+#include "function_list.h"
 #include "libds.h"
 #include "liblex.h"
 #include "parsetype.h"
 #include "result.h"
 #include "table.h"
-#include "function_list.h"
 #include <string.h>
 
 /**
@@ -65,7 +65,7 @@ libab_result libab_resolve_parsetype(libab_parsetype* to_resolve,
  * @return the result of the instantiation.
  */
 libab_result libab_instantiate_basetype(libab_basetype* to_instantiate,
-        libab_ref* into, size_t n, ...);
+                                        libab_ref* into, size_t n, ...);
 /**
  * Creates a new libab_table, and stores it into the given reference.
  * @param into the reference to store the table into.
@@ -80,7 +80,8 @@ libab_result libab_create_table(libab_ref* into, libab_ref* parent);
  * @param type the type to give the value.
  * @return the result of necessary allocations.
  */
-libab_result libab_create_value_ref(libab_ref* into, libab_ref* data, libab_ref* type);
+libab_result libab_create_value_ref(libab_ref* into, libab_ref* data,
+                                    libab_ref* type);
 /**
  * Allocates a new reference counted value with the given type and data.
  * @param into the reference to store the allocated data into.
@@ -88,7 +89,8 @@ libab_result libab_create_value_ref(libab_ref* into, libab_ref* data, libab_ref*
  * @param type the type to give the value.
  * @return the result of necessary allocations.
  */
-libab_result libab_create_value_raw(libab_ref* into, void* data, libab_ref* type);
+libab_result libab_create_value_raw(libab_ref* into, void* data,
+                                    libab_ref* type);
 /**
  * Allocates a function that uses internal code to run.
  * @param into the reference into which to store the new function.
@@ -96,7 +98,8 @@ libab_result libab_create_value_raw(libab_ref* into, void* data, libab_ref* type
  * @param fun the function implementation.
  * @return libab_result the result of any necessary allocations.
  */
-libab_result libab_create_function_internal(libab_ref* into, void (*free_function)(void*),
+libab_result libab_create_function_internal(libab_ref* into,
+                                            void (*free_function)(void*),
                                             libab_function_ptr fun);
 /**
  * Allocates a function that uses a tree to run.
@@ -105,7 +108,8 @@ libab_result libab_create_function_internal(libab_ref* into, void (*free_functio
  * @param tree the function implementation.
  * @return libab_result the result of any necessary allocations.
  */
-libab_result libab_create_function_tree(libab_ref* into, void (*free_function)(void*),
+libab_result libab_create_function_tree(libab_ref* into,
+                                        void (*free_function)(void*),
                                         libab_tree* tree);
 /**
  * Creates a function list object, storing it in to the given reference.
@@ -121,7 +125,7 @@ libab_result libab_create_function_list(libab_ref* into, libab_ref* type);
  * @param value the value to store into the table.
  * @param result the result of the operation.
  */
-libab_result libab_put_table_value(libab_table* table, 
-                                      const char* key, libab_ref* value);
+libab_result libab_put_table_value(libab_table* table, const char* key,
+                                   libab_ref* value);
 
 #endif

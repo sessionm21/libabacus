@@ -54,7 +54,7 @@ void libab_ref_trie_init(libab_ref_trie* trie);
  * @param copy_of the trie to copy.
  * @return the result of the initialization.
  */
-libab_result libab_ref_trie_init_copy(libab_ref_trie* trie, 
+libab_result libab_ref_trie_init_copy(libab_ref_trie* trie,
                                       const libab_ref_trie* copy_of);
 /**
  * Stores a reference counted value into the trie.
@@ -73,8 +73,8 @@ libab_result libab_ref_trie_put(libab_ref_trie* trie, const char* key,
  * @param key the key to look under.
  * @return a reference stored under the given key. This can be a NULL reference.
  */
-void libab_ref_trie_get(const libab_ref_trie* trie,
-                                    const char* key, libab_ref* into);
+void libab_ref_trie_get(const libab_ref_trie* trie, const char* key,
+                        libab_ref* into);
 /**
  * Releases the trie, decrementing the refcounts of all
  * the values stored inside.

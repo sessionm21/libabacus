@@ -17,9 +17,7 @@ libab_result libab_ref_new(libab_ref* ref, void* data,
     return result;
 }
 
-void libab_ref_null(libab_ref* ref) {
-    ref->null = 1;
-}
+void libab_ref_null(libab_ref* ref) { ref->null = 1; }
 
 void _libab_ref_changed(libab_ref* ref) {
     if (ref->count->strong == 0) {
@@ -42,7 +40,7 @@ void libab_ref_weaken(libab_ref* ref) {
 }
 
 void libab_ref_free(libab_ref* ref) {
-    if(!ref->null) {
+    if (!ref->null) {
         ref->count->strong -= ref->strong;
         ref->count->weak--;
         _libab_ref_changed(ref);
@@ -50,7 +48,7 @@ void libab_ref_free(libab_ref* ref) {
 }
 
 void libab_ref_copy(const libab_ref* ref, libab_ref* into) {
-    if(!ref->null) {
+    if (!ref->null) {
         ref->count->strong++;
         ref->count->weak++;
     }

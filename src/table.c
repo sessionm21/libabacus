@@ -30,7 +30,7 @@ libab_table_entry* libab_table_search(libab_table* table, const char* string) {
 #define OP_TYPE_COMPARATOR(NAME, TYPE)                                         \
     int NAME(const void* left, const void* right) {                            \
         const libab_table_entry* entry = right;                                \
-        return entry->variant == ENTRY_OP && entry->data_u.op.variant == TYPE;    \
+        return entry->variant == ENTRY_OP && entry->data_u.op.variant == TYPE; \
     }
 
 OP_TYPE_COMPARATOR(libab_table_compare_op_prefix, OPERATOR_PREFIX)
@@ -65,17 +65,16 @@ libab_operator* libab_table_search_operator(libab_table* table,
 
 libab_basetype* libab_table_search_basetype(libab_table* table,
                                             const char* string) {
-    libab_table_entry* entry =
-        libab_table_search_filter(table, string, NULL, libab_table_compare_basetype);
+    libab_table_entry* entry = libab_table_search_filter(
+        table, string, NULL, libab_table_compare_basetype);
     return entry ? entry->data_u.basetype : NULL;
 }
 
-void libab_table_search_value(libab_table* table,
-                                          const char* string,
-                                          libab_ref* ref) {
-    libab_table_entry* entry = 
-        libab_table_search_filter(table, string, NULL, libab_table_compare_value);
-    if(entry) {
+void libab_table_search_value(libab_table* table, const char* string,
+                              libab_ref* ref) {
+    libab_table_entry* entry = libab_table_search_filter(
+        table, string, NULL, libab_table_compare_value);
+    if (entry) {
         libab_ref_copy(&entry->data_u.value, ref);
     } else {
         libab_ref_null(ref);

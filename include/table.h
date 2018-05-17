@@ -3,9 +3,9 @@
 
 #include "basetype.h"
 #include "custom.h"
+#include "refcount.h"
 #include "result.h"
 #include "trie.h"
-#include "refcount.h"
 
 /**
  * A struct that represents a structure
@@ -29,11 +29,7 @@ struct libab_table_s {
  * Enum that represents the type of a table
  * entry.
  */
-enum libab_table_entry_variant_e {
-    ENTRY_VALUE,
-    ENTRY_BASETYPE,
-    ENTRY_OP
-};
+enum libab_table_entry_variant_e { ENTRY_VALUE, ENTRY_BASETYPE, ENTRY_OP };
 
 /**
  * An entry in the table.
@@ -107,9 +103,8 @@ libab_basetype* libab_table_search_basetype(libab_table* table,
  * @param string the table entry key.
  * @param ref the reference to store the result into.
  */
-void libab_table_search_value(libab_table* table,
-                                          const char* string,
-                                          libab_ref* ref);
+void libab_table_search_value(libab_table* table, const char* string,
+                              libab_ref* ref);
 /**
  * Stores the given entry in the table under the given key.
  * @param table the table to store the entry into.

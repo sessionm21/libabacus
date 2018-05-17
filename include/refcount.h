@@ -34,11 +34,11 @@ struct libab_ref_s {
     /**
      * Whether this reference is a strong reference.
      */
-    unsigned int strong:1;
+    unsigned int strong : 1;
     /**
      * Whether this reference is a NULL reference.
      */
-    unsigned int null:1;
+    unsigned int null : 1;
     /**
      * The reference count struct keeping track
      * of how many references are pointing to the value.

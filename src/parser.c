@@ -327,7 +327,7 @@ libab_result _parse_type(struct parser_state* state, libab_ref* into) {
         }
     }
 
-    if(result != LIBAB_SUCCESS) {
+    if (result != LIBAB_SUCCESS) {
         libab_ref_null(into);
     }
 
@@ -1169,7 +1169,8 @@ libab_result libab_parser_parse(libab_parser* parser, ll* tokens,
                                 const char* string, libab_tree** store_into) {
     libab_result result;
     struct parser_state state;
-    _parser_state_init(&state, tokens, string, libab_ref_get(&parser->ab->table));
+    _parser_state_init(&state, tokens, string,
+                       libab_ref_get(&parser->ab->table));
 
     result = _parse_block(&state, store_into, 0);
     if (result == LIBAB_SUCCESS) {
@@ -1182,7 +1183,8 @@ libab_result libab_parser_parse_type(libab_parser* parser, ll* tokens,
                                      const char* string,
                                      libab_ref* store_into) {
     struct parser_state state;
-    _parser_state_init(&state, tokens, string, libab_ref_get(&parser->ab->table));
+    _parser_state_init(&state, tokens, string,
+                       libab_ref_get(&parser->ab->table));
 
     return _parse_type(&state, store_into);
 }

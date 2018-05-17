@@ -1,9 +1,7 @@
 #include "ref_trie.h"
 #include <stdlib.h>
 
-void libab_ref_trie_init(libab_ref_trie* trie) {
-    trie->head = NULL;
-}
+void libab_ref_trie_init(libab_ref_trie* trie) { trie->head = NULL; }
 
 void _libab_ref_trie_free(libab_ref_trie_node* node) {
     if (node == NULL)
@@ -18,18 +16,18 @@ libab_result _libab_ref_trie_copy(const libab_ref_trie_node* copy_of,
                                   libab_ref_trie_node** copy_into) {
     libab_result result = LIBAB_SUCCESS;
 
-    if(copy_of == NULL) {
+    if (copy_of == NULL) {
         *copy_into = NULL;
-    } else if(((*copy_into) = malloc(sizeof(**copy_into)))) {
+    } else if (((*copy_into) = malloc(sizeof(**copy_into)))) {
         (*copy_into)->child = NULL;
         (*copy_into)->next = NULL;
 
         result = _libab_ref_trie_copy(copy_of->next, &(*copy_into)->next);
-        if(result == LIBAB_SUCCESS) {
+        if (result == LIBAB_SUCCESS) {
             result = _libab_ref_trie_copy(copy_of->child, &(*copy_into)->child);
         }
 
-        if(result == LIBAB_SUCCESS) {
+        if (result == LIBAB_SUCCESS) {
             (*copy_into)->key = copy_of->key;
             libab_ref_copy(&copy_of->ref, &(*copy_into)->ref);
         }
@@ -37,7 +35,7 @@ libab_result _libab_ref_trie_copy(const libab_ref_trie_node* copy_of,
         result = LIBAB_MALLOC;
     }
 
-    if(result != LIBAB_SUCCESS && *copy_into) {
+    if (result != LIBAB_SUCCESS && *copy_into) {
         _libab_ref_trie_free((*copy_into)->next);
         _libab_ref_trie_free((*copy_into)->child);
         free(*copy_into);
@@ -47,14 +45,14 @@ libab_result _libab_ref_trie_copy(const libab_ref_trie_node* copy_of,
     return result;
 }
 
-libab_result libab_ref_trie_init_copy(libab_ref_trie* trie, 
+libab_result libab_ref_trie_init_copy(libab_ref_trie* trie,
                                       const libab_ref_trie* copy_of) {
     libab_result result = LIBAB_SUCCESS;
 
     libab_ref_trie_init(trie);
     result = _libab_ref_trie_copy(copy_of->head, &trie->head);
 
-    if(result != LIBAB_SUCCESS) {
+    if (result != LIBAB_SUCCESS) {
         libab_ref_trie_free(trie);
     }
 
@@ -115,8 +113,8 @@ libab_result libab_ref_trie_put(libab_ref_trie* trie, const char* key,
     return result;
 }
 
-void libab_ref_trie_get(const libab_ref_trie* trie,
-                                    const char* key, libab_ref* into) {
+void libab_ref_trie_get(const libab_ref_trie* trie, const char* key,
+                        libab_ref* into) {
     libab_ref_trie_node* current = trie->head;
     while (current && *key) {
         while (current && current->key != *key) {

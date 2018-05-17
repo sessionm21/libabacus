@@ -55,9 +55,8 @@ typedef struct libab_basetype_s libab_basetype;
  * @param n the number of type parameters it has.
  * @param params the parameters this basetype accepts.
  */
-void libab_basetype_init(libab_basetype* basetype, 
-                         void (*free_function)(void*), int n,
-                         const libab_basetype_param params[]);
+void libab_basetype_init(libab_basetype* basetype, void (*free_function)(void*),
+                         int n, const libab_basetype_param params[]);
 /**
  * Frees the given basetype.
  * @param basetype the type to free.
