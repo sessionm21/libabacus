@@ -32,7 +32,7 @@ enum libab_behavior_variant_e { BIMPL_INTERNAL, BIMPL_TREE };
  */
 struct libab_behavior_s {
     /**
-     * The variant of this implementation.
+     * The variant of this behavior.
      */
     enum libab_behavior_variant_e variant;
     union {
@@ -98,7 +98,6 @@ typedef struct libab_function_s libab_function;
 /**
  * Initializes a behavior that uses an internal function.
  * @param behavior the behavior to initialize.
- * @param type the type of the behavior.
  * @param func the function that this behavior calls.
  */
 void libab_behavior_init_internal(libab_behavior* behavior,
@@ -107,7 +106,6 @@ void libab_behavior_init_internal(libab_behavior* behavior,
  * Initializes a behavior that uses a tree that has been
  * parsed from the user.
  * @param behavior the behavior to initialize.
- * @param type the type of the behavior.
  * @param tree the tree that this behavior uses.
  */
 void libab_behavior_init_tree(libab_behavior* behavior, libab_tree* tree);
@@ -137,7 +135,6 @@ void libab_operator_free(libab_operator* op);
 /**
  * Initializes a function with the given internal behavior.
  * @param function the function to initialize.
- * @param type the type of the function.
  * @param fun the function implementation.
  * @return the result of the initialization.
  */
@@ -146,7 +143,6 @@ libab_result libab_function_init_internal(libab_function* function,
 /**
  * Initializes a function with the given tree behavior.
  * @param function the function to initialize.
- * @param type the type of the function.
  * @param tree the tree that represents the function's behavior.
  * @return the result of the initialization.
  */

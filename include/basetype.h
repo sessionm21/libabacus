@@ -52,6 +52,7 @@ typedef struct libab_basetype_s libab_basetype;
  * Initializes a base type, including all the parameters that it needs
  * to take.
  * @param basetype the type that is being initialized.
+ * @param free_function to function used to free the data in this basetype.
  * @param n the number of type parameters it has.
  * @param params the parameters this basetype accepts.
  */

@@ -31,9 +31,18 @@ void libab_parser_init(libab_parser* parser, struct libab_s* ab);
  * @param tokens the tokens to use for parsing.
  * @param string the string to use for determining token values.
  * @param store_into tree pointer to store the new data into.
+ * @return the result of parsing the tree.
  */
 libab_result libab_parser_parse(libab_parser* parser, ll* tokens,
                                 const char* string, libab_tree** store_into);
+/**
+ * Parses a type into the given reference.
+ * @param parser the parser to use for parsing text.
+ * @param tokens the tokens to use for parsing.
+ * @param string the string from which the tokens came from.
+ * @param store_into the reference into which to place the type.
+ * @return the result of parsing the type.
+ */
 libab_result libab_parser_parse_type(libab_parser* parser, ll* tokens,
                                      const char* string, libab_ref* store_into);
 /**
