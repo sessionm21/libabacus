@@ -2,19 +2,19 @@
 
 void libab_behavior_init_internal(libab_behavior* behavior,
                                   libab_function_ptr func) {
-    behavior->impl.variant = BIMPL_INTERNAL;
-    behavior->impl.data_u.internal = func;
+    behavior->variant = BIMPL_INTERNAL;
+    behavior->data_u.internal = func;
 }
 
 void libab_behavior_init_tree(libab_behavior* behavior,
                               libab_tree* tree) {
-    behavior->impl.variant = BIMPL_TREE;
-    behavior->impl.data_u.tree = tree;
+    behavior->variant = BIMPL_TREE;
+    behavior->data_u.tree = tree;
 }
 
 void libab_behavior_free(libab_behavior* behavior) {
-    if (behavior->impl.variant == BIMPL_TREE) {
-        libab_tree_free_recursive(behavior->impl.data_u.tree);
+    if (behavior->variant == BIMPL_TREE) {
+        libab_tree_free_recursive(behavior->data_u.tree);
     }
 }
 

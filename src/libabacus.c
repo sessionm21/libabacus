@@ -93,8 +93,8 @@ void _sanitize(char* to, const char* from, size_t buffer_size) {
 
 void _initialize_behavior(libab_behavior* behavior, libab_ref* type,
                           libab_function_ptr func) {
-    behavior->impl.variant = BIMPL_INTERNAL;
-    behavior->impl.data_u.internal = func;
+    behavior->variant = BIMPL_INTERNAL;
+    behavior->data_u.internal = func;
 }
 
 libab_result _register_operator(libab* ab, const char* op,
