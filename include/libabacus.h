@@ -160,6 +160,15 @@ libab_basetype* libab_get_basetype_function(libab* ab);
 libab_basetype* libab_get_basetype_function_list(libab* ab);
 
 /**
+ * Executes the given string of code.
+ * @param ab the libabacus instance to use for executing code.
+ * @param string the string to execute.
+ * @param value the reference into which to store the result.
+ * @return the result of the computation.
+ */
+libab_result libab_run(libab* ab, const char* string, libab_ref* value);
+
+/**
  * Releases all the resources allocated by libabacus.
  * @param ab the libabacus instance to release.
  * @return the result of the initialization.
