@@ -52,7 +52,12 @@ libab_result libab_resolve_parsetype(libab_parsetype* to_resolve,
     resolve_name = !(to_resolve->variant &
                      (LIBABACUS_TYPE_F_RESOLVED | LIBABACUS_TYPE_F_PLACE));
     check_parents = !(to_resolve->variant & LIBABACUS_TYPE_F_PLACE);
-    if (resolve_name) {
+
+    if ((to_resolve->variant & LIBABACUS_TYPE_F_PLACE) && (to_resolve->variant & LIBABACUS_TYPE_F_PARENT)) {
+        result = LIBAB_UNEXPECTED;
+    }
+
+    if (resolve_name && result == LIBAB_SUCCESS) {
         libab_basetype* basetype =
             libab_table_search_basetype(scope, to_resolve->data_u.name);
         if (basetype) {
