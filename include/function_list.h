@@ -32,6 +32,19 @@ libab_result libab_function_list_init(libab_function_list* list);
 libab_result libab_function_list_insert(libab_function_list* list,
                                         libab_ref* function_value);
 /**
+ * Get the size of the given function list.
+ * @param list the list to get the size of.
+ * @return the size of the list.
+ */
+size_t libab_function_list_size(libab_function_list* list);
+/**
+ * Gets a value at the given index in the list.
+ * @param list the list to get a value from.
+ * @param index the index at which to get the value.
+ * @param into the reference to store the function into.
+ */
+void libab_function_list_index(libab_function_list* list, size_t index, libab_ref* into);
+/**
  * Frees the given function list.
  * @param list the list to free.
  */
