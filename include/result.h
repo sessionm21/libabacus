@@ -15,7 +15,9 @@ enum libab_result_e {
     LIBAB_EOF,
     LIBAB_UNEXPECTED,
     LIBAB_AMBIGOUS_TYPE,
-    LIBAB_MISMATCHED_TYPE
+    LIBAB_MISMATCHED_TYPE,
+    LIBAB_BAD_CALL,
+    LIBAB_AMBIGOUS_CALL
 };
 
 typedef enum libab_result_e libab_result;
