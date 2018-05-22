@@ -65,7 +65,7 @@ libab_result libab_resolve_parsetype(libab_parsetype* to_resolve,
             to_resolve->data_u.base = basetype;
             to_resolve->variant |= LIBABACUS_TYPE_F_RESOLVED;
         } else {
-            result = LIBAB_BAD_TYPE;
+            result = LIBAB_UNKNOWN_TYPE;
         }
     }
 
