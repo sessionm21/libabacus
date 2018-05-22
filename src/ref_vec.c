@@ -12,6 +12,21 @@ libab_result libab_ref_vec_init(libab_ref_vec* vec) {
     return result;
 }
 
+libab_result libab_ref_vec_init_copy(libab_ref_vec* vec, libab_ref_vec* copy_of) {
+    libab_result result = LIBAB_SUCCESS;
+    if((vec->data = malloc(sizeof(*vec->data) * copy_of->capacity))) {
+        size_t index = 0;
+        vec->size = copy_of->size;
+        vec->capacity = copy_of->capacity;
+        for(; index < copy_of->size; index++) {
+            libab_ref_copy(&copy_of->data[index], &vec->data[index]);
+        }
+    } else {
+        result = LIBAB_MALLOC;
+    }
+    return result;
+}
+
 libab_result _libab_ref_vec_try_resize(libab_ref_vec* vec) {
     libab_result result = LIBAB_SUCCESS;
     if (vec->size == vec->capacity) {
@@ -56,6 +71,14 @@ void libab_ref_vec_index(libab_ref_vec* vec, size_t index, libab_ref* into) {
     } else {
         libab_ref_null(into);
     }
+}
+
+void libab_ref_vec_clear(libab_ref_vec* vec) {
+    size_t i = 0;
+    for(; i < vec->size; i++) {
+        libab_ref_free(&vec->data[i]);
+    }
+    vec->size = 0;
 }
 
 void libab_ref_vec_free(libab_ref_vec* vec) {

@@ -35,6 +35,13 @@ typedef struct libab_ref_vec_s libab_ref_vec;
  */
 libab_result libab_ref_vec_init(libab_ref_vec* vec);
 /**
+ * Initializes a new vector as a copy another.
+ * @param vec the vector to initialize.
+ * @param copy_of the vector to make a copy of.
+ * @return the result of the initialization.
+ */
+libab_result libab_ref_vec_init_copy(libab_ref_vec* vec, libab_ref_vec* copy_of);
+/**
  * Inserts an existing reference counted value into the vector.
  * This bumps the reference's refcount, thereby preventing its
  * deallocation.
@@ -61,6 +68,11 @@ libab_result libab_ref_vec_insert_value(libab_ref_vec* vec, void* data,
  * @return the reference stored at the given index.
  */
 void libab_ref_vec_index(libab_ref_vec* vec, size_t index, libab_ref* into);
+/**
+ * Clears the reference counted vector, without resizing.
+ * @param vec the vector to clear.
+ */
+void libab_ref_vec_clear(libab_ref_vec* vec);
 /**
  * Releases the memory allocated by the vector.
  * The references stored in the vector have their refcount decreased.
