@@ -48,10 +48,12 @@ int _interpreter_type_contains_placeholders(libab_ref* type) {
     libab_ref temp_child;
     libab_parsetype* parsetype = libab_ref_get(type);
     placeholder = (parsetype->variant & LIBABACUS_TYPE_F_PLACE) != 0;
-    for(; index < parsetype->children.size && !placeholder; index++) {
-        libab_ref_vec_index(&parsetype->children, index, &temp_child);
-        placeholder |= _interpreter_type_contains_placeholders(&temp_child);
-        libab_ref_free(&temp_child);
+    if(parsetype->variant & LIBABACUS_TYPE_F_PARENT) {
+        for(; index < parsetype->children.size && !placeholder; index++) {
+            libab_ref_vec_index(&parsetype->children, index, &temp_child);
+            placeholder |= _interpreter_type_contains_placeholders(&temp_child);
+            libab_ref_free(&temp_child);
+        }
     }
     return placeholder;
 }
@@ -217,13 +219,16 @@ libab_result _interpreter_check_function(struct interpreter_state* state,
 
             if(result == LIBAB_SUCCESS) {
                 result = _interpreter_resolve_type_params(right_temp, &child_params, &produced_type);
+                if(result != LIBAB_SUCCESS) {
+                    libab_ref_free(&produced_type);
+                }
             }
 
             if(result == LIBAB_SUCCESS) {
                 result = libab_ref_vec_insert(types, &produced_type);
+                libab_ref_free(&produced_type);
             }
 
-            libab_ref_free(&produced_type);
             libab_ref_free(&left_temp);
             libab_ref_free(&right_value_temp);
 
@@ -296,6 +301,8 @@ libab_result _interpreter_find_match(struct interpreter_state* state,
 
     if(result == LIBAB_SUCCESS) {
         libab_ref_vec_free(&temp_new_types);
+        if(!found_match)
+            libab_ref_null(match);
     } else {
         libab_ref_free(match);
         libab_ref_null(match);
@@ -309,7 +316,7 @@ libab_result _interpreter_cast_param(libab_ref* param, libab_ref* type, libab_re
     libab_value* old_value = libab_ref_get(param);
     libab_ref new_value;
 
-    result = libab_create_value_ref(&new_value, &old_value->type, type);
+    result = libab_create_value_ref(&new_value, &old_value->data, type);
     if(result == LIBAB_SUCCESS) {
         result = libab_ref_vec_insert(into, &new_value);
     }
@@ -386,8 +393,10 @@ libab_result _interpreter_call_function_list(struct interpreter_state* state,
 
     if(result == LIBAB_SUCCESS) {
         libab_ref_vec new_params;
+        libab_value* value;
         libab_function* function;
-        function = libab_ref_get(&to_call);
+        value = libab_ref_get(&to_call);
+        function = libab_ref_get(&value->data);
         result = libab_ref_vec_init_copy(&new_params, &function->params);
         if(result == LIBAB_SUCCESS) {
             result = _interpreter_cast_params(params, &new_types, &new_params);
@@ -397,19 +406,13 @@ libab_result _interpreter_call_function_list(struct interpreter_state* state,
                 result = _interpreter_perform_call(libab_ref_get(&to_call), &new_params, into);
             }
 
-            if(result != LIBAB_SUCCESS) {
-                libab_ref_vec_free(&new_params);
-            }
+            libab_ref_vec_free(&new_params);
         }
 
-        if(result != LIBAB_SUCCESS) {
-            libab_ref_vec_free(&new_types);
-        }
+        libab_ref_vec_free(&new_types);
     }
 
-    if(result != LIBAB_SUCCESS) {
-        libab_ref_free(&to_call);
-    }
+    libab_ref_free(&to_call);
 
     return result;
 }
