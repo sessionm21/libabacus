@@ -42,6 +42,20 @@ libab_result _interpreter_create_num_val(struct interpreter_state* state,
     return result;
 }
 
+int _interpreter_type_contains_placeholders(libab_ref* type) {
+    size_t index = 0;
+    int placeholder;
+    libab_ref temp_child;
+    libab_parsetype* parsetype = libab_ref_get(type);
+    placeholder = (parsetype->variant & LIBABACUS_TYPE_F_PLACE) != 0;
+    for(; index < parsetype->children.size && !placeholder; index++) {
+        libab_ref_vec_index(&parsetype->children, index, &temp_child);
+        placeholder |= _interpreter_type_contains_placeholders(&temp_child);
+        libab_ref_free(&temp_child);
+    }
+    return placeholder;
+}
+
 libab_result _interpreter_compare_types(libab_ref* left_type, libab_ref* right_type,
                                         libab_ref_trie* left_params, libab_ref_trie* right_params) {
     libab_result result = LIBAB_SUCCESS;
@@ -61,15 +75,25 @@ libab_result _interpreter_compare_types(libab_ref* left_type, libab_ref* right_t
             libab_ref_trie_get(left_params, name, &param_type);
             left = libab_ref_get(&param_type);
             libab_ref_free(&param_type);
-            if(left == NULL)
-                result = libab_ref_trie_put(left_params, name, right_type);
+            if(left == NULL) {
+                if(!_interpreter_type_contains_placeholders(right_type)) {
+                    result = libab_ref_trie_put(left_params, name, right_type);
+                } else {
+                    result = LIBAB_AMBIGOUS_TYPE;
+                }
+            }
         } else if(right_placeholder) {
             const char* name = right->data_u.name;
             libab_ref_trie_get(right_params, name, &param_type);
             right = libab_ref_get(&param_type);
             libab_ref_free(&param_type);
-            if(right == NULL)
-                result = libab_ref_trie_put(right_params, name, left_type);
+            if(right == NULL) {
+                if(!_interpreter_type_contains_placeholders(left_type)) {
+                    result = libab_ref_trie_put(right_params, name, left_type);
+                } else {
+                    result = LIBAB_AMBIGOUS_TYPE;
+                }
+            }
         }
 
         if(left != NULL && right != NULL) {
@@ -97,8 +121,67 @@ libab_result _interpreter_compare_types(libab_ref* left_type, libab_ref* right_t
     return result;
 }
 
+void _free_parsetype(void* parsetype) {
+    libab_parsetype_free(parsetype);
+    free(parsetype);
+}
+
+libab_result _interpreter_copy_resolved_type(libab_ref* type, libab_ref_trie* params, libab_ref* into) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_parsetype* copy;
+    libab_parsetype* original;
+
+    original = libab_ref_get(type);
+    if(original->variant & LIBABACUS_TYPE_F_PLACE) {
+        libab_ref_trie_get(params, original->data_u.name, into);
+    } else if((copy = malloc(sizeof(*copy)))) {
+        size_t index = 0;
+        copy->variant = original->variant;
+        copy->data_u.base = original->data_u.base;
+        if(copy->variant & LIBABACUS_TYPE_F_PARENT) {
+            libab_ref child_copy;
+            libab_ref temp_child;
+            result = libab_ref_vec_init(&copy->children);
+            for(; index < original->children.size && result == LIBAB_SUCCESS; index++) {
+                libab_ref_vec_index(&original->children, index, &temp_child);
+                result = _interpreter_copy_resolved_type(&temp_child, params, &child_copy);
+                if(result == LIBAB_SUCCESS) {
+                    result = libab_ref_vec_insert(&copy->children, &child_copy);
+                }
+
+                if(result != LIBAB_SUCCESS) {
+                    libab_parsetype_free(copy);
+                }
+
+                libab_ref_free(&child_copy);
+                libab_ref_free(&temp_child);
+            }
+
+            if(result == LIBAB_SUCCESS) {
+                result = libab_ref_new(into, copy, _free_parsetype);
+                if(result != LIBAB_SUCCESS) {
+                    _free_parsetype(copy);
+                }
+            }
+        }
+    } else {
+        result = LIBAB_MALLOC;
+    }
+
+    if(result != LIBAB_SUCCESS) {
+        libab_ref_null(into);
+    }
+
+    return result;
+}
+
 libab_result _interpreter_resolve_type_params(libab_ref* type, libab_ref_trie* params, libab_ref* into) {
     libab_result result = LIBAB_SUCCESS;
+    if(_interpreter_type_contains_placeholders(type)) {
+        result = _interpreter_copy_resolved_type(type, params, into);
+    } else {
+        libab_ref_copy(type, into);
+    }
     return result;
 }
 
@@ -254,16 +337,41 @@ libab_result _interpreter_cast_params(libab_ref_vec* params, libab_ref_vec* new_
     return result;
 }
 
-libab_result _interpreter_perform_call(libab_function* to_call, libab_ref_vec* params, libab_ref* into) {
+libab_result _interpreter_call_tree(libab_tree* tree, libab_ref_vec* params, libab_ref* into) {
     libab_result result = LIBAB_SUCCESS;
     return result;
 }
 
+libab_result _interpreter_call_behavior(libab_behavior* behavior, libab_ref_vec* params, libab_ref* into) {
+    libab_result result = LIBAB_SUCCESS;
+    if(behavior->variant == BIMPL_INTERNAL) {
+        result = behavior->data_u.internal(params, into);
+    } else {
+        result = _interpreter_call_tree(behavior->data_u.tree, params, into);
+    }
+    return result;
+}
+
+libab_result _interpreter_perform_call(libab_value* to_call, libab_ref_vec* params, libab_ref* into) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_function* function;
+    libab_parsetype* function_type;
+    size_t new_params;
+    function = libab_ref_get(&to_call->data);
+    function_type = libab_ref_get(&to_call->type);
+    new_params = params->size - function->params.size;
+    if(function_type->children.size - new_params == 1) {
+        _interpreter_call_behavior(&function->behavior, params, into);
+    }
+    return result;
+}
+
 libab_result _interpreter_call_function_list(struct interpreter_state* state,
-                                        libab_function_list* list, libab_ref_vec* params) {
+                                        libab_function_list* list, libab_ref_vec* params, libab_ref* into) {
     libab_result result = LIBAB_SUCCESS;
     libab_ref_vec new_types;
     libab_ref to_call;
+    libab_ref_null(into);
 
     result = _interpreter_find_match(state, list, params, &new_types, &to_call, 0);
     if(result == LIBAB_SUCCESS) {
@@ -280,12 +388,13 @@ libab_result _interpreter_call_function_list(struct interpreter_state* state,
         libab_ref_vec new_params;
         libab_function* function;
         function = libab_ref_get(&to_call);
-        /* result = libab_ref_vec_init_copy(&new_params, &function->params); */
+        result = libab_ref_vec_init_copy(&new_params, &function->params);
         if(result == LIBAB_SUCCESS) {
             result = _interpreter_cast_params(params, &new_types, &new_params);
 
             if(result == LIBAB_SUCCESS) {
-                result = _interpreter_perform_call(function, &new_params, NULL);
+                libab_ref_free(into);
+                result = _interpreter_perform_call(libab_ref_get(&to_call), &new_params, into);
             }
 
             if(result != LIBAB_SUCCESS) {

@@ -9,7 +9,7 @@
  * A function pointer that is called
  * to execute a certain type of function.
  */
-typedef void (*libab_function_ptr)();
+typedef libab_result (*libab_function_ptr)(libab_ref_vec*, libab_ref*);
 
 /**
  * The variant of the operator that
@@ -87,6 +87,11 @@ struct libab_function_s {
      * The behavior of this function.
      */
     struct libab_behavior_s behavior;
+    /**
+     * The parameters given to this function
+     * if it was created via partial application.
+     */
+    libab_ref_vec params;
 };
 
 typedef enum libab_operator_variant_e libab_operator_variant;
