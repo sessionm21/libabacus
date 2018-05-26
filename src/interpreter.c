@@ -373,6 +373,30 @@ libab_result _interpreter_perform_call(libab_value* to_call, libab_ref_vec* para
     return result;
 }
 
+libab_result _interpreter_cast_and_perform_call(libab_ref* to_call,
+                                                libab_ref_vec* params,
+                                                libab_ref_vec* new_types,
+                                                libab_ref* into) {
+    libab_result result;
+    libab_ref_vec new_params;
+    libab_value* function_value;
+    libab_function* function;
+
+    function_value = libab_ref_get(to_call);
+    function = libab_ref_get(&function_value->data);
+    result = libab_ref_vec_init_copy(&new_params, &function->params);
+    if(result == LIBAB_SUCCESS) {
+        result = _interpreter_cast_params(params, new_types, &new_params);
+
+        if(result == LIBAB_SUCCESS) {
+            result = _interpreter_perform_call(function_value, &new_params, into);
+        }
+
+        libab_ref_vec_free(&new_params);
+    }
+    return result;
+}
+
 libab_result _interpreter_call_function_list(struct interpreter_state* state,
                                         libab_function_list* list, libab_ref_vec* params, libab_ref* into) {
     libab_result result = LIBAB_SUCCESS;
@@ -392,27 +416,34 @@ libab_result _interpreter_call_function_list(struct interpreter_state* state,
     }
 
     if(result == LIBAB_SUCCESS) {
-        libab_ref_vec new_params;
-        libab_value* value;
-        libab_function* function;
-        value = libab_ref_get(&to_call);
-        function = libab_ref_get(&value->data);
-        result = libab_ref_vec_init_copy(&new_params, &function->params);
-        if(result == LIBAB_SUCCESS) {
-            result = _interpreter_cast_params(params, &new_types, &new_params);
-
-            if(result == LIBAB_SUCCESS) {
-                libab_ref_free(into);
-                result = _interpreter_perform_call(libab_ref_get(&to_call), &new_params, into);
-            }
-
-            libab_ref_vec_free(&new_params);
-        }
-
+        libab_ref_free(into);
+        result = _interpreter_cast_and_perform_call(&to_call, params, &new_types, into);
         libab_ref_vec_free(&new_types);
     }
 
     libab_ref_free(&to_call);
+
+    return result;
+}
+
+libab_result _interpreter_call_function(struct interpreter_state* state, libab_ref* function, libab_ref_vec* params, libab_ref* into) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_ref_vec temp_new_types;
+
+    libab_ref_null(into);
+    result = libab_ref_vec_init(&temp_new_types);
+    if(result == LIBAB_SUCCESS) {
+        result = _interpreter_check_function(state, function, params, &temp_new_types);
+
+        if(result == LIBAB_SUCCESS) {
+            libab_ref_free(into);
+            result = _interpreter_cast_and_perform_call(function, params, &temp_new_types, into);
+        } else {
+            printf("Failed check. %d\n", result);
+        }
+
+        libab_ref_vec_free(&temp_new_types);
+    }
 
     return result;
 }
