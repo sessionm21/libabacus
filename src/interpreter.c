@@ -446,6 +446,82 @@ libab_result _interpreter_call_function(struct interpreter_state* state, libab_r
     return result;
 }
 
+libab_result _interpreter_try_call(struct interpreter_state* state, libab_ref* value,
+                                   libab_ref_vec* params, libab_ref* into) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_value* callee_value;
+    libab_parsetype* callee_type;
+    libab_basetype* callee_basetype;
+    callee_value = libab_ref_get(value);
+    callee_type = libab_ref_get(&callee_value->type);
+    callee_basetype = callee_type->data_u.base;
+
+    if(callee_basetype == libab_get_basetype_function_list(state->ab)) {
+        result = _interpreter_call_function_list(state,
+                libab_ref_get(&callee_value->data), params, into);
+    } else if(callee_basetype == libab_get_basetype_function(state->ab)) {
+        result = _interpreter_call_function(state,
+                value, params, into);
+    } else {
+        libab_ref_null(into);
+        result = LIBAB_BAD_CALL;
+    }
+
+    return result;
+}
+
+libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
+                              libab_ref* into, libab_ref* scope,
+                              int force_scope);
+
+libab_result _interpreter_run_function_node(struct interpreter_state* state,
+                                            libab_tree* tree,
+                                            libab_ref* into, libab_ref* scope) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_ref param;
+    libab_ref callee;
+    libab_ref_vec params;
+    size_t count = 0;
+    void* child;
+
+    libab_ref_null(&param);
+    result = libab_ref_vec_init(&params);
+    for(; count < tree->children.size - 1 && result == LIBAB_SUCCESS; count++) {
+        libab_ref_free(&param);
+        child = vec_index(&tree->children, count);
+        result = _interpreter_run(state, child, &param, scope, 0);
+
+        if(result == LIBAB_SUCCESS) {
+            result = libab_ref_vec_insert(&params, &param);
+        }
+
+        if(result != LIBAB_SUCCESS) {
+            libab_ref_vec_free(&params);
+        }
+    }
+    libab_ref_free(&param);
+
+    if(result == LIBAB_SUCCESS) {
+        result = _interpreter_run(state, 
+                vec_index(&tree->children,
+                    tree->children.size - 1),
+                &callee, scope, 0);
+        if(result != LIBAB_SUCCESS) {
+            libab_ref_vec_free(&params);
+        }
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = _interpreter_try_call(state, &callee, &params, into);
+        libab_ref_free(&callee);
+        libab_ref_vec_free(&params);
+    } else {
+        libab_ref_null(into);
+    }
+
+    return result;
+}
+
 libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
                               libab_ref* into, libab_ref* scope,
                               int force_scope) {
@@ -473,6 +549,13 @@ libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
         result = _interpreter_create_num_val(state, into, tree->string_value);
     } else if (tree->variant == TREE_VOID) {
         libab_ref_null(into);
+    } else if (tree->variant == TREE_ID) {
+        libab_table_search_value(libab_ref_get(scope), tree->string_value, into);
+        if(libab_ref_get(into) == NULL) {
+            result = LIBAB_UNEXPECTED;
+        }
+    } else if (tree->variant == TREE_CALL) {
+        result = _interpreter_run_function_node(state, tree, into, scope);
     }
 
     if (needs_scope) {
