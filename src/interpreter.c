@@ -438,8 +438,6 @@ libab_result _interpreter_call_function(struct interpreter_state* state, libab_r
         if(result == LIBAB_SUCCESS) {
             libab_ref_free(into);
             result = _interpreter_cast_and_perform_call(function, params, &temp_new_types, into);
-        } else {
-            printf("Failed check. %d\n", result);
         }
 
         libab_ref_vec_free(&temp_new_types);

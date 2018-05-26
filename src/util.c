@@ -309,3 +309,17 @@ libab_result libab_put_table_value(libab_table* table, const char* key,
 
     return result;
 }
+
+void* libab_unwrap_value(libab_ref* ref) {
+    libab_value* value = libab_ref_get(ref);
+    return libab_ref_get(&value->data);
+}
+
+void* libab_unwrap_param(libab_ref_vec* vec, size_t index) {
+    libab_ref temp;
+    void* data;
+    libab_ref_vec_index(vec, index, &temp);
+    data = libab_unwrap_value(&temp);
+    libab_ref_free(&temp);
+    return data;
+}

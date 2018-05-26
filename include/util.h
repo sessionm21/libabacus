@@ -127,5 +127,23 @@ libab_result libab_create_function_list(libab_ref* into, libab_ref* type);
  */
 libab_result libab_put_table_value(libab_table* table, const char* key,
                                    libab_ref* value);
+/**
+ * Returns the data stored in the given reference to a libab_value.
+ * This is not the same as libab_ref_get: libab_ref_get will return directly
+ * the data pointed to by the ference. libab_unwrap_value assumes the reference
+ * it's given is that to a libab_value, extracts it, then extracts its data
+ * field.
+ * @param ref the reference to unwrap.
+ * @return the resulting data.
+ */
+void* libab_unwrap_value(libab_ref* ref);
+/**
+ * Similar to unwrap_value; Assumes the vector is a vector of
+ * values, and unwraps the value at the given index.
+ * @param vec the vector to unwrap a value from.
+ * @param index the index to look up.
+ * @return the value at the given index.
+ */
+void* libab_unwrap_param(libab_ref_vec* vec, size_t index);
 
 #endif
