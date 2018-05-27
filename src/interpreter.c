@@ -252,6 +252,8 @@ libab_result _interpreter_check_types(libab_ref_vec* reference_types,
         }
     }
 
+    libab_ref_trie_free(&function_params);
+
     if (result != LIBAB_SUCCESS) {
         libab_ref_vec_clear(types);
     }
