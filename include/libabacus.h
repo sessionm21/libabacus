@@ -160,6 +160,19 @@ libab_basetype* libab_get_basetype_function(libab* ab);
 libab_basetype* libab_get_basetype_function_list(libab* ab);
 
 /**
+ * Get the type of a number in this libabacus instance.
+ * @param ab the instance to get the type for.
+ * @param into the reference to store the type into.
+ */
+void libab_get_type_num(libab* ab, libab_ref* into);
+/**
+ * Get the type of the function list in this libabacus instance.
+ * @param ab the instance to get the type for.
+ * @param into the ference to store the type into.
+ */
+void libab_get_type_function_list(libab* ab, libab_ref* into);
+
+/**
  * Executes the given string of code.
  * @param ab the libabacus instance to use for executing code.
  * @param string the string to execute.

@@ -342,6 +342,14 @@ libab_basetype* libab_get_basetype_function_list(libab* ab) {
     return &_basetype_function_list;
 }
 
+void libab_get_type_num(libab* ab, libab_ref* into) {
+    libab_ref_copy(&ab->type_num, into);
+}
+
+void libab_get_type_function_list(libab* ab, libab_ref* into) {
+    libab_ref_copy(&ab->type_function_list, into);
+}
+
 libab_result libab_run(libab* ab, const char* string, libab_ref* value) {
     libab_result result = LIBAB_SUCCESS;
     ll tokens;
