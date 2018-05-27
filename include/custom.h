@@ -5,11 +5,13 @@
 #include "ref_trie.h"
 #include "tree.h"
 
+struct libab_s;
+
 /**
  * A function pointer that is called
  * to execute a certain type of function.
  */
-typedef libab_result (*libab_function_ptr)(libab_ref_vec*, libab_ref*);
+typedef libab_result (*libab_function_ptr)(struct libab_s*, libab_ref_vec*, libab_ref*);
 
 /**
  * The variant of the operator that

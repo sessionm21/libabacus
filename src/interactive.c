@@ -18,19 +18,19 @@ void* impl_parse(const char* string) {
 
 void impl_free(void* data) { free(data); }
 
-libab_result function_atan(libab_ref_vec* params, libab_ref* into) {
+libab_result function_atan(libab* ab, libab_ref_vec* params, libab_ref* into) {
     printf("atan called\n");
     libab_ref_null(into);
     return LIBAB_SUCCESS;
 }
 
-libab_result function_atan2(libab_ref_vec* params, libab_ref* into) {
+libab_result function_atan2(libab* ab, libab_ref_vec* params, libab_ref* into) {
     printf("atan2 called\n");
     libab_ref_null(into);
     return LIBAB_SUCCESS;
 }
 
-libab_result function_operator(libab_ref_vec* params, libab_ref* into) {
+libab_result function_operator(libab* ab, libab_ref_vec* params, libab_ref* into) {
     libab_result result = LIBAB_SUCCESS;
     libab_ref left_ref;
     libab_value* left_value;
