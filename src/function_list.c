@@ -13,7 +13,8 @@ size_t libab_function_list_size(libab_function_list* list) {
     return list->functions.size;
 }
 
-void libab_function_list_index(libab_function_list* list, size_t index, libab_ref* into) {
+void libab_function_list_index(libab_function_list* list, size_t index,
+                               libab_ref* into) {
     libab_ref_vec_index(&list->functions, index, into);
 }
 

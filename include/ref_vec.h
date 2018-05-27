@@ -40,7 +40,8 @@ libab_result libab_ref_vec_init(libab_ref_vec* vec);
  * @param copy_of the vector to make a copy of.
  * @return the result of the initialization.
  */
-libab_result libab_ref_vec_init_copy(libab_ref_vec* vec, libab_ref_vec* copy_of);
+libab_result libab_ref_vec_init_copy(libab_ref_vec* vec,
+                                     libab_ref_vec* copy_of);
 /**
  * Inserts an existing reference counted value into the vector.
  * This bumps the reference's refcount, thereby preventing its

@@ -28,7 +28,8 @@ void libab_interpreter_init(libab_interpreter* intr, struct libab_s* ab);
  * Uses the interpreter to run the given parse tree.
  * @param intr the interpreter to use to run the code.
  * @param tree the tree to run.
- * @param into the reference into which the result of the execution will be stored.
+ * @param into the reference into which the result of the execution will be
+ * stored.
  * @return the result of the execution.
  */
 libab_result libab_interpreter_run(libab_interpreter* intr, libab_tree* tree,

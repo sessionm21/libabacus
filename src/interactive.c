@@ -1,22 +1,22 @@
 #include "libabacus.h"
-#include <stdio.h>
-#include "value.h"
 #include "util.h"
+#include "value.h"
+#include <stdio.h>
 
-#define TRY(expression) if(result == LIBAB_SUCCESS) result = expression;
+#define TRY(expression)                                                        \
+    if (result == LIBAB_SUCCESS)                                               \
+        result = expression;
 #define INTERACTIONS 5
 
 void* impl_parse(const char* string) {
     double* data = malloc(sizeof(*data));
-    if(data) {
+    if (data) {
         *data = strtod(string, NULL);
     }
     return data;
 }
 
-void impl_free(void* data) {
-    free(data);
-}
+void impl_free(void* data) { free(data); }
 
 libab_result function_atan(libab_ref_vec* params, libab_ref* into) {
     printf("atan called\n");
@@ -42,16 +42,16 @@ libab_result function_operator(libab_ref_vec* params, libab_ref* into) {
 
     libab_ref_vec_index(params, 0, &left_ref);
     left_value = libab_ref_get(&left_ref);
-    left = *((double*) libab_unwrap_param(params, 0));
-    right = *((double*) libab_unwrap_param(params, 1));
+    left = *((double*)libab_unwrap_param(params, 0));
+    right = *((double*)libab_unwrap_param(params, 1));
 
     return_value = malloc(sizeof(*return_value));
-    if(return_value == NULL) {
+    if (return_value == NULL) {
         result = LIBAB_MALLOC;
         libab_ref_null(into);
     } else {
         *return_value = left + right;
-        result = libab_create_value_raw(into, return_value, &left_value->type); 
+        result = libab_create_value_raw(into, return_value, &left_value->type);
     }
 
     libab_ref_free(&left_ref);
@@ -71,10 +71,14 @@ libab_result register_functions(libab* ab) {
 
     TRY(libab_register_function(ab, "atan", &trig_type, function_atan));
     TRY(libab_register_function(ab, "atan2", &atan2_type, function_atan2));
-    TRY(libab_register_operator_infix(ab, "+", 0, -1, &atan2_type, function_operator));
-    TRY(libab_register_operator_infix(ab, "-", 0, -1, &atan2_type, function_operator));
-    TRY(libab_register_operator_infix(ab, "*", 1, -1, &atan2_type, function_operator));
-    TRY(libab_register_operator_infix(ab, "/", 1, -1, &atan2_type, function_operator));
+    TRY(libab_register_operator_infix(ab, "+", 0, -1, &atan2_type,
+                                      function_operator));
+    TRY(libab_register_operator_infix(ab, "-", 0, -1, &atan2_type,
+                                      function_operator));
+    TRY(libab_register_operator_infix(ab, "*", 1, -1, &atan2_type,
+                                      function_operator));
+    TRY(libab_register_operator_infix(ab, "/", 1, -1, &atan2_type,
+                                      function_operator));
 
     libab_ref_free(&trig_type);
     libab_ref_free(&atan2_type);
@@ -91,18 +95,18 @@ int main() {
     libab_result eval_result;
     libab ab;
 
-    if(libab_init(&ab, impl_parse, impl_free) != LIBAB_SUCCESS) {
+    if (libab_init(&ab, impl_parse, impl_free) != LIBAB_SUCCESS) {
         fprintf(stderr, "Failed to initialize libab.\n");
         exit(1);
     }
 
     result = register_functions(&ab);
-    while(interaction_count-- && result == LIBAB_SUCCESS) {
+    while (interaction_count-- && result == LIBAB_SUCCESS) {
         printf("(%d) > ", INTERACTIONS - interaction_count);
         fgets(input_buffer, 2048, stdin);
         eval_result = libab_run(&ab, input_buffer, &eval_into);
 
-        if(eval_result != LIBAB_SUCCESS) {
+        if (eval_result != LIBAB_SUCCESS) {
             printf("Invalid input.\n");
         }
         libab_ref_free(&eval_into);

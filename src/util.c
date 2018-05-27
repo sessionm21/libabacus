@@ -53,7 +53,8 @@ libab_result libab_resolve_parsetype(libab_parsetype* to_resolve,
                      (LIBABACUS_TYPE_F_RESOLVED | LIBABACUS_TYPE_F_PLACE));
     check_parents = !(to_resolve->variant & LIBABACUS_TYPE_F_PLACE);
 
-    if ((to_resolve->variant & LIBABACUS_TYPE_F_PLACE) && (to_resolve->variant & LIBABACUS_TYPE_F_PARENT)) {
+    if ((to_resolve->variant & LIBABACUS_TYPE_F_PLACE) &&
+        (to_resolve->variant & LIBABACUS_TYPE_F_PARENT)) {
         result = LIBAB_UNEXPECTED;
     }
 

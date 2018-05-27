@@ -1,10 +1,10 @@
 #include "libabacus.h"
+#include "debug.h"
 #include "lexer.h"
 #include "reserved.h"
 #include "util.h"
 #include "value.h"
 #include <stdlib.h>
-#include "debug.h"
 
 void _free_function_list(void* function_list) {
     libab_function_list_free(function_list);
@@ -346,17 +346,17 @@ libab_result libab_run(libab* ab, const char* string, libab_ref* value) {
     libab_result result = LIBAB_SUCCESS;
     ll tokens;
     libab_tree* root;
-    
+
     ll_init(&tokens);
     libab_ref_null(value);
 
     result = libab_lexer_lex(&ab->lexer, string, &tokens);
 
-    if(result == LIBAB_SUCCESS) {
+    if (result == LIBAB_SUCCESS) {
         result = libab_parser_parse(&ab->parser, &tokens, string, &root);
     }
 
-    if(result == LIBAB_SUCCESS) {
+    if (result == LIBAB_SUCCESS) {
         libab_debug_print_tree(root);
         libab_ref_free(value);
         result = libab_interpreter_run(&ab->intr, root, value);

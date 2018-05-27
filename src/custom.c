@@ -32,7 +32,7 @@ void libab_operator_free(libab_operator* op) {
     libab_behavior_free(&op->behavior);
 }
 
-libab_result _function_init(libab_function* function) { 
+libab_result _function_init(libab_function* function) {
     return libab_ref_vec_init(&function->params);
 }
 libab_result libab_function_init_internal(libab_function* function,

@@ -43,7 +43,8 @@ size_t libab_function_list_size(libab_function_list* list);
  * @param index the index at which to get the value.
  * @param into the reference to store the function into.
  */
-void libab_function_list_index(libab_function_list* list, size_t index, libab_ref* into);
+void libab_function_list_index(libab_function_list* list, size_t index,
+                               libab_ref* into);
 /**
  * Frees the given function list.
  * @param list the list to free.
