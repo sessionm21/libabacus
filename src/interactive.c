@@ -1,5 +1,7 @@
 #include "libabacus.h"
 #include <stdio.h>
+#include "value.h"
+#include "util.h"
 
 #define TRY(expression) if(result == LIBAB_SUCCESS) result = expression;
 #define INTERACTIONS 5
@@ -29,9 +31,32 @@ libab_result function_atan2(libab_ref_vec* params, libab_ref* into) {
 }
 
 libab_result function_operator(libab_ref_vec* params, libab_ref* into) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_ref left_ref;
+    libab_value* left_value;
+    double right;
+    double left;
+    double* return_value;
+
     printf("operator called\n");
-    libab_ref_null(into);
-    return LIBAB_SUCCESS;
+
+    libab_ref_vec_index(params, 0, &left_ref);
+    left_value = libab_ref_get(&left_ref);
+    left = *((double*) libab_unwrap_param(params, 0));
+    right = *((double*) libab_unwrap_param(params, 1));
+
+    return_value = malloc(sizeof(*return_value));
+    if(return_value == NULL) {
+        result = LIBAB_MALLOC;
+        libab_ref_null(into);
+    } else {
+        *return_value = left + right;
+        result = libab_create_value_raw(into, return_value, &left_value->type); 
+    }
+
+    libab_ref_free(&left_ref);
+
+    return result;
 }
 
 libab_result register_functions(libab* ab) {

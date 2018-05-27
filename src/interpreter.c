@@ -188,8 +188,8 @@ libab_result _interpreter_resolve_type_params(libab_ref* type, libab_ref_trie* p
 }
 
 libab_result _interpreter_check_types(struct interpreter_state* state,
-                                        libab_ref_vec* reference_types, libab_ref_vec* params,
-                                        libab_ref_vec* types) {
+                                      libab_ref_vec* reference_types, libab_ref_vec* params,
+                                      libab_ref_vec* types) {
     libab_result result = LIBAB_SUCCESS;
     libab_ref_trie function_params;
 
@@ -355,7 +355,7 @@ libab_result _interpreter_call_behavior(libab_behavior* behavior, libab_ref_vec*
     return result;
 }
 
-libab_result _interpreter_perform_call(libab_value* to_call, libab_ref_vec* params, libab_ref* into) {
+libab_result _interpreter_perform_function_call(libab_value* to_call, libab_ref_vec* params, libab_ref* into) {
     libab_result result = LIBAB_SUCCESS;
     libab_function* function;
     libab_parsetype* function_type;
@@ -369,7 +369,7 @@ libab_result _interpreter_perform_call(libab_value* to_call, libab_ref_vec* para
     return result;
 }
 
-libab_result _interpreter_cast_and_perform_call(libab_ref* to_call,
+libab_result _interpreter_cast_and_perform_function_call(libab_ref* to_call,
                                                 libab_ref_vec* params,
                                                 libab_ref_vec* new_types,
                                                 libab_ref* into) {
@@ -385,7 +385,7 @@ libab_result _interpreter_cast_and_perform_call(libab_ref* to_call,
         result = _interpreter_cast_params(params, new_types, &new_params);
 
         if(result == LIBAB_SUCCESS) {
-            result = _interpreter_perform_call(function_value, &new_params, into);
+            result = _interpreter_perform_function_call(function_value, &new_params, into);
         }
 
         libab_ref_vec_free(&new_params);
@@ -413,7 +413,7 @@ libab_result _interpreter_call_function_list(struct interpreter_state* state,
 
     if(result == LIBAB_SUCCESS) {
         libab_ref_free(into);
-        result = _interpreter_cast_and_perform_call(&to_call, params, &new_types, into);
+        result = _interpreter_cast_and_perform_function_call(&to_call, params, &new_types, into);
         libab_ref_vec_free(&new_types);
     }
 
@@ -438,7 +438,7 @@ libab_result _interpreter_call_function(struct interpreter_state* state, libab_r
 
         if(result == LIBAB_SUCCESS) {
             libab_ref_free(into);
-            result = _interpreter_cast_and_perform_call(function, params, &temp_new_types, into);
+            result = _interpreter_cast_and_perform_function_call(function, params, &temp_new_types, into);
         }
 
         libab_ref_vec_free(&temp_new_types);
@@ -471,9 +471,87 @@ libab_result _interpreter_try_call(struct interpreter_state* state, libab_ref* v
     return result;
 }
 
+libab_result _interpreter_cast_and_perform_operator_call(libab_operator* to_call,
+                                                         libab_ref_vec* params,
+                                                         libab_ref_vec* new_types,
+                                                         libab_ref* into) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_ref_vec new_params;
+    libab_ref_null(into);
+
+    result = libab_ref_vec_init(&new_params);
+    if(result == LIBAB_SUCCESS) {
+        result = _interpreter_cast_params(params, new_types, &new_params);
+
+        if(result == LIBAB_SUCCESS) {
+            libab_ref_free(into);
+            result = _interpreter_call_behavior(&to_call->behavior, params, into);
+        }
+
+        libab_ref_vec_free(&new_params);
+    }
+
+    return result;
+}
+
 libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
                               libab_ref* into, libab_ref* scope,
                               int force_scope);
+
+libab_result _interpreter_call_operator(struct interpreter_state* state,
+                                        libab_operator* to_call, libab_ref* into, libab_ref* scope, ...) {
+    va_list args;
+    libab_result result = LIBAB_SUCCESS;
+    libab_ref_vec params;
+    libab_ref_vec new_types;
+    libab_ref temp;
+    libab_parsetype* operator_type;
+
+    va_start(args, scope);
+    operator_type = libab_ref_get(&to_call->type);
+    result = libab_ref_vec_init(&params);
+
+    if(result == LIBAB_SUCCESS) {
+        result = libab_ref_vec_init(&new_types);
+        if(result != LIBAB_SUCCESS) {
+            libab_ref_vec_free(&params);
+        }
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = _interpreter_run(state, va_arg(args, libab_tree*), &temp, scope, 0);
+
+        if(result == LIBAB_SUCCESS) {
+            result = libab_ref_vec_insert(&params, &temp);
+        }
+
+        libab_ref_free(&temp);
+
+        if(result == LIBAB_SUCCESS && to_call->variant == OPERATOR_INFIX) {
+            result = _interpreter_run(state, va_arg(args, libab_tree*), &temp, scope, 0);
+            
+            if(result == LIBAB_SUCCESS) {
+                result = libab_ref_vec_insert(&params, &temp);
+            }
+
+            libab_ref_free(&temp);
+        }
+
+        if(result == LIBAB_SUCCESS) {
+            result = _interpreter_check_types(state, &operator_type->children, &params, &new_types);
+        }
+
+        if(result == LIBAB_SUCCESS) {
+            result = _interpreter_cast_and_perform_operator_call(to_call, &params, &new_types, into);
+        }
+
+        libab_ref_vec_free(&params);
+        libab_ref_vec_free(&new_types);
+    }
+    va_end(args);
+
+    return result;
+}
 
 libab_result _interpreter_run_function_node(struct interpreter_state* state,
                                             libab_tree* tree,
@@ -557,6 +635,19 @@ libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
         }
     } else if (tree->variant == TREE_CALL) {
         result = _interpreter_run_function_node(state, tree, into, scope);
+    } else if (tree->variant == TREE_OP) {
+        libab_operator* to_call = libab_table_search_operator(libab_ref_get(scope), tree->string_value, OPERATOR_INFIX);
+        result = _interpreter_call_operator(state, to_call, into, scope, 
+                vec_index(&tree->children, 0),
+                vec_index(&tree->children, 1));
+    } else if (tree->variant == TREE_PREFIX_OP) {
+        libab_operator* to_call = libab_table_search_operator(libab_ref_get(scope), tree->string_value, OPERATOR_PREFIX);
+        result = _interpreter_call_operator(state, to_call, into, scope, 
+                vec_index(&tree->children, 0));
+    } else if (tree->variant == TREE_POSTFIX_OP) {
+        libab_operator* to_call = libab_table_search_operator(libab_ref_get(scope), tree->string_value, OPERATOR_POSTFIX);
+        result = _interpreter_call_operator(state, to_call, into, scope, 
+                vec_index(&tree->children, 0));
     }
 
     if (needs_scope) {
