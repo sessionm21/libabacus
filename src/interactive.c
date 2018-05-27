@@ -30,31 +30,35 @@ libab_result function_atan2(libab* ab, libab_ref_vec* params, libab_ref* into) {
     return LIBAB_SUCCESS;
 }
 
+libab_result create_double_value(libab* ab, double val, libab_ref* into) {
+    libab_ref type_num;
+    libab_result result = LIBAB_SUCCESS;
+    libab_get_type_num(ab, &type_num);
+    double* new_double = malloc(sizeof(*new_double));
+    if(new_double) {
+        *new_double = val;
+        result = libab_create_value_raw(into, new_double, &type_num);
+        if(result != LIBAB_SUCCESS) {
+            free(new_double);
+        }
+    } else {
+        result = LIBAB_MALLOC;
+        libab_ref_null(into);
+    }
+    libab_ref_free(&type_num);
+    return result;
+}
+
 libab_result function_operator(libab* ab, libab_ref_vec* params, libab_ref* into) {
     libab_result result = LIBAB_SUCCESS;
-    libab_ref left_ref;
-    libab_value* left_value;
     double right;
     double left;
-    double* return_value;
 
     printf("operator called\n");
 
-    libab_ref_vec_index(params, 0, &left_ref);
-    left_value = libab_ref_get(&left_ref);
     left = *((double*)libab_unwrap_param(params, 0));
     right = *((double*)libab_unwrap_param(params, 1));
-
-    return_value = malloc(sizeof(*return_value));
-    if (return_value == NULL) {
-        result = LIBAB_MALLOC;
-        libab_ref_null(into);
-    } else {
-        *return_value = left + right;
-        result = libab_create_value_raw(into, return_value, &left_value->type);
-    }
-
-    libab_ref_free(&left_ref);
+    create_double_value(ab, left + right, into);
 
     return result;
 }
