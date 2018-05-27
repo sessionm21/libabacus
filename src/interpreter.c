@@ -187,19 +187,15 @@ libab_result _interpreter_resolve_type_params(libab_ref* type, libab_ref_trie* p
     return result;
 }
 
-libab_result _interpreter_check_function(struct interpreter_state* state,
-                                        libab_ref* func, libab_ref_vec* params,
+libab_result _interpreter_check_types(struct interpreter_state* state,
+                                        libab_ref_vec* reference_types, libab_ref_vec* params,
                                         libab_ref_vec* types) {
     libab_result result = LIBAB_SUCCESS;
-    libab_value* value;
-    libab_parsetype* function_type;
     libab_ref_trie function_params;
 
     libab_ref_trie_init(&function_params);
-    value = libab_ref_get(func);
-    function_type = libab_ref_get(&value->type);
 
-    if (params->size >= function_type->children.size) {
+    if (params->size >= reference_types->size) {
         result = LIBAB_BAD_CALL;
     } else {
         libab_ref_trie child_params;
@@ -211,7 +207,7 @@ libab_result _interpreter_check_function(struct interpreter_state* state,
         for(; index < params->size && result == LIBAB_SUCCESS; index++) {
             libab_ref_trie_init(&child_params);
 
-            libab_ref_vec_index(&function_type->children, index, &left_temp);
+            libab_ref_vec_index(reference_types, index, &left_temp);
             libab_ref_vec_index(params, index, &right_value_temp);
             right_temp = &((libab_value*) libab_ref_get(&right_value_temp))->type;
             result = _interpreter_compare_types(&left_temp, 
@@ -264,7 +260,7 @@ libab_result _interpreter_find_match(struct interpreter_state* state,
         if(((temp_function_type->children.size == params->size + 1) && !partial) ||
                 ((temp_function_type->children.size > params->size + 1) && partial)) {
             /* We found a function that has the correct number of parameters. */
-            result = _interpreter_check_function(state, &temp_function_value, params, &temp_new_types);
+            result = _interpreter_check_types(state, &temp_function_type->children, params, &temp_new_types);
             if(result == LIBAB_MISMATCHED_TYPE) {
                 /* Mismatch is OK. */
                 result = LIBAB_SUCCESS;
@@ -429,11 +425,16 @@ libab_result _interpreter_call_function_list(struct interpreter_state* state,
 libab_result _interpreter_call_function(struct interpreter_state* state, libab_ref* function, libab_ref_vec* params, libab_ref* into) {
     libab_result result = LIBAB_SUCCESS;
     libab_ref_vec temp_new_types;
+    libab_value* function_value;
+    libab_parsetype* function_type;
 
+    function_value = libab_ref_get(function);
+    function_type = libab_ref_get(&function_value->type);
     libab_ref_null(into);
+
     result = libab_ref_vec_init(&temp_new_types);
     if(result == LIBAB_SUCCESS) {
-        result = _interpreter_check_function(state, function, params, &temp_new_types);
+        result = _interpreter_check_types(state, &function_type->children, params, &temp_new_types);
 
         if(result == LIBAB_SUCCESS) {
             libab_ref_free(into);
