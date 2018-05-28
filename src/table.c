@@ -47,6 +47,11 @@ int libab_table_compare_basetype(const void* left, const void* right) {
     return entry->variant == ENTRY_BASETYPE;
 }
 
+int libab_table_compare_type_param(const void* left, const void* right) {
+    const libab_table_entry* entry = right;
+    return entry->variant == ENTRY_TYPE_PARAM;
+}
+
 libab_operator* libab_table_search_operator(libab_table* table,
                                             const char* string, int type) {
     libab_table_entry* entry = NULL;
@@ -81,6 +86,17 @@ void libab_table_search_value(libab_table* table, const char* string,
     }
 }
 
+void libab_table_search_type_param(libab_table* table, const char* string,
+                                   libab_ref* ref) {
+    libab_table_entry* entry = libab_table_search_filter(
+        table, string, NULL, libab_table_compare_type_param);
+    if (entry) {
+        libab_ref_copy(&entry->data_u.type_param, ref);
+    } else {
+        libab_ref_null(ref);
+    }
+}
+
 libab_result libab_table_put(libab_table* table, const char* string,
                              libab_table_entry* entry) {
     return libab_trie_put(&table->trie, string, entry);
@@ -107,5 +123,7 @@ void libab_table_entry_free(libab_table_entry* entry) {
         libab_basetype_free(entry->data_u.basetype);
     } else if (entry->variant == ENTRY_VALUE) {
         libab_ref_free(&entry->data_u.value);
+    } else if (entry->variant == ENTRY_TYPE_PARAM) {
+        libab_ref_free(&entry->data_u.type_param);
     }
 }

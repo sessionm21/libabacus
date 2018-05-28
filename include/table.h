@@ -29,7 +29,12 @@ struct libab_table_s {
  * Enum that represents the type of a table
  * entry.
  */
-enum libab_table_entry_variant_e { ENTRY_VALUE, ENTRY_BASETYPE, ENTRY_OP };
+enum libab_table_entry_variant_e { 
+    ENTRY_VALUE, 
+    ENTRY_BASETYPE,
+    ENTRY_OP,
+    ENTRY_TYPE_PARAM
+};
 
 /**
  * An entry in the table.
@@ -47,6 +52,7 @@ struct libab_table_entry_s {
         libab_operator op;
         libab_basetype* basetype;
         libab_ref value;
+        libab_ref type_param;
     } data_u;
 };
 
@@ -105,6 +111,14 @@ libab_basetype* libab_table_search_basetype(libab_table* table,
  */
 void libab_table_search_value(libab_table* table, const char* string,
                               libab_ref* ref);
+/**
+ * Searches for the given type parameter in the talb.e
+ * @param table the table to search in.
+ * @param string the key ot search for.
+ * @param ref the reference to store the type into.
+ */
+void libab_table_search_type_param(libab_table* table, const char* string,
+                                   libab_ref* ref);
 /**
  * Stores the given entry in the table under the given key.
  * @param table the table to store the entry into.
