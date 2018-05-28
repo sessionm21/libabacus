@@ -42,6 +42,11 @@ libab_result _interpreter_create_num_val(struct interpreter_state* state,
     return result;
 }
 
+/**
+ * Checks if the given type reference contains any placeholder types.
+ * @param type the type to check.
+ * @return whether the type has placeholders.
+ */
 int _interpreter_type_contains_placeholders(libab_ref* type) {
     size_t index = 0;
     int placeholder;
@@ -58,6 +63,15 @@ int _interpreter_type_contains_placeholders(libab_ref* type) {
     return placeholder;
 }
 
+/**
+ * Compares the two types, filling in any missing type parameters
+ * in the respective type tries.
+ * @param left_type the left type to compare.
+ * @param right_type the right type to compare.
+ * @pram left_params the trie into which to store left parameters.
+ * @param right_params the trie into which to store right parameters.
+ * @param result the result of the operation.
+ */
 libab_result _interpreter_compare_types(libab_ref* left_type,
                                         libab_ref* right_type,
                                         libab_ref_trie* left_params,
@@ -140,6 +154,14 @@ void _free_parsetype(void* parsetype) {
     free(parsetype);
 }
 
+/**
+ * Copies a type, substituting type parameters for their copies
+ * from the parameter trie.
+ * @param type the type to copy.
+ * @param params the type parameter map.
+ * @param into the copy destination.
+ * @return result the result of the operation.
+ */
 libab_result _interpreter_copy_resolved_type(libab_ref* type,
                                              libab_ref_trie* params,
                                              libab_ref* into) {
@@ -193,6 +215,13 @@ libab_result _interpreter_copy_resolved_type(libab_ref* type,
     return result;
 }
 
+/**
+ * Gets a type of with its template types substituted with types
+ * from the parameters trie.
+ * @param type the type into which to substitute.
+ * @param params the map of param names to their types.
+ * @param into the reference into which to store the type.
+ */
 libab_result _interpreter_resolve_type_params(libab_ref* type,
                                               libab_ref_trie* params,
                                               libab_ref* into) {
@@ -205,6 +234,14 @@ libab_result _interpreter_resolve_type_params(libab_ref* type,
     return result;
 }
 
+/**
+ * Takes a list of types and a list of parameters that have to match these types,
+ * and computes the actual types that these parameters should be given, storing them
+ * into a third, pre-initialized vector. On error, clears the output vector.
+ * @param reference_types the types to check against.
+ * @param params the paramters to check.
+ * @param types the destination for the new types.
+ */
 libab_result _interpreter_check_types(libab_ref_vec* reference_types,
                                       libab_ref_vec* params,
                                       libab_ref_vec* types) {
@@ -261,6 +298,16 @@ libab_result _interpreter_check_types(libab_ref_vec* reference_types,
     return result;
 }
 
+/**
+ * Checks through a list of functions, and finds a function that matches the given
+ * paramters.
+ * @param function_value the list of functions to search.
+ * @param parmas the parameters that the function must be able to accept.
+ * @param new_types the types that the parameters have to be cast to to be accepted
+ * by this function. This variable is only initialized if a match is found.
+ * @param match the reference into which to store the function value to call, if any.
+ * @return the result of the operation.
+ */
 libab_result _interpreter_find_match(libab_function_list* function_values,
                                      libab_ref_vec* params,
                                      libab_ref_vec* new_types, libab_ref* match,
@@ -335,6 +382,12 @@ libab_result _interpreter_find_match(libab_function_list* function_values,
     return result;
 }
 
+/**
+ * Create a new value with the same data and a new type.
+ * @param param the value to cast.
+ * @param type the new type.
+ * @param into the reference into which to store the new value.
+ */
 libab_result _interpreter_cast_param(libab_ref* param, libab_ref* type,
                                      libab_ref_vec* into) {
     libab_result result = LIBAB_SUCCESS;
@@ -350,6 +403,13 @@ libab_result _interpreter_cast_param(libab_ref* param, libab_ref* type,
     return result;
 }
 
+/**
+ * Casts a list of parameters to the given list of types.
+ * @param params the parameters to cast.
+ * @param new_types the types to cast to.
+ * @param into the pre-initialized vector to store the new values into.
+ * @return the result of any allocations.
+ */
 libab_result _interpreter_cast_params(libab_ref_vec* params,
                                       libab_ref_vec* new_types,
                                       libab_ref_vec* into) {
@@ -371,12 +431,27 @@ libab_result _interpreter_cast_params(libab_ref_vec* params,
     return result;
 }
 
+/**
+ * Calls a tree-based function with the given parameters.
+ * @param tree the tree function to call.
+ * @param the parameters to give to the function.
+ * @param into the reference to store the result into;
+ * @return the result of the call.
+ */
 libab_result _interpreter_call_tree(libab_tree* tree, libab_ref_vec* params,
                                     libab_ref* into) {
     libab_result result = LIBAB_SUCCESS;
     return result;
 }
 
+/**
+ * Calls the given behavior with the given parameters.
+ * @param state the state in which to perform the call.
+ * @param behavior the behavior to clal.
+ * @param params the parameters to give to the behavior.
+ * @param into the reference into which to store the result of the call.
+ * @return libab_result the result of the call.
+ */
 libab_result _interpreter_call_behavior(struct interpreter_state* state,
                                         libab_behavior* behavior,
                                         libab_ref_vec* params,
@@ -390,6 +465,14 @@ libab_result _interpreter_call_behavior(struct interpreter_state* state,
     return result;
 }
 
+/**
+ * Calls a function with the given, compatible paramters.
+ * @param state the state to use to call the function.
+ * @param to_call the function value to call.
+ * @param params the parameters to pass to the function.
+ * @param into the reference into which to store the result.
+ * @return the result of the call.
+ */
 libab_result _interpreter_perform_function_call(struct interpreter_state* state,
                                                 libab_value* to_call,
                                                 libab_ref_vec* params,
@@ -407,6 +490,15 @@ libab_result _interpreter_perform_function_call(struct interpreter_state* state,
     return result;
 }
 
+/**
+ * Casts the parameters to the given new types, then calls a function.
+ * @param state the state to use to call.
+ * @param to_call the function to call.
+ * @param params the parameters to cast then pass to the function.
+ * @param new_types the types to cast the params to.
+ * @param into the reference to store the result of the call into.
+ * @return the result of the call.
+ */
 libab_result _interpreter_cast_and_perform_function_call(
     struct interpreter_state* state,
     libab_ref* to_call, libab_ref_vec* params, libab_ref_vec* new_types,
@@ -432,6 +524,14 @@ libab_result _interpreter_cast_and_perform_function_call(
     return result;
 }
 
+/**
+ * Calls a function list with the given parameters.
+ * @param state the state to use to call the list.
+ * @param list the list to call.
+ * @param params the parameters to pass to the function list.
+ * @param into the reference into which to store the result of the call.
+ * @return the result of the call.
+ */
 libab_result _interpreter_call_function_list(struct interpreter_state* state,
                                              libab_function_list* list,
                                              libab_ref_vec* params,
@@ -466,6 +566,14 @@ libab_result _interpreter_call_function_list(struct interpreter_state* state,
     return result;
 }
 
+/**
+ * Calls a function with the given parameters.
+ * @param state the state to use to call the.
+ * @param function the function to call.
+ * @param params the parameters to pass to the function.
+ * @param into the reference into which to store the result of the call.
+ * @return the result of the call.
+ */
 libab_result _interpreter_call_function(struct interpreter_state* state,
                                         libab_ref* function,
                                         libab_ref_vec* params,
@@ -496,6 +604,14 @@ libab_result _interpreter_call_function(struct interpreter_state* state,
     return result;
 }
 
+/**
+ * Attempts to call a value of unknown type.
+ * @param state the state in which to run the code.
+ * @param value the value which is being called.
+ * @param params the parameters given to the value.
+ * @param into the reference into which to store the output of the call.
+ * @return the result of the call.
+ */
 libab_result _interpreter_try_call(struct interpreter_state* state,
                                    libab_ref* value, libab_ref_vec* params,
                                    libab_ref* into) {
@@ -520,6 +636,15 @@ libab_result _interpreter_try_call(struct interpreter_state* state,
     return result;
 }
 
+/**
+ * Casts the paramters of an operator, and calls it.
+ * @param state the state in which to perform the call on the operator.
+ * @param to_call the operator to call.
+ * @param params the parameters to give to the operator.
+ * @param new_types the types to which to cast the parameters.
+ * @param into the reference into which to store the result of the cold.
+ * @return the result of the call.
+ */
 libab_result _interpreter_cast_and_perform_operator_call(
     struct interpreter_state* state,
     libab_operator* to_call, libab_ref_vec* params, libab_ref_vec* new_types,
