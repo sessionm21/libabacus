@@ -94,6 +94,10 @@ struct libab_function_s {
      * if it was created via partial application.
      */
     libab_ref_vec params;
+    /**
+     * The scope in which this function was declared.
+     */
+    libab_ref scope;
 };
 
 typedef enum libab_operator_variant_e libab_operator_variant;
@@ -143,18 +147,22 @@ void libab_operator_free(libab_operator* op);
  * Initializes a function with the given internal behavior.
  * @param function the function to initialize.
  * @param fun the function implementation.
+ * @param the parent scope in which this function was declared.
  * @return the result of the initialization.
  */
 libab_result libab_function_init_internal(libab_function* function,
-                                          libab_function_ptr fun);
+                                          libab_function_ptr fun,
+                                          libab_ref* scope);
 /**
  * Initializes a function with the given tree behavior.
  * @param function the function to initialize.
  * @param tree the tree that represents the function's behavior.
+ * @param scope the scope in which this function was declared.
  * @return the result of the initialization.
  */
 libab_result libab_function_init_tree(libab_function* function,
-                                      libab_tree* tree);
+                                      libab_tree* tree,
+                                      libab_ref* scope);
 /**
  * Frees the given function.
  * @param fun the function to free.

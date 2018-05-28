@@ -147,10 +147,11 @@ libab_result libab_register_operator_postfix(libab* ab, const char* op,
 }
 
 libab_result _create_value_function_internal(libab_ref* into, libab_ref* type,
-                                             libab_function_ptr func) {
+                                             libab_function_ptr func, 
+                                             libab_ref* scope) {
     libab_ref function_ref;
     libab_result result =
-        libab_create_function_internal(&function_ref, _free_function, func);
+        libab_create_function_internal(&function_ref, _free_function, func, scope);
     libab_ref_null(into);
     if (result == LIBAB_SUCCESS) {
         libab_ref_free(into);
@@ -233,7 +234,7 @@ libab_result libab_register_function(libab* ab, const char* name,
     libab_table_entry* existing_entry;
     libab_ref function_value;
     libab_result result =
-        _create_value_function_internal(&function_value, type, func);
+        _create_value_function_internal(&function_value, type, func, &ab->table);
 
     if (result == LIBAB_SUCCESS) {
         existing_entry = libab_table_search_filter(

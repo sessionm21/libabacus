@@ -210,12 +210,13 @@ libab_result libab_create_value_raw(libab_ref* into, void* data,
 
 libab_result libab_create_function_internal(libab_ref* into,
                                             void (*free_function)(void*),
-                                            libab_function_ptr fun) {
+                                            libab_function_ptr fun,
+                                            libab_ref* scope) {
     libab_function* new_function;
     libab_result result = LIBAB_SUCCESS;
 
     if ((new_function = malloc(sizeof(*new_function)))) {
-        result = libab_function_init_internal(new_function, fun);
+        result = libab_function_init_internal(new_function, fun, scope);
     } else {
         result = LIBAB_MALLOC;
     }
@@ -237,12 +238,13 @@ libab_result libab_create_function_internal(libab_ref* into,
 
 libab_result libab_create_function_tree(libab_ref* into,
                                         void (*free_function)(void*),
-                                        libab_tree* tree) {
+                                        libab_tree* tree,
+                                        libab_ref* scope) {
     libab_function* new_function;
     libab_result result = LIBAB_SUCCESS;
 
     if ((new_function = malloc(sizeof(*new_function)))) {
-        result = libab_function_init_tree(new_function, tree);
+        result = libab_function_init_tree(new_function, tree, scope);
     } else {
         result = LIBAB_MALLOC;
     }
