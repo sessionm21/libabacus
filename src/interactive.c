@@ -49,19 +49,22 @@ libab_result create_double_value(libab* ab, double val, libab_ref* into) {
     return result;
 }
 
-libab_result function_operator(libab* ab, libab_ref_vec* params, libab_ref* into) {
-    libab_result result = LIBAB_SUCCESS;
-    double right;
-    double left;
+#define OP_FUNCTION(name, expression) \
+    libab_result name(libab* ab, libab_ref_vec* params, libab_ref* into) { \
+        libab_result result = LIBAB_SUCCESS; \
+        double right; \
+        double left; \
+        printf(#name " called\n"); \
+        left = *((double*)libab_unwrap_param(params, 0)); \
+        right = *((double*)libab_unwrap_param(params, 1)); \
+        create_double_value(ab, expression, into); \
+        return result;\
+    }
 
-    printf("operator called\n");
-
-    left = *((double*)libab_unwrap_param(params, 0));
-    right = *((double*)libab_unwrap_param(params, 1));
-    create_double_value(ab, left + right, into);
-
-    return result;
-}
+OP_FUNCTION(function_plus, left + right)
+OP_FUNCTION(function_minus, left - right)
+OP_FUNCTION(function_times, left * right)
+OP_FUNCTION(function_divide, left / right)
 
 libab_result register_functions(libab* ab) {
     libab_result result = LIBAB_SUCCESS;
@@ -75,10 +78,10 @@ libab_result register_functions(libab* ab) {
 
     TRY(libab_register_function(ab, "atan", &trig_type, function_atan));
     TRY(libab_register_function(ab, "atan2", &atan2_type, function_atan2));
-    TRY(libab_register_function(ab, "plus", &atan2_type, function_operator));
-    TRY(libab_register_function(ab, "minus", &atan2_type, function_operator));
-    TRY(libab_register_function(ab, "times", &atan2_type, function_operator));
-    TRY(libab_register_function(ab, "divide", &atan2_type, function_operator));
+    TRY(libab_register_function(ab, "plus", &atan2_type, function_plus));
+    TRY(libab_register_function(ab, "minus", &atan2_type, function_minus));
+    TRY(libab_register_function(ab, "times", &atan2_type, function_times));
+    TRY(libab_register_function(ab, "divide", &atan2_type, function_divide));
     TRY(libab_register_operator_infix(ab, "+", 0, -1, "plus"));
     TRY(libab_register_operator_infix(ab, "-", 0, -1, "minus"));
     TRY(libab_register_operator_infix(ab, "*", 1, -1, "times"));
