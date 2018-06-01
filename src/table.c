@@ -110,6 +110,9 @@ void libab_table_set_parent(libab_table* table, libab_ref* parent) {
     libab_ref_free(&table->parent);
     libab_ref_copy(parent, &table->parent);
 }
+void libab_table_clear(libab_table* table) {
+    libab_trie_clear(&table->trie);
+}
 void libab_table_free(libab_table* table) {
     libab_trie_foreach(&table->trie, NULL, compare_always,
                        _table_foreach_entry_free);

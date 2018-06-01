@@ -110,6 +110,11 @@ int libab_trie_foreach(const libab_trie* trie, void* data, compare_func compare,
     return _libab_trie_foreach(trie->head, data, compare, foreach);
 }
 
+void libab_trie_clear(libab_trie* trie) {
+    libab_trie_free(trie);
+    libab_trie_init(trie);
+}
+
 void libab_trie_free(libab_trie* trie) {
     _libab_trie_free(trie->head);
     trie->head = NULL;

@@ -135,6 +135,11 @@ libab_result libab_table_put(libab_table* table, const char* string,
  */
 void libab_table_set_parent(libab_table* table, libab_ref* parent);
 /**
+ * Clears the table.
+ * @param table the table to clear.
+ */
+void libab_table_clear(libab_table* table);
+/**
  * Frees the resources allocated by the
  * given table.
  * @param table the table to free.
