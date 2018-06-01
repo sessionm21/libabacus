@@ -379,6 +379,7 @@ libab_result libab_run(libab* ab, const char* string, libab_ref* value) {
 }
 
 libab_result libab_free(libab* ab) {
+    libab_table_free(libab_ref_get(&ab->table));
     libab_ref_free(&ab->table);
     libab_ref_free(&ab->type_num);
     libab_ref_free(&ab->type_function_list);
