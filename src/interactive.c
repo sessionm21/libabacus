@@ -75,14 +75,14 @@ libab_result register_functions(libab* ab) {
 
     TRY(libab_register_function(ab, "atan", &trig_type, function_atan));
     TRY(libab_register_function(ab, "atan2", &atan2_type, function_atan2));
-    TRY(libab_register_operator_infix(ab, "+", 0, -1, &atan2_type,
-                                      function_operator));
-    TRY(libab_register_operator_infix(ab, "-", 0, -1, &atan2_type,
-                                      function_operator));
-    TRY(libab_register_operator_infix(ab, "*", 1, -1, &atan2_type,
-                                      function_operator));
-    TRY(libab_register_operator_infix(ab, "/", 1, -1, &atan2_type,
-                                      function_operator));
+    TRY(libab_register_function(ab, "plus", &atan2_type, function_operator));
+    TRY(libab_register_function(ab, "minus", &atan2_type, function_operator));
+    TRY(libab_register_function(ab, "times", &atan2_type, function_operator));
+    TRY(libab_register_function(ab, "divide", &atan2_type, function_operator));
+    TRY(libab_register_operator_infix(ab, "+", 0, -1, "plus"));
+    TRY(libab_register_operator_infix(ab, "-", 0, -1, "minus"));
+    TRY(libab_register_operator_infix(ab, "*", 1, -1, "times"));
+    TRY(libab_register_operator_infix(ab, "/", 1, -1, "divide"));
 
     libab_ref_free(&trig_type);
     libab_ref_free(&atan2_type);

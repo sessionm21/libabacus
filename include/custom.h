@@ -62,10 +62,6 @@ struct libab_operator_s {
      */
     enum libab_operator_variant_e variant;
     /**
-     * The type of this operator.
-     */
-    libab_ref type;
-    /**
      * The precedence of the operator.
      */
     int precedence;
@@ -74,9 +70,9 @@ struct libab_operator_s {
      */
     int associativity;
     /**
-     * The behavior of this operator.
+     * The function called by this operator.
      */
-    struct libab_behavior_s behavior;
+    const char* function;
 };
 
 /**
@@ -132,12 +128,10 @@ void libab_behavior_free(libab_behavior* behavior);
  * @param precedence the precedence of the operator.
  * @param associativity the associativity (left = -1, right = 1) of the
  * operator.
- * @param type the type of the operator.
- * @param func the function used to implement the operator.
+ * @param function the function this operator represents.
  */
 void libab_operator_init(libab_operator* op, libab_operator_variant variant,
-                         int precedence, int associativity, libab_ref* type,
-                         libab_function_ptr func);
+                         int precedence, int associativity, const char* function);
 /**
  * Frees the given operator.
  * @param op the operator to free.

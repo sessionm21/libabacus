@@ -92,7 +92,7 @@ void _initialize_behavior(libab_behavior* behavior, libab_ref* type,
 libab_result _register_operator(libab* ab, const char* op,
                                 libab_operator_variant token_type,
                                 int precedence, int associativity,
-                                libab_ref* type, libab_function_ptr func) {
+                                const char* function) {
     char op_buffer[8];
     libab_result result = LIBAB_SUCCESS;
     libab_table_entry* new_entry;
@@ -101,7 +101,7 @@ libab_result _register_operator(libab* ab, const char* op,
         new_entry->variant = ENTRY_OP;
         new_operator = &(new_entry->data_u.op);
         libab_operator_init(new_operator, token_type, precedence, associativity,
-                            type, func);
+                            function);
     } else {
         result = LIBAB_MALLOC;
     }
@@ -128,22 +128,19 @@ libab_result _register_operator(libab* ab, const char* op,
 
 libab_result libab_register_operator_infix(libab* ab, const char* op,
                                            int precedence, int associativity,
-                                           libab_ref* type,
-                                           libab_function_ptr func) {
+                                           const char* function) {
     return _register_operator(ab, op, OPERATOR_INFIX, precedence, associativity,
-                              type, func);
+                              function);
 }
 
 libab_result libab_register_operator_prefix(libab* ab, const char* op,
-                                            libab_ref* type,
-                                            libab_function_ptr func) {
-    return _register_operator(ab, op, OPERATOR_PREFIX, 0, 0, type, func);
+                                            const char* function) {
+    return _register_operator(ab, op, OPERATOR_PREFIX, 0, 0, function);
 }
 
 libab_result libab_register_operator_postfix(libab* ab, const char* op,
-                                             libab_ref* type,
-                                             libab_function_ptr func) {
-    return _register_operator(ab, op, OPERATOR_POSTFIX, 0, 0, type, func);
+                                             const char* function) {
+    return _register_operator(ab, op, OPERATOR_POSTFIX, 0, 0, function);
 }
 
 libab_result _create_value_function_internal(libab_ref* into, libab_ref* type,

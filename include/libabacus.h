@@ -78,38 +78,32 @@ libab_result libab_init(libab* ab, void* (*parse_function)(const char*),
  * @param op the operator string to register.
  * @param precedence the precedence of the operator.
  * @param associativity the associativity of the operator.
- * @param type the type of this operator.
- * @param func the function that describes the functionality of the operator.
+ * @param function the function this operator calls.
  * @return the result of the initialization.
  */
 libab_result libab_register_operator_infix(libab* ab, const char* op,
                                            int precedence, int associativity,
-                                           libab_ref* type,
-                                           libab_function_ptr func);
+                                           const char* function);
 /**
  * Registers an operation with libabacus that appears
  * before its operand.
  * @param ab the libabacus instance to register the operator with.
  * @param op the operator string to register.
- * @param type the type of this operator.
- * @param func the function that describes the functionality of the operator.
+ * @param function the function this operator calls.
  * @return the result of the registration.
  */
 libab_result libab_register_operator_prefix(libab* ab, const char* op,
-                                            libab_ref* type,
-                                            libab_function_ptr func);
+                                            const char* function);
 /**
  * Registers an operation with libabacus that appears
  * after its operand.
  * @param ab the libabacus instance to register the operator with.
  * @param op the operator string to register.
- * @param type the type of this operator.
- * @param func the function that describes the functionality of the operator.
+ * @param function the function this operator calls.
  * @return the result of the registration.
  */
 libab_result libab_register_operator_postfix(libab* ab, const char* op,
-                                             libab_ref* type,
-                                             libab_function_ptr func);
+                                             const char* function);
 
 /**
  * Registers a function with libabacus.
