@@ -839,6 +839,7 @@ libab_result libab_interpreter_run_function(libab_interpreter* intr,
     }
 
     _interpreter_free(&state);
+    libab_ref_free(&function_value);
 
     return result;
 }
