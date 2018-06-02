@@ -51,6 +51,10 @@ struct libab_s {
      * The function list type instance.
      */
     libab_ref type_function_list;
+    /**
+     * The unit type instance.
+     */
+    libab_ref type_unit;
 
     /**
      * Internal; the number basetype. This cannot be a static
@@ -152,6 +156,12 @@ libab_basetype* libab_get_basetype_function(libab* ab);
  * @return the function list basetype.
  */
 libab_basetype* libab_get_basetype_function_list(libab* ab);
+/**
+ * Finds and returns the built-in libabacus unit type.
+ * @param ab the ab instance for which to return a type.
+ * @return the unit basetype.
+ */
+libab_basetype* libab_get_basetype_unit(libab* ab);
 
 /**
  * Get the type of a number in this libabacus instance.
@@ -165,6 +175,12 @@ void libab_get_type_num(libab* ab, libab_ref* into);
  * @param into the ference to store the type into.
  */
 void libab_get_type_function_list(libab* ab, libab_ref* into);
+/**
+ * Get the type of the unit in this libabacus instance.
+ * @param ab the instance to get the type for.
+ * @param into the reference to store the type into.
+ */
+void libab_get_type_unit(libab* ab, libab_ref* into);
 
 /**
  * Executes the given string of code.
