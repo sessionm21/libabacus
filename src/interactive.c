@@ -30,6 +30,13 @@ libab_result function_atan2(libab* ab, libab_ref_vec* params, libab_ref* into) {
     return LIBAB_SUCCESS;
 }
 
+libab_result function_print_num(libab* ab, libab_ref_vec* params, libab_ref* into) {
+    double* param = libab_unwrap_param(params, 0);
+    printf("%f\n", *param);
+    libab_ref_null(into);
+    return LIBAB_SUCCESS;
+}
+
 libab_result create_double_value(libab* ab, double val, libab_ref* into) {
     libab_ref type_num;
     libab_result result = LIBAB_SUCCESS;
@@ -82,6 +89,7 @@ libab_result register_functions(libab* ab) {
     TRY(libab_register_function(ab, "minus", &atan2_type, function_minus));
     TRY(libab_register_function(ab, "times", &atan2_type, function_times));
     TRY(libab_register_function(ab, "divide", &atan2_type, function_divide));
+    TRY(libab_register_function(ab, "print", &trig_type, function_print_num));
     TRY(libab_register_operator_infix(ab, "+", 0, -1, "plus"));
     TRY(libab_register_operator_infix(ab, "-", 0, -1, "minus"));
     TRY(libab_register_operator_infix(ab, "*", 1, -1, "times"));
@@ -98,6 +106,7 @@ int main() {
     char input_buffer[2048];
     int interaction_count = INTERACTIONS;
     libab_ref eval_into;
+    libab_ref call_into;
     libab_result result;
     libab_result eval_result;
     libab ab;
@@ -115,6 +124,9 @@ int main() {
 
         if (eval_result != LIBAB_SUCCESS) {
             printf("Invalid input.\n");
+        } else {
+            result = libab_run_function(&ab, "print", &call_into, 1, &eval_into);
+            libab_ref_free(&call_into);
         }
         libab_ref_free(&eval_into);
     }
