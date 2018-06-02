@@ -2,6 +2,7 @@
 #include "util.h"
 #include "value.h"
 #include <stdio.h>
+#include <math.h>
 
 #define TRY(expression)                                                        \
     if (result == LIBAB_SUCCESS)                                               \
@@ -17,25 +18,6 @@ void* impl_parse(const char* string) {
 }
 
 void impl_free(void* data) { free(data); }
-
-libab_result function_atan(libab* ab, libab_ref_vec* params, libab_ref* into) {
-    printf("atan called\n");
-    libab_ref_null(into);
-    return LIBAB_SUCCESS;
-}
-
-libab_result function_atan2(libab* ab, libab_ref_vec* params, libab_ref* into) {
-    printf("atan2 called\n");
-    libab_ref_null(into);
-    return LIBAB_SUCCESS;
-}
-
-libab_result function_print_num(libab* ab, libab_ref_vec* params, libab_ref* into) {
-    double* param = libab_unwrap_param(params, 0);
-    printf("%f\n", *param);
-    libab_ref_null(into);
-    return LIBAB_SUCCESS;
-}
 
 libab_result create_double_value(libab* ab, double val, libab_ref* into) {
     libab_ref type_num;
@@ -54,6 +36,32 @@ libab_result create_double_value(libab* ab, double val, libab_ref* into) {
     }
     libab_ref_free(&type_num);
     return result;
+}
+
+libab_result function_atan(libab* ab, libab_ref_vec* params, libab_ref* into) {
+    printf("atan called\n");
+    double* val = libab_unwrap_param(params, 0);
+    return create_double_value(ab, atan(*val), into);
+}
+
+libab_result function_atan2(libab* ab, libab_ref_vec* params, libab_ref* into) {
+    printf("atan2 called\n");
+    double* left = libab_unwrap_param(params, 0);
+    double* right = libab_unwrap_param(params, 1);
+    return create_double_value(ab, atan2(*left, *right), into);
+}
+
+libab_result function_print_num(libab* ab, libab_ref_vec* params, libab_ref* into) {
+    double* param = libab_unwrap_param(params, 0);
+    printf("%f\n", *param);
+    libab_get_unit_value(ab, into);
+    return LIBAB_SUCCESS;
+}
+
+libab_result function_print_unit(libab* ab, libab_ref_vec* params, libab_ref* into) {
+    printf("()\n");
+    libab_get_unit_value(ab, into);
+    return LIBAB_SUCCESS;
 }
 
 #define OP_FUNCTION(name, expression) \
@@ -79,11 +87,13 @@ libab_result register_functions(libab* ab) {
     libab_ref atan2_type;
     libab_ref difficult_type;
     libab_ref print_num_type;
+    libab_ref print_unit_type;
 
     result = libab_create_type(ab, &trig_type, "(num)->num");
     TRY(libab_create_type(ab, &atan2_type, "(num, num)->num"));
     TRY(libab_create_type(ab, &difficult_type, "((num)->num)->num"));
     TRY(libab_create_type(ab, &print_num_type, "(num)->unit"));
+    TRY(libab_create_type(ab, &print_unit_type, "(unit)->unit"));
 
     TRY(libab_register_function(ab, "atan", &trig_type, function_atan));
     TRY(libab_register_function(ab, "atan2", &atan2_type, function_atan2));
@@ -92,6 +102,7 @@ libab_result register_functions(libab* ab) {
     TRY(libab_register_function(ab, "times", &atan2_type, function_times));
     TRY(libab_register_function(ab, "divide", &atan2_type, function_divide));
     TRY(libab_register_function(ab, "print", &print_num_type, function_print_num));
+    TRY(libab_register_function(ab, "print", &print_unit_type, function_print_unit));
     TRY(libab_register_operator_infix(ab, "+", 0, -1, "plus"));
     TRY(libab_register_operator_infix(ab, "-", 0, -1, "minus"));
     TRY(libab_register_operator_infix(ab, "*", 1, -1, "times"));
@@ -101,6 +112,7 @@ libab_result register_functions(libab* ab) {
     libab_ref_free(&atan2_type);
     libab_ref_free(&difficult_type);
     libab_ref_free(&print_num_type);
+    libab_ref_free(&print_unit_type);
 
     return result;
 }

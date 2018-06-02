@@ -183,6 +183,13 @@ void libab_get_type_function_list(libab* ab, libab_ref* into);
 void libab_get_type_unit(libab* ab, libab_ref* into);
 
 /**
+ * Gets the unit value form this libab instance.
+ * @param ab the instance to get the unit value from.
+ * @param into the reference into which to store the unit value.
+ */
+void libab_get_unit_value(libab* ab, libab_ref* into);
+
+/**
  * Executes the given string of code.
  * @param ab the libabacus instance to use for executing code.
  * @param string the string to execute.

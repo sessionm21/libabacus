@@ -387,6 +387,10 @@ void libab_get_type_unit(libab* ab, libab_ref* into) {
     libab_ref_copy(&ab->type_unit, into);
 }
 
+void libab_get_unit_value(libab* ab, libab_ref* into) {
+    libab_interpreter_unit_value(&ab->intr, into);
+}
+
 libab_result libab_run(libab* ab, const char* string, libab_ref* value) {
     libab_result result = LIBAB_SUCCESS;
     ll tokens;

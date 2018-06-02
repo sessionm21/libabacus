@@ -31,8 +31,10 @@ libab_result _interpreter_create_num_val(struct interpreter_state* state,
                                          libab_ref* into, const char* from) {
     void* data;
     libab_result result = LIBAB_SUCCESS;
+    libab_ref_null(into);
 
     if ((data = state->ab->impl.parse_num(from))) {
+        libab_ref_free(into);
         result = libab_create_value_raw(into, data, &state->ab->type_num);
 
         if (result != LIBAB_SUCCESS) {
@@ -380,8 +382,6 @@ libab_result _interpreter_find_match(libab_function_list* function_values,
 
     if (result == LIBAB_SUCCESS) {
         libab_ref_vec_free(&temp_new_types);
-        if (!found_match)
-            libab_ref_null(match);
     } else {
         libab_ref_free(match);
         libab_ref_null(match);
@@ -776,7 +776,7 @@ libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
 
     } else if (tree->variant == TREE_BASE || tree->variant == TREE_BLOCK) {
         size_t index = 0;
-        libab_ref_null(into);
+        libab_get_unit_value(state->ab, into);
         while (result == LIBAB_SUCCESS && index < tree->children.size) {
             libab_ref_free(into);
             result = _interpreter_run(state, vec_index(&tree->children, index),
@@ -786,7 +786,7 @@ libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
     } else if (tree->variant == TREE_NUM) {
         result = _interpreter_create_num_val(state, into, tree->string_value);
     } else if (tree->variant == TREE_VOID) {
-        libab_ref_null(into);
+        libab_get_unit_value(state->ab, into);
     } else if (tree->variant == TREE_ID) {
         result = _interpreter_require_value(scope, tree->string_value, into);
     } else if (tree->variant == TREE_CALL) {
