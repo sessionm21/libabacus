@@ -14,6 +14,10 @@ struct libab_s;
  */
 struct libab_interpreter_s {
     struct libab_s* ab;
+    /**
+     * The unit value, which doesn't need more than one instance.
+     */
+    libab_ref value_unit;
 };
 
 typedef struct libab_interpreter_s libab_interpreter;
@@ -23,7 +27,7 @@ typedef struct libab_interpreter_s libab_interpreter;
  * @param intr the interpreter to initialize.
  * @param ab the libabacus instance this interpreter belongs to.
  */
-void libab_interpreter_init(libab_interpreter* intr, struct libab_s* ab);
+libab_result libab_interpreter_init(libab_interpreter* intr, struct libab_s* ab);
 /**
  * Uses the interpreter to run the given parse tree.
  * @param intr the interpreter to use to run the code.
@@ -46,6 +50,12 @@ libab_result libab_interpreter_run_function(libab_interpreter* intr,
                                             const char* function,
                                             libab_ref_vec* params,
                                             libab_ref* into);
+/**
+ * Gets the unit value from this interpreter.
+ * @param intr the interpreter from which to get the unit value.
+ * @param into the reference into which to store the unit value.
+ */
+void libab_interpreter_unit_value(libab_interpreter* intr, libab_ref* into);
 /**
  * Frees the given interpreter.
  * @param intr the interpreter to free.

@@ -35,6 +35,7 @@ libab_result libab_init(libab* ab, void* (*parse_function)(const char*),
                         void (*free_function)(void*)) {
     int parser_initialized = 0;
     int lexer_initialized = 0;
+    int interpreter_initialized = 0;
     libab_ref null_ref;
     libab_result result;
     libab_ref_null(&null_ref);
@@ -55,7 +56,11 @@ libab_result libab_init(libab* ab, void* (*parse_function)(const char*),
     if (result == LIBAB_SUCCESS) {
         parser_initialized = 1;
         libab_parser_init(&ab->parser, ab);
-        libab_interpreter_init(&ab->intr, ab);
+        result = libab_interpreter_init(&ab->intr, ab);
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        interpreter_initialized = 1;
         result = libab_lexer_init(&ab->lexer);
     }
 
@@ -72,6 +77,9 @@ libab_result libab_init(libab* ab, void* (*parse_function)(const char*),
 
         if (parser_initialized) {
             libab_parser_free(&ab->parser);
+        }
+
+        if (interpreter_initialized) {
             libab_interpreter_free(&ab->intr);
         }
 

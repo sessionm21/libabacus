@@ -2,8 +2,16 @@
 #include "util.h"
 #include "value.h"
 
-void libab_interpreter_init(libab_interpreter* intr, libab* ab) {
+libab_result libab_interpreter_init(libab_interpreter* intr, libab* ab) {
+    libab_result result;
+    libab_ref unit_data;
     intr->ab = ab;
+
+    libab_ref_null(&unit_data);
+    result = libab_create_value_ref(&intr->value_unit, &unit_data, &ab->type_unit);
+    libab_ref_free(&unit_data);
+
+    return result;
 }
 
 struct interpreter_state {
@@ -844,4 +852,10 @@ libab_result libab_interpreter_run_function(libab_interpreter* intr,
     return result;
 }
 
-void libab_interpreter_free(libab_interpreter* intr) {}
+void libab_interpreter_unit_value(libab_interpreter* intr, libab_ref* into) {
+    libab_ref_copy(&intr->value_unit, into);
+}
+
+void libab_interpreter_free(libab_interpreter* intr) {
+    libab_ref_free(&intr->value_unit);
+}
