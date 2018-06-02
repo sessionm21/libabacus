@@ -35,6 +35,18 @@ void libab_interpreter_init(libab_interpreter* intr, struct libab_s* ab);
 libab_result libab_interpreter_run(libab_interpreter* intr, libab_tree* tree,
                                    libab_ref* into);
 /**
+ * Calls a function with the given parameters.
+ * @param intr the interpreter to use to call the function.
+ * @param function the function to call.
+ * @param params the parameters to pass to the function.
+ * @param into the reference to store the result into.
+ * @return the result of the call.
+ */
+libab_result libab_interpreter_run_function(libab_interpreter* intr,
+                                            const char* function,
+                                            libab_ref_vec* params,
+                                            libab_ref* into);
+/**
  * Frees the given interpreter.
  * @param intr the interpreter to free.
  */

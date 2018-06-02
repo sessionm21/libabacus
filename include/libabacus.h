@@ -174,6 +174,17 @@ void libab_get_type_function_list(libab* ab, libab_ref* into);
  * @return the result of the computation.
  */
 libab_result libab_run(libab* ab, const char* string, libab_ref* value);
+/**
+ * Calls a function with the given name and parameters.
+ * @param ab the libabacus instance to use to call the function.
+ * @param function the name of the function to call.
+ * @param iunto the reference into which to store the result.
+ * @param param_count the number of parameters given to this function.
+ * @return the result of the call.
+ */
+libab_result libab_run_function(libab* ab, const char* function,
+                                libab_ref* into,
+                                size_t param_count, ...);
 
 /**
  * Releases all the resources allocated by libabacus.

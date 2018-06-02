@@ -375,6 +375,33 @@ libab_result libab_run(libab* ab, const char* string, libab_ref* value) {
     return result;
 }
 
+libab_result libab_run_function(libab* ab, const char* function, 
+                                libab_ref* into,
+                                size_t param_count, ...) {
+    libab_ref_vec params;
+    va_list args;
+    libab_result result = LIBAB_SUCCESS;
+
+    va_start(args, param_count);
+    libab_ref_null(into);
+    result = libab_ref_vec_init(&params);
+    if(result == LIBAB_SUCCESS) {
+        while(result == LIBAB_SUCCESS && param_count--) {
+            result = libab_ref_vec_insert(&params, va_arg(args, libab_ref*));
+        }
+
+        if(result == LIBAB_SUCCESS) {
+            libab_ref_free(into);
+            result = libab_interpreter_run_function(&ab->intr, function, &params, into);
+        }
+
+        libab_ref_vec_free(&params);
+    }
+    va_end(args);
+
+    return result;
+}
+
 libab_result libab_free(libab* ab) {
     libab_table_free(libab_ref_get(&ab->table));
     libab_ref_free(&ab->table);

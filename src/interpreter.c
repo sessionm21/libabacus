@@ -820,4 +820,27 @@ libab_result libab_interpreter_run(libab_interpreter* intr, libab_tree* tree,
     return result;
 }
 
+libab_result libab_interpreter_run_function(libab_interpreter* intr,
+                                            const char* function,
+                                            libab_ref_vec* params,
+                                            libab_ref* into) {
+    struct interpreter_state state;
+    libab_ref function_value;
+    libab_result result;
+
+    _interpreter_init(&state, intr);
+
+    libab_ref_null(into);
+    result = _interpreter_require_value(&state.ab->table, 
+                                        function, &function_value);
+    if(result == LIBAB_SUCCESS) {
+        libab_ref_free(into);
+        _interpreter_try_call(&state, &function_value, params, into);
+    }
+
+    _interpreter_free(&state);
+
+    return result;
+}
+
 void libab_interpreter_free(libab_interpreter* intr) {}
