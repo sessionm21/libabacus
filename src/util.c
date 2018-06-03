@@ -264,6 +264,34 @@ libab_result libab_create_function_tree(libab_ref* into,
     return result;
 }
 
+libab_result libab_create_function_behavior(libab_ref* into,
+                                            void (*free_function)(void*),
+                                            libab_behavior* behavior,
+                                            libab_ref* scope) {
+    libab_function* new_function;
+    libab_result result = LIBAB_SUCCESS;
+
+    if((new_function = malloc(sizeof(*new_function)))) {
+        result = libab_function_init_behavior(new_function, behavior, scope);
+    } else {
+        result = LIBAB_MALLOC;
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = libab_ref_new(into, new_function, free_function);
+        if(result != LIBAB_SUCCESS) {
+            libab_function_free(new_function);
+        }
+    }
+
+    if(result != LIBAB_SUCCESS) {
+        libab_ref_null(into);
+        free(new_function);
+    }
+
+    return result;
+}
+
 libab_result libab_create_function_list(libab_ref* into, libab_ref* type) {
     libab_function_list* list;
     libab_result result = LIBAB_SUCCESS;

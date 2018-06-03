@@ -116,6 +116,18 @@ libab_result libab_create_function_tree(libab_ref* into,
                                         libab_tree* tree,
                                         libab_ref* scope);
 /**
+ * Allocates a function that uses a given behavior to run.
+ * @param into the reference into which to store the new function.
+ * @param free_function the free function used to free function instances.
+ * @param behavior the behavior that dictates what the function does.
+ * @param scope the scope in which this function was declared.
+ * @return libab_result the result of any necessary allocations.
+ */
+libab_result libab_create_function_behavior(libab_ref* into,
+                                            void (*free_function)(void*),
+                                            libab_behavior* behavior,
+                                            libab_ref* scope);
+/**
  * Creates a function list object, storing it in to the given reference.
  * @param into the reference to store into.
  * @param the function_list type.
