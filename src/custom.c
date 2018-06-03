@@ -11,6 +11,11 @@ void libab_behavior_init_tree(libab_behavior* behavior, libab_tree* tree) {
     behavior->data_u.tree = tree;
 }
 
+void libab_behavior_copy(libab_behavior* behavior, libab_behavior* into) {
+    into->variant = behavior->variant;
+    into->data_u = behavior->data_u;
+}
+
 void libab_behavior_free(libab_behavior* behavior) {
     if (behavior->variant == BIMPL_TREE) {
         libab_tree_free_recursive(behavior->data_u.tree);
@@ -45,6 +50,13 @@ libab_result libab_function_init_tree(libab_function* function,
                                       libab_ref* scope) {
     libab_result result = _function_init(function, scope);
     libab_behavior_init_tree(&function->behavior, tree);
+    return result;
+}
+libab_result libab_function_init_behavior(libab_function* function,
+                                          libab_behavior* behavior,
+                                          libab_ref* scope) {
+    libab_result result = _function_init(function, scope);
+    libab_behavior_copy(behavior, &function->behavior);
     return result;
 }
 void libab_function_free(libab_function* fun) {

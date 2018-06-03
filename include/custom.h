@@ -117,6 +117,12 @@ void libab_behavior_init_internal(libab_behavior* behavior,
  */
 void libab_behavior_init_tree(libab_behavior* behavior, libab_tree* tree);
 /**
+ * Copies given behavior into a new one.
+ * @param behavior the behavior to copy.
+ * @param into the behavior to copy into.
+ */
+void libab_behavior_copy(libab_behavior* behavior, libab_behavior* into);
+/**
  * Frees the given behavior.
  * @param behavior the behavior to free.
  */
@@ -157,6 +163,16 @@ libab_result libab_function_init_internal(libab_function* function,
 libab_result libab_function_init_tree(libab_function* function,
                                       libab_tree* tree,
                                       libab_ref* scope);
+/**
+ * Initializes a function with the given behavior, regardless of type.
+ * @param function the function to initialize.
+ * @param behavior the behavior to initialize this function with.
+ * @param scope the scope this function is in.
+ * @return the result of the initialization.
+ */
+libab_result libab_function_init_behavior(libab_function* function,
+                                          libab_behavior* behavior,
+                                          libab_ref* scope);
 /**
  * Frees the given function.
  * @param fun the function to free.
