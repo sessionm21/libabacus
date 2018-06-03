@@ -474,6 +474,114 @@ libab_result _interpreter_call_behavior(struct interpreter_state* state,
 }
 
 /**
+ * Copies a function without copying its partial application parameters.
+ * @param function the function to copy.
+ * @param into the reference to store the copy into.
+ */
+libab_result _interpreter_copy_function_basic(libab_ref* function,
+                                              libab_ref* into) {
+    libab_function* func = libab_ref_get(function);
+    void (*free_function)(void*) = function->count->free_func;
+    return libab_create_function_behavior(into, free_function, &func->behavior, &func->scope);
+}
+
+libab_result _interpreter_copy_function_with_params(libab_ref* function,
+                                                    libab_ref_vec* params,
+                                                    libab_ref* into) {
+    int index = 0;
+    libab_ref param;
+    libab_function* func;
+    libab_result result = _interpreter_copy_function_basic(function, into);
+    func = libab_ref_get(into);
+
+    for(; index < params->size && result == LIBAB_SUCCESS; index++) {
+        libab_ref_vec_index(params, index, &param);
+        result = libab_ref_vec_insert(&func->params, &param);
+        libab_ref_free(&param);
+    }
+
+    if(result != LIBAB_SUCCESS) {
+        libab_ref_free(into);
+        libab_ref_null(into);
+    }
+
+    return result;
+}
+
+libab_result _interpreter_copy_type_offset(libab_ref* type,
+                                           size_t offset,
+                                           libab_ref* into) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_parsetype* new_type;
+    libab_parsetype* copy_of = libab_ref_get(type);
+    size_t index = 0;
+    if((new_type = malloc(sizeof(*new_type)))) {
+        new_type->variant = copy_of->variant;
+        new_type->data_u = copy_of->data_u;
+
+        result = libab_ref_vec_init(&new_type->children);
+        if(result == LIBAB_SUCCESS) {
+            libab_ref child_type_ref;
+
+            for(; index < copy_of->children.size - 1 - offset &&
+                    result == LIBAB_SUCCESS; index++) {
+                libab_ref_vec_index(&copy_of->children, offset + index, &child_type_ref);
+                result = libab_ref_vec_insert(&new_type->children, &child_type_ref);
+                libab_ref_free(&child_type_ref);
+            }
+
+            if(result != LIBAB_SUCCESS) {
+                libab_ref_vec_free(&new_type->children);
+            }
+        }
+    } else {
+        result = LIBAB_MALLOC;
+    }
+    
+    if(result == LIBAB_SUCCESS) {
+        result = libab_ref_new(into, new_type, type->count->free_func);
+        if(result != LIBAB_SUCCESS) {
+            libab_parsetype_free(new_type);
+        }
+    }
+
+    if(result != LIBAB_SUCCESS) {
+        libab_ref_null(into);
+    }
+
+    return result;
+}
+
+libab_result _interpreter_partially_apply(struct interpreter_state* state,
+                                          libab_ref* function,
+                                          libab_ref_vec* params,
+                                          libab_ref* into) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_value* value;
+    libab_ref new_type;
+    libab_ref new_function;
+
+    value = libab_ref_get(function);
+    libab_ref_null(&new_type);
+    result = _interpreter_copy_function_with_params(&value->data, params, &new_function);
+    if(result == LIBAB_SUCCESS) {
+        libab_ref_free(&new_type);
+        result = _interpreter_copy_type_offset(&value->type, 0, &new_type);
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = libab_create_value_ref(into, &new_function, &new_type);
+    } else {
+        libab_ref_null(into);
+    }
+
+    libab_ref_free(&new_function);
+    libab_ref_free(&new_type);
+
+    return result;
+}
+
+/**
  * Calls a function with the given, compatible paramters.
  * @param state the state to use to call the function.
  * @param to_call the function value to call.
@@ -482,18 +590,22 @@ libab_result _interpreter_call_behavior(struct interpreter_state* state,
  * @return the result of the call.
  */
 libab_result _interpreter_perform_function_call(struct interpreter_state* state,
-                                                libab_value* to_call,
+                                                libab_ref* to_call,
                                                 libab_ref_vec* params,
                                                 libab_ref* into) {
     libab_result result = LIBAB_SUCCESS;
+    libab_value* function_value;
     libab_function* function;
     libab_parsetype* function_type;
     size_t new_params;
-    function = libab_ref_get(&to_call->data);
-    function_type = libab_ref_get(&to_call->type);
+    function_value = libab_ref_get(to_call);
+    function = libab_ref_get(&function_value->data);
+    function_type = libab_ref_get(&function_value->type);
     new_params = params->size - function->params.size;
     if (function_type->children.size - new_params == 1) {
-        _interpreter_call_behavior(state, &function->behavior, params, into);
+        result = _interpreter_call_behavior(state, &function->behavior, params, into);
+    } else {
+        result = _interpreter_partially_apply(state, to_call, params, into);
     }
     return result;
 }
@@ -523,7 +635,7 @@ libab_result _interpreter_cast_and_perform_function_call(
         result = _interpreter_cast_params(params, new_types, &new_params);
 
         if (result == LIBAB_SUCCESS) {
-            result = _interpreter_perform_function_call(state, function_value,
+            result = _interpreter_perform_function_call(state, to_call,
                                                         &new_params, into);
         }
 
