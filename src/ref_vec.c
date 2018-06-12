@@ -33,8 +33,9 @@ libab_result _libab_ref_vec_try_resize(libab_ref_vec* vec) {
     if (vec->size == vec->capacity) {
         libab_ref* new_memory =
             realloc(vec->data, (vec->capacity *= 2) * sizeof(*vec->data));
-        if (new_memory == NULL) {
-            free(vec->data);
+        if(new_memory) {
+            vec->data = new_memory;
+        } else {
             result = LIBAB_MALLOC;
         }
     }
