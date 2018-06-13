@@ -47,10 +47,23 @@ int _tree_foreach_free(void* data, va_list args) {
     return 0;
 }
 
+int _tree_needs_free(libab_tree* tree) {
+    return ((tree->variant == TREE_FUN && --tree->int_value) | (tree->variant != TREE_FUN));
+}
+
 void libab_tree_free_recursive(libab_tree* tree) {
-    if (libab_tree_has_vector(tree->variant)) {
-        vec_foreach(&tree->children, NULL, compare_always, _tree_foreach_free);
+    if(_tree_needs_free(tree)) {
+        if (libab_tree_has_vector(tree->variant)) {
+            vec_foreach(&tree->children, NULL, compare_always, _tree_foreach_free);
+        }
+        libab_tree_free(tree);
+        free(tree);
     }
-    libab_tree_free(tree);
-    free(tree);
+}
+
+void libab_tree_refcount_free(libab_tree* tree) {
+    if(_tree_needs_free(tree)) {
+        libab_tree_free(tree);
+        free(tree);
+    }
 }

@@ -67,8 +67,6 @@ enum libab_lexer_token_e {
     TOKEN_KW_ARROW,
     TOKEN_KW_FUN,
     TOKEN_KW_RETURN,
-    TOKEN_KW_LET,
-    TOKEN_KW_BE,
     TOKEN_LAST
 };
 

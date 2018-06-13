@@ -16,13 +16,11 @@ libab_result libab_lexer_init(libab_lexer* lexer) {
                            "do",
                            "->",
                            "fun",
-                           "return",
-                           "let",
-                           "be"};
+                           "return"};
     libab_lexer_token tokens[] = {
         TOKEN_CHAR,    TOKEN_ID,        TOKEN_NUM,    TOKEN_KW_IF,
         TOKEN_KW_ELSE, TOKEN_KW_WHILE,  TOKEN_KW_DO,  TOKEN_KW_ARROW,
-        TOKEN_KW_FUN,  TOKEN_KW_RETURN, TOKEN_KW_LET, TOKEN_KW_BE};
+        TOKEN_KW_FUN,  TOKEN_KW_RETURN };
     const size_t count = sizeof(tokens) / sizeof(libab_lexer_token);
 
     eval_config_init(&lexer->config);

@@ -119,5 +119,11 @@ int libab_tree_has_vector(libab_tree_variant var);
  * @param tree the tree to free.
  */
 void libab_tree_free_recursive(libab_tree* tree);
+/**
+ * Frees the tree, taking into account reference-counted
+ * nodes.
+ * @param tree the tree to free.
+ */
+void libab_tree_refcount_free(libab_tree* tree);
 
 #endif

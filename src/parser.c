@@ -489,51 +489,6 @@ libab_result _parse_fun_param(struct parser_state* state,
     return result;
 }
 
-libab_result _parse_def_fun(struct parser_state* state,
-                            libab_tree** store_into) {
-    libab_result result = LIBAB_SUCCESS;
-    libab_tree* temp;
-    if (_parser_is_type(state, TOKEN_KW_LET)) {
-        _parser_state_step(state);
-        if (!_parser_eof(state)) {
-            result = _parser_construct_node_both(state, state->current_match,
-                                                 store_into);
-        } else {
-            result = LIBAB_UNEXPECTED;
-        }
-    } else {
-        result = LIBAB_UNEXPECTED;
-    }
-
-    if (result == LIBAB_SUCCESS) {
-        _parser_state_step(state);
-        libab_ref_null(&(*store_into)->type);
-        (*store_into)->variant = TREE_FUN;
-        result = _parser_consume_char(state, ':');
-    }
-
-    if (result == LIBAB_SUCCESS) {
-        libab_ref_free(&(*store_into)->type);
-        result = _parse_type(state, &(*store_into)->type);
-    }
-
-    if (result == LIBAB_SUCCESS) {
-        result = _parser_consume_type(state, TOKEN_KW_BE);
-    }
-
-    if (result == LIBAB_SUCCESS) {
-        PARSE_CHILD(result, state, _parse_expression, temp,
-                    &(*store_into)->children);
-    }
-
-    if (result != LIBAB_SUCCESS && *store_into) {
-        libab_tree_free_recursive(*store_into);
-        *store_into = NULL;
-    }
-
-    return result;
-}
-
 libab_result _parse_fun(struct parser_state* state, libab_tree** store_into) {
     libab_result result = LIBAB_SUCCESS;
     int is_parenth, is_comma;
@@ -551,6 +506,7 @@ libab_result _parse_fun(struct parser_state* state, libab_tree** store_into) {
         _parser_state_step(state);
         libab_ref_null(&(*store_into)->type);
         (*store_into)->variant = TREE_FUN;
+        (*store_into)->int_value = 1;
         result = _parser_consume_char(state, '(');
     }
     while (result == LIBAB_SUCCESS && !_parser_eof(state) &&
@@ -778,8 +734,6 @@ libab_result _parse_atom(struct parser_state* state, libab_tree** store_into) {
         result = _parse_braced_block(state, store_into);
     } else if (_parser_is_type(state, TOKEN_KW_FUN)) {
         result = _parse_fun(state, store_into);
-    } else if (_parser_is_type(state, TOKEN_KW_LET)) {
-        result = _parse_def_fun(state, store_into);
     } else if (_parser_is_type(state, TOKEN_KW_RETURN)) {
         result = _parse_return(state, store_into);
     } else {
