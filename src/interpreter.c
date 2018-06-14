@@ -919,6 +919,8 @@ libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
             libab_ref_get(scope), tree->string_value, OPERATOR_POSTFIX);
         result = _interpreter_call_operator(state, to_call, into, scope,
                                             vec_index(&tree->children, 0));
+    } else {
+        libab_get_unit_value(state->ab, into);
     }
 
     if (needs_scope) {
