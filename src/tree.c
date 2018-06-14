@@ -48,7 +48,8 @@ int _tree_foreach_free(void* data, va_list args) {
 }
 
 int _tree_needs_free(libab_tree* tree) {
-    return ((tree->variant == TREE_FUN && --tree->int_value) | (tree->variant != TREE_FUN));
+    return ((tree->variant == TREE_FUN && --(tree->int_value) == 0) |
+            (tree->variant != TREE_FUN));
 }
 
 void libab_tree_free_recursive(libab_tree* tree) {
