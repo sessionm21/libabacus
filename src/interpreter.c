@@ -868,6 +868,112 @@ libab_result _interpreter_run_function_node(struct interpreter_state* state,
     return result;
 }
 
+int _interpreter_compare_function_param(
+        const void* left, const void* right) {
+    const libab_tree* data = right;
+    return data->variant == TREE_FUN_PARAM;
+}
+
+int _interpreter_foreach_resolve_function_param(
+        void* data, va_list args) {
+    libab_tree* tree = data;
+    libab_ref* scope = va_arg(args, libab_ref*);
+    libab_parsetype* type = libab_ref_get(&tree->type);
+
+    return libab_resolve_parsetype(type, libab_ref_get(scope));
+}
+
+libab_result _interpreter_resolve_function_params(
+        struct interpreter_state* state, libab_tree* tree,
+        libab_ref* scope) {
+    return vec_foreach(&tree->children, NULL, _interpreter_compare_function_param,
+            _interpreter_foreach_resolve_function_param, scope);
+}
+
+int _interpreter_foreach_insert_function_param(
+        void* data, va_list args) {
+    libab_tree* tree = data;
+    libab_ref_vec* into = va_arg(args, libab_ref_vec*);
+    return libab_ref_vec_insert(into, &tree->type);
+}
+
+libab_result _interpreter_create_function_type(
+        struct interpreter_state* state, libab_tree* tree, libab_parsetype** type) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_basetype* funciton_type = libab_get_basetype_function(state->ab);
+
+    if((*type = malloc(sizeof(**type)))) {
+        (*type)->variant = LIBABACUS_TYPE_F_PARENT | LIBABACUS_TYPE_F_RESOLVED;
+        (*type)->data_u.base = funciton_type;
+        result = libab_ref_vec_init(&(*type)->children);
+    } else {
+        result = LIBAB_MALLOC;
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = vec_foreach(&tree->children, NULL, _interpreter_compare_function_param, 
+                _interpreter_foreach_insert_function_param, &(*type)->children);
+        if(result == LIBAB_SUCCESS) {
+            result = libab_ref_vec_insert(&(*type)->children, &tree->type);
+        }
+        if(result != LIBAB_SUCCESS) {
+            libab_ref_vec_free(&(*type)->children);
+        }
+    }
+
+    if(result != LIBAB_SUCCESS) {
+        free(*type);
+        *type = NULL;
+    }
+
+    return result;
+}
+
+libab_result _interpreter_wrap_function_type(
+        struct interpreter_state* state, libab_tree* tree, libab_ref* into) {
+    libab_parsetype* type;
+    libab_result result = _interpreter_create_function_type(state, tree, &type);
+
+    if(result == LIBAB_SUCCESS) {
+        result = libab_ref_new(into, type, free_parsetype);
+    }
+
+    if(result != LIBAB_SUCCESS) {
+        libab_ref_null(into);
+    }
+    return result;
+}
+
+libab_result _interpreter_create_function_value(
+        struct interpreter_state* state, libab_tree* tree,
+        libab_ref* scope, libab_ref* into) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_ref function, type;
+
+    libab_ref_null(&type);
+    libab_ref_null(into);
+    result = libab_create_function_tree(&function, free_function, tree, scope);
+
+    if(result == LIBAB_SUCCESS) {
+        libab_ref_free(&type);
+        result = _interpreter_wrap_function_type(state, tree, &type);
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        libab_ref_free(into);
+        result = libab_create_value_ref(into, &function, &type);
+    }
+
+    if(result != LIBAB_SUCCESS) {
+        libab_ref_free(into);
+        libab_ref_null(into);
+    }
+    libab_ref_free(&function);
+    libab_ref_free(&type);
+
+    return result;
+}
+
 libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
                               libab_ref* into, libab_ref* scope,
                               int force_scope) {
@@ -915,6 +1021,22 @@ libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
             libab_ref_get(scope), tree->string_value, OPERATOR_POSTFIX);
         result = _interpreter_call_operator(state, to_call, into, scope,
                                             vec_index(&tree->children, 0));
+    } else if (tree->variant == TREE_FUN) {
+        libab_ref function;
+        result = 
+            _interpreter_create_function_value(state, tree, scope, &function);
+
+        if(result == LIBAB_SUCCESS) {
+            result = libab_put_table_value(libab_ref_get(scope),
+                    tree->string_value, &function);
+            if(result != LIBAB_SUCCESS) {
+                libab_ref_free(&function);
+                libab_ref_null(&function);
+            }
+        }
+
+        libab_ref_copy(&function, into);
+        libab_ref_free(&function);
     } else {
         libab_get_unit_value(state->ab, into);
     }
