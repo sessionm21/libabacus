@@ -2,6 +2,7 @@
 #include "value.h"
 #include <stdarg.h>
 #include <stdlib.h>
+#include "free_functions.h"
 
 libab_result libab_convert_lex_result(liblex_result to_convert) {
     libab_result result = LIBAB_SUCCESS;
@@ -130,21 +131,16 @@ libab_result libab_instantiate_basetype(libab_basetype* to_instantiate,
     return result;
 }
 
-void _free_table(void* data) {
-    libab_table_free(data);
-    free(data);
-}
-
 libab_result libab_create_table(libab_ref* into, libab_ref* parent) {
     libab_table* table;
     libab_result result = LIBAB_SUCCESS;
     if ((table = malloc(sizeof(*table)))) {
         libab_table_init(table);
         libab_table_set_parent(table, parent);
-        result = libab_ref_new(into, table, _free_table);
+        result = libab_ref_new(into, table, free_table);
 
         if (result != LIBAB_SUCCESS) {
-            _free_table(table);
+            free_table(table);
         }
     } else {
         result = LIBAB_MALLOC;
@@ -156,21 +152,16 @@ libab_result libab_create_table(libab_ref* into, libab_ref* parent) {
     return result;
 }
 
-void _free_value(void* value) {
-    libab_value_free(value);
-    free(value);
-}
-
 libab_result libab_create_value_ref(libab_ref* into, libab_ref* data,
                                     libab_ref* type) {
     libab_value* value;
     libab_result result = LIBAB_SUCCESS;
     if ((value = malloc(sizeof(*value)))) {
         libab_value_init_ref(value, data, type);
-        result = libab_ref_new(into, value, _free_value);
+        result = libab_ref_new(into, value, free_value);
 
         if (result != LIBAB_SUCCESS) {
-            _free_value(value);
+            free_value(value);
         }
     } else {
         result = LIBAB_MALLOC;
@@ -194,7 +185,7 @@ libab_result libab_create_value_raw(libab_ref* into, void* data,
     }
 
     if (result == LIBAB_SUCCESS) {
-        result = libab_ref_new(into, value, _free_value);
+        result = libab_ref_new(into, value, free_value);
         if (result != LIBAB_SUCCESS) {
             libab_value_free(value);
         }

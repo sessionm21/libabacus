@@ -1,6 +1,7 @@
 #include "libabacus.h"
 #include "util.h"
 #include "value.h"
+#include "free_functions.h"
 
 libab_result libab_interpreter_init(libab_interpreter* intr, libab* ab) {
     libab_result result;
@@ -159,11 +160,6 @@ libab_result _interpreter_compare_types(libab_ref* left_type,
     return result;
 }
 
-void _free_parsetype(void* parsetype) {
-    libab_parsetype_free(parsetype);
-    free(parsetype);
-}
-
 /**
  * Copies a type, substituting type parameters for their copies
  * from the parameter trie.
@@ -208,9 +204,9 @@ libab_result _interpreter_copy_resolved_type(libab_ref* type,
             }
 
             if (result == LIBAB_SUCCESS) {
-                result = libab_ref_new(into, copy, _free_parsetype);
+                result = libab_ref_new(into, copy, free_parsetype);
                 if (result != LIBAB_SUCCESS) {
-                    _free_parsetype(copy);
+                    free_parsetype(copy);
                 }
             }
         }
