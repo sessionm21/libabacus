@@ -74,6 +74,28 @@ int _interpreter_type_contains_placeholders(libab_ref* type) {
     return placeholder;
 }
 
+void _interpreter_search_type_param(libab_ref_trie* params,
+                                    libab_ref* scope,
+                                    const char* name,
+                                    libab_ref* into) {
+    libab_ref_trie_get(params, name, into);
+
+    if(libab_ref_get(into) == NULL) {
+        libab_table_search_type_param(libab_ref_get(scope), name, into);
+    }
+}
+
+libab_parsetype* _interpreter_search_type_param_raw(libab_ref_trie* params,
+                                                    libab_ref* scope,
+                                                    const char* name) {
+    libab_ref into;
+    libab_parsetype* to_return;
+    _interpreter_search_type_param(params, scope, name, &into);
+    to_return = libab_ref_get(&into);
+    libab_ref_free(&into);
+    return to_return;
+}
+
 /**
  * Compares the two types, filling in any missing type parameters
  * in the respective type tries.
@@ -86,13 +108,13 @@ int _interpreter_type_contains_placeholders(libab_ref* type) {
 libab_result _interpreter_compare_types(libab_ref* left_type,
                                         libab_ref* right_type,
                                         libab_ref_trie* left_params,
-                                        libab_ref_trie* right_params) {
+                                        libab_ref_trie* right_params,
+                                        libab_ref* scope) {
     libab_result result = LIBAB_SUCCESS;
     int left_placeholder;
     int right_placeholder;
     libab_parsetype* left = libab_ref_get(left_type);
     libab_parsetype* right = libab_ref_get(right_type);
-    libab_ref param_type;
 
     left_placeholder = left->variant & LIBABACUS_TYPE_F_PLACE;
     right_placeholder = right->variant & LIBABACUS_TYPE_F_PLACE;
@@ -101,9 +123,7 @@ libab_result _interpreter_compare_types(libab_ref* left_type,
     } else {
         if (left_placeholder) {
             const char* name = left->data_u.name;
-            libab_ref_trie_get(left_params, name, &param_type);
-            left = libab_ref_get(&param_type);
-            libab_ref_free(&param_type);
+            left = _interpreter_search_type_param_raw(left_params, scope, name);
             if (left == NULL) {
                 if (!_interpreter_type_contains_placeholders(right_type)) {
                     result = libab_ref_trie_put(left_params, name, right_type);
@@ -113,9 +133,7 @@ libab_result _interpreter_compare_types(libab_ref* left_type,
             }
         } else if (right_placeholder) {
             const char* name = right->data_u.name;
-            libab_ref_trie_get(right_params, name, &param_type);
-            right = libab_ref_get(&param_type);
-            libab_ref_free(&param_type);
+            right = _interpreter_search_type_param_raw(right_params, scope, name);
             if (right == NULL) {
                 if (!_interpreter_type_contains_placeholders(left_type)) {
                     result = libab_ref_trie_put(right_params, name, left_type);
@@ -149,7 +167,7 @@ libab_result _interpreter_compare_types(libab_ref* left_type,
                     libab_ref_vec_index(&left->children, index, &temp_left);
                     libab_ref_vec_index(&right->children, index, &temp_right);
                     result = _interpreter_compare_types(
-                        &temp_left, &temp_right, left_params, right_params);
+                        &temp_left, &temp_right, left_params, right_params, scope);
                     libab_ref_free(&temp_left);
                     libab_ref_free(&temp_right);
                 }
@@ -170,6 +188,7 @@ libab_result _interpreter_compare_types(libab_ref* left_type,
  */
 libab_result _interpreter_copy_resolved_type(libab_ref* type,
                                              libab_ref_trie* params,
+                                             libab_ref* scope,
                                              libab_ref* into) {
     libab_result result = LIBAB_SUCCESS;
     libab_parsetype* copy;
@@ -177,7 +196,7 @@ libab_result _interpreter_copy_resolved_type(libab_ref* type,
 
     original = libab_ref_get(type);
     if (original->variant & LIBABACUS_TYPE_F_PLACE) {
-        libab_ref_trie_get(params, original->data_u.name, into);
+        _interpreter_search_type_param(params, scope, original->data_u.name, into);
     } else if ((copy = malloc(sizeof(*copy)))) {
         size_t index = 0;
         copy->variant = original->variant;
@@ -190,7 +209,7 @@ libab_result _interpreter_copy_resolved_type(libab_ref* type,
                  index++) {
                 libab_ref_vec_index(&original->children, index, &temp_child);
                 result = _interpreter_copy_resolved_type(&temp_child, params,
-                                                         &child_copy);
+                                                         scope, &child_copy);
                 if (result == LIBAB_SUCCESS) {
                     result = libab_ref_vec_insert(&copy->children, &child_copy);
                 }
@@ -230,10 +249,11 @@ libab_result _interpreter_copy_resolved_type(libab_ref* type,
  */
 libab_result _interpreter_resolve_type_params(libab_ref* type,
                                               libab_ref_trie* params,
+                                              libab_ref* scope,
                                               libab_ref* into) {
     libab_result result = LIBAB_SUCCESS;
     if (_interpreter_type_contains_placeholders(type)) {
-        result = _interpreter_copy_resolved_type(type, params, into);
+        result = _interpreter_copy_resolved_type(type, params, scope, into);
     } else {
         libab_ref_copy(type, into);
     }
@@ -251,6 +271,7 @@ libab_result _interpreter_resolve_type_params(libab_ref* type,
 libab_result _interpreter_check_types(libab_ref_vec* reference_types,
                                       libab_ref_vec* params,
                                       libab_ref_vec* types,
+                                      libab_ref* scope,
                                       libab_ref_trie* param_map) {
     libab_result result = LIBAB_SUCCESS;
     libab_ref_trie function_params;
@@ -274,11 +295,11 @@ libab_result _interpreter_check_types(libab_ref_vec* reference_types,
             right_temp =
                 &((libab_value*)libab_ref_get(&right_value_temp))->type;
             result = _interpreter_compare_types(
-                &left_temp, right_temp, &function_params, &child_params);
+                &left_temp, right_temp, &function_params, &child_params, scope);
 
             if (result == LIBAB_SUCCESS) {
                 result = _interpreter_resolve_type_params(
-                    right_temp, &child_params, &produced_type);
+                    right_temp, &child_params, scope, &produced_type);
                 if (result != LIBAB_SUCCESS) {
                     libab_ref_free(&produced_type);
                 }
@@ -329,15 +350,18 @@ libab_result _interpreter_find_match(libab_function_list* function_values,
     libab_ref_trie temp_param_map;
     libab_ref_vec temp_new_types;
     libab_ref temp_function_value;
+    libab_value* temp_value;
     libab_parsetype* temp_function_type;
+    libab_function* temp_function;
 
     libab_ref_null(match);
     result = libab_ref_vec_init(&temp_new_types);
 
     for (; index < list_size && result == LIBAB_SUCCESS; index++) {
         libab_function_list_index(function_values, index, &temp_function_value);
-        temp_function_type = libab_ref_get(
-            &((libab_value*)libab_ref_get(&temp_function_value))->type);
+        temp_value = libab_ref_get(&temp_function_value);
+        temp_function_type = libab_ref_get(&temp_value->type);
+        temp_function = libab_ref_get(&temp_value->data);
 
         if (((temp_function_type->children.size == params->size + 1) &&
              !partial) ||
@@ -345,7 +369,7 @@ libab_result _interpreter_find_match(libab_function_list* function_values,
              partial)) {
             /* We found a function that has the correct number of parameters. */
             result = _interpreter_check_types(
-                &temp_function_type->children, params, &temp_new_types, &temp_param_map);
+                &temp_function_type->children, params, &temp_new_types, &temp_function->scope, &temp_param_map);
             if (result == LIBAB_MISMATCHED_TYPE) {
                 /* Mismatch is OK. */
                 result = LIBAB_SUCCESS;
@@ -766,15 +790,17 @@ libab_result _interpreter_call_function(struct interpreter_state* state,
     libab_ref_trie param_map;
     libab_value* function_value;
     libab_parsetype* function_type;
+    libab_function* function_instance;
 
     function_value = libab_ref_get(function);
     function_type = libab_ref_get(&function_value->type);
+    function_instance = libab_ref_get(&function_value->data);
     libab_ref_null(into);
 
     result = libab_ref_vec_init(&temp_new_types);
     if (result == LIBAB_SUCCESS) {
         result = _interpreter_check_types(&function_type->children,
-                                          params, &temp_new_types, &param_map);
+                                          params, &temp_new_types, &function_instance->scope, &param_map);
 
         if (result == LIBAB_SUCCESS) {
             libab_ref_free(into);
