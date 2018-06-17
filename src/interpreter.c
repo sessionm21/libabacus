@@ -469,16 +469,48 @@ libab_result _interpreter_cast_params(libab_ref_vec* params,
     return result;
 }
 
+libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
+                              libab_ref* into, libab_ref* scope,
+                              libab_interpreter_scope_mode scope_mode);
+
 /**
  * Calls a tree-based function with the given parameters.
  * @param tree the tree function to call.
  * @param the parameters to give to the function.
+ * @param scope the scope used for the call.
  * @param into the reference to store the result into;
  * @return the result of the call.
  */
-libab_result _interpreter_call_tree(libab_tree* tree, libab_ref_vec* params,
+libab_result _interpreter_call_tree(struct interpreter_state* state,
+                                    libab_tree* tree, 
+                                    libab_ref_vec* params,
+                                    libab_ref* scope,
                                     libab_ref* into) {
-    libab_result result = LIBAB_SUCCESS;
+    libab_ref new_scope;
+    libab_tree* child;
+    libab_ref param;
+    libab_table* new_scope_raw;
+    size_t i;
+    libab_result result = libab_create_table(&new_scope, scope);
+
+    if(result == LIBAB_SUCCESS) {
+        new_scope_raw = libab_ref_get(&new_scope);
+        for(i = 0; i < tree->children.size - 1 && result == LIBAB_SUCCESS; i++) {
+            child = vec_index(&tree->children, i);
+            libab_ref_vec_index(params, i, &param);
+            result = libab_put_table_value(new_scope_raw, child->string_value, &param);
+            libab_ref_free(&param);
+        }
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = _interpreter_run(state, 
+                vec_index(&tree->children, tree->children.size - 1),
+                into, &new_scope, SCOPE_NONE);
+    }
+
+    libab_ref_free(&new_scope);
+
     return result;
 }
 
@@ -499,7 +531,7 @@ libab_result _interpreter_call_behavior(struct interpreter_state* state,
     if (behavior->variant == BIMPL_INTERNAL) {
         result = behavior->data_u.internal(state->ab, params, into);
     } else {
-        result = _interpreter_call_tree(behavior->data_u.tree, params, into);
+        result = _interpreter_call_tree(state, behavior->data_u.tree, params, scope, into);
     }
     return result;
 }
@@ -846,10 +878,6 @@ libab_result _interpreter_try_call(struct interpreter_state* state,
 
     return result;
 }
-
-libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
-                              libab_ref* into, libab_ref* scope,
-                              libab_interpreter_scope_mode scope_mode);
 
 libab_result _interpreter_require_value(libab_ref* scope, const char* name,
                                         libab_ref* into) {
