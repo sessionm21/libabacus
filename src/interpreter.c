@@ -250,7 +250,8 @@ libab_result _interpreter_resolve_type_params(libab_ref* type,
  */
 libab_result _interpreter_check_types(libab_ref_vec* reference_types,
                                       libab_ref_vec* params,
-                                      libab_ref_vec* types) {
+                                      libab_ref_vec* types,
+                                      libab_ref_trie* param_map) {
     libab_result result = LIBAB_SUCCESS;
     libab_ref_trie function_params;
 
@@ -295,9 +296,10 @@ libab_result _interpreter_check_types(libab_ref_vec* reference_types,
         }
     }
 
-    libab_ref_trie_free(&function_params);
-
-    if (result != LIBAB_SUCCESS) {
+    if(result == LIBAB_SUCCESS) {
+        *param_map = function_params;
+    } else {
+        libab_ref_trie_free(&function_params);
         libab_ref_vec_clear(types);
     }
 
@@ -316,12 +318,15 @@ libab_result _interpreter_check_types(libab_ref_vec* reference_types,
  */
 libab_result _interpreter_find_match(libab_function_list* function_values,
                                      libab_ref_vec* params,
-                                     libab_ref_vec* new_types, libab_ref* match,
+                                     libab_ref_vec* new_types, 
+                                     libab_ref_trie* param_map,
+                                     libab_ref* match,
                                      int partial) {
     libab_result result = LIBAB_SUCCESS;
     size_t index = 0;
     size_t list_size = libab_function_list_size(function_values);
     int found_match = 0;
+    libab_ref_trie temp_param_map;
     libab_ref_vec temp_new_types;
     libab_ref temp_function_value;
     libab_parsetype* temp_function_type;
@@ -340,7 +345,7 @@ libab_result _interpreter_find_match(libab_function_list* function_values,
              partial)) {
             /* We found a function that has the correct number of parameters. */
             result = _interpreter_check_types(
-                &temp_function_type->children, params, &temp_new_types);
+                &temp_function_type->children, params, &temp_new_types, &temp_param_map);
             if (result == LIBAB_MISMATCHED_TYPE) {
                 /* Mismatch is OK. */
                 result = LIBAB_SUCCESS;
@@ -352,6 +357,7 @@ libab_result _interpreter_find_match(libab_function_list* function_values,
                      * new_types, and use new memory for temp list. */
                     found_match = 1;
                     *new_types = temp_new_types;
+                    *param_map = temp_param_map;
                     libab_ref_free(match);
                     libab_ref_copy(&temp_function_value, match);
                     result = libab_ref_vec_init(&temp_new_types);
@@ -363,13 +369,17 @@ libab_result _interpreter_find_match(libab_function_list* function_values,
                      * initialized, and the call is ambigous. Free all data. */
                     libab_ref_vec_free(new_types);
                     libab_ref_vec_free(&temp_new_types);
+                    libab_ref_trie_free(param_map);
+                    libab_ref_trie_free(&temp_param_map);
                     result = LIBAB_AMBIGOUS_CALL;
                 }
             } else {
                 /* Something bad happened. Free data as best as we can. */
                 libab_ref_vec_free(&temp_new_types);
-                if (found_match)
+                if (found_match) {
                     libab_ref_vec_free(new_types);
+                    libab_ref_trie_free(param_map);
+                }
             }
         }
 
@@ -459,6 +469,7 @@ libab_result _interpreter_call_tree(libab_tree* tree, libab_ref_vec* params,
 libab_result _interpreter_call_behavior(struct interpreter_state* state,
                                         libab_behavior* behavior,
                                         libab_ref_vec* params,
+                                        libab_ref* scope,
                                         libab_ref* into) {
     libab_result result = LIBAB_SUCCESS;
     if (behavior->variant == BIMPL_INTERNAL) {
@@ -475,19 +486,21 @@ libab_result _interpreter_call_behavior(struct interpreter_state* state,
  * @param into the reference to store the copy into.
  */
 libab_result _interpreter_copy_function_basic(libab_ref* function,
+                                              libab_ref* scope,
                                               libab_ref* into) {
     libab_function* func = libab_ref_get(function);
     void (*free_function)(void*) = function->count->free_func;
-    return libab_create_function_behavior(into, free_function, &func->behavior, &func->scope);
+    return libab_create_function_behavior(into, free_function, &func->behavior, scope);
 }
 
 libab_result _interpreter_copy_function_with_params(libab_ref* function,
                                                     libab_ref_vec* params,
+                                                    libab_ref* scope,
                                                     libab_ref* into) {
     int index = 0;
     libab_ref param;
     libab_function* func;
-    libab_result result = _interpreter_copy_function_basic(function, into);
+    libab_result result = _interpreter_copy_function_basic(function, scope, into);
     func = libab_ref_get(into);
 
     for(; index < params->size && result == LIBAB_SUCCESS; index++) {
@@ -551,6 +564,7 @@ libab_result _interpreter_copy_type_offset(libab_ref* type,
 libab_result _interpreter_partially_apply(struct interpreter_state* state,
                                           libab_ref* function,
                                           libab_ref_vec* params,
+                                          libab_ref* scope,
                                           libab_ref* into) {
     libab_result result = LIBAB_SUCCESS;
     libab_value* value;
@@ -559,7 +573,7 @@ libab_result _interpreter_partially_apply(struct interpreter_state* state,
 
     value = libab_ref_get(function);
     libab_ref_null(&new_type);
-    result = _interpreter_copy_function_with_params(&value->data, params, &new_function);
+    result = _interpreter_copy_function_with_params(&value->data, params, scope, &new_function);
     if(result == LIBAB_SUCCESS) {
         libab_ref_free(&new_type);
         result = _interpreter_copy_type_offset(&value->type, 0, &new_type);
@@ -577,6 +591,44 @@ libab_result _interpreter_partially_apply(struct interpreter_state* state,
     return result;
 }
 
+libab_result _interpreter_foreach_insert_param(const libab_ref* param,
+                                               const char* key,
+                                               va_list args) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_table_entry* entry;
+
+    if ((entry = malloc(sizeof(*entry)))) {
+        entry->variant = ENTRY_TYPE_PARAM;
+        libab_ref_copy(param, &entry->data_u.type_param);
+    } else {
+        result = LIBAB_MALLOC;
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = libab_table_put(libab_ref_get(va_arg(args, libab_ref*)), key, entry);
+        if(result != LIBAB_SUCCESS) {
+            libab_ref_free(&entry->data_u.type_param);
+            free(entry);
+        }
+    }
+
+    return result;
+}
+
+libab_result _interpreter_create_scope(libab_ref* into,
+                                       libab_ref* parent_scope,
+                                       libab_ref_trie* param_map) {
+    libab_result result = libab_create_table(into, parent_scope);
+    if (result == LIBAB_SUCCESS) {
+        result = libab_ref_trie_foreach(param_map, _interpreter_foreach_insert_param, into);
+
+        if(result != LIBAB_SUCCESS) {
+            libab_ref_free(into);
+            libab_ref_null(into);
+        }
+    }
+    return result;
+}
 /**
  * Calls a function with the given, compatible paramters.
  * @param state the state to use to call the function.
@@ -588,21 +640,32 @@ libab_result _interpreter_partially_apply(struct interpreter_state* state,
 libab_result _interpreter_perform_function_call(struct interpreter_state* state,
                                                 libab_ref* to_call,
                                                 libab_ref_vec* params,
+                                                libab_ref_trie* param_map,
                                                 libab_ref* into) {
     libab_result result = LIBAB_SUCCESS;
     libab_value* function_value;
     libab_function* function;
     libab_parsetype* function_type;
+    libab_ref new_scope;
     size_t new_params;
+
     function_value = libab_ref_get(to_call);
     function = libab_ref_get(&function_value->data);
     function_type = libab_ref_get(&function_value->type);
     new_params = params->size - function->params.size;
-    if (function_type->children.size - new_params == 1) {
-        result = _interpreter_call_behavior(state, &function->behavior, params, into);
+
+    result = _interpreter_create_scope(&new_scope, &function->scope, param_map);
+
+    if(result != LIBAB_SUCCESS) {
+        libab_ref_null(into);
+    } else if (function_type->children.size - new_params == 1) {
+        result = _interpreter_call_behavior(state, &function->behavior, params, &new_scope, into);
     } else {
-        result = _interpreter_partially_apply(state, to_call, params, into);
+        result = _interpreter_partially_apply(state, to_call, params, &new_scope, into);
     }
+
+    libab_ref_free(&new_scope);
+
     return result;
 }
 
@@ -617,7 +680,9 @@ libab_result _interpreter_perform_function_call(struct interpreter_state* state,
  */
 libab_result _interpreter_cast_and_perform_function_call(
     struct interpreter_state* state,
-    libab_ref* to_call, libab_ref_vec* params, libab_ref_vec* new_types,
+    libab_ref* to_call, libab_ref_vec* params,
+    libab_ref_vec* new_types,
+    libab_ref_trie* param_map,
     libab_ref* into) {
     libab_result result;
     libab_ref_vec new_params;
@@ -632,7 +697,7 @@ libab_result _interpreter_cast_and_perform_function_call(
 
         if (result == LIBAB_SUCCESS) {
             result = _interpreter_perform_function_call(state, to_call,
-                                                        &new_params, into);
+                                                        &new_params, param_map, into);
         }
 
         libab_ref_vec_free(&new_params);
@@ -655,13 +720,14 @@ libab_result _interpreter_call_function_list(struct interpreter_state* state,
     libab_result result = LIBAB_SUCCESS;
     libab_ref_vec new_types;
     libab_ref to_call;
+    libab_ref_trie param_map;
     libab_ref_null(into);
 
     result =
-        _interpreter_find_match(list, params, &new_types, &to_call, 0);
+        _interpreter_find_match(list, params, &new_types, &param_map, &to_call, 0);
     if (result == LIBAB_SUCCESS) {
         if (libab_ref_get(&to_call) == NULL) {
-            result = _interpreter_find_match(list, params, &new_types,
+            result = _interpreter_find_match(list, params, &new_types, &param_map,
                                              &to_call, 1);
         }
     }
@@ -673,7 +739,8 @@ libab_result _interpreter_call_function_list(struct interpreter_state* state,
     if (result == LIBAB_SUCCESS) {
         libab_ref_free(into);
         result = _interpreter_cast_and_perform_function_call(state, &to_call, params,
-                                                             &new_types, into);
+                                                             &new_types, &param_map, into);
+        libab_ref_trie_free(&param_map);
         libab_ref_vec_free(&new_types);
     }
 
@@ -696,6 +763,7 @@ libab_result _interpreter_call_function(struct interpreter_state* state,
                                         libab_ref* into) {
     libab_result result = LIBAB_SUCCESS;
     libab_ref_vec temp_new_types;
+    libab_ref_trie param_map;
     libab_value* function_value;
     libab_parsetype* function_type;
 
@@ -706,12 +774,13 @@ libab_result _interpreter_call_function(struct interpreter_state* state,
     result = libab_ref_vec_init(&temp_new_types);
     if (result == LIBAB_SUCCESS) {
         result = _interpreter_check_types(&function_type->children,
-                                          params, &temp_new_types);
+                                          params, &temp_new_types, &param_map);
 
         if (result == LIBAB_SUCCESS) {
             libab_ref_free(into);
             result = _interpreter_cast_and_perform_function_call(
-                state, function, params, &temp_new_types, into);
+                state, function, params, &temp_new_types, &param_map, into);
+            libab_ref_trie_free(&param_map);
         }
 
         libab_ref_vec_free(&temp_new_types);
