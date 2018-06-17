@@ -9,6 +9,16 @@
 struct libab_s;
 
 /**
+ * Scope moe used to determine how the interpreter handles
+ * scoping.
+ */
+enum libab_interpreter_scope_mode_e {
+    SCOPE_NORMAL,
+    SCOPE_FORCE,
+    SCOPE_NONE
+};
+
+/**
  * The interpreter struct used to encapsulate
  * any interpreter-specific data.
  */
@@ -20,6 +30,7 @@ struct libab_interpreter_s {
     libab_ref value_unit;
 };
 
+typedef enum libab_interpreter_scope_mode_e libab_interpreter_scope_mode;
 typedef struct libab_interpreter_s libab_interpreter;
 
 /**
@@ -32,11 +43,13 @@ libab_result libab_interpreter_init(libab_interpreter* intr, struct libab_s* ab)
  * Uses the interpreter to run the given parse tree.
  * @param intr the interpreter to use to run the code.
  * @param tree the tree to run.
+ * @param mode the scope mode to use.
  * @param into the reference into which the result of the execution will be
  * stored.
  * @return the result of the execution.
  */
 libab_result libab_interpreter_run(libab_interpreter* intr, libab_tree* tree,
+                                   libab_interpreter_scope_mode mode,
                                    libab_ref* into);
 /**
  * Calls a function with the given parameters.

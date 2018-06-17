@@ -849,7 +849,7 @@ libab_result _interpreter_try_call(struct interpreter_state* state,
 
 libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
                               libab_ref* into, libab_ref* scope,
-                              int force_scope);
+                              libab_interpreter_scope_mode scope_mode);
 
 libab_result _interpreter_require_value(libab_ref* scope, const char* name,
                                         libab_ref* into) {
@@ -878,7 +878,7 @@ libab_result _interpreter_call_operator(struct interpreter_state* state,
     if (result == LIBAB_SUCCESS) {
         /* Get first parameter. */
         result =
-            _interpreter_run(state, va_arg(args, libab_tree*), &temp, scope, 0);
+            _interpreter_run(state, va_arg(args, libab_tree*), &temp, scope, SCOPE_NORMAL);
 
         if (result == LIBAB_SUCCESS) {
             result = libab_ref_vec_insert(&params, &temp);
@@ -889,7 +889,7 @@ libab_result _interpreter_call_operator(struct interpreter_state* state,
         /* If infix, get second parameter. */
         if (result == LIBAB_SUCCESS && to_call->variant == OPERATOR_INFIX) {
             result = _interpreter_run(state, va_arg(args, libab_tree*), &temp,
-                                      scope, 0);
+                                      scope, SCOPE_NORMAL);
 
             if (result == LIBAB_SUCCESS) {
                 result = libab_ref_vec_insert(&params, &temp);
@@ -915,7 +915,7 @@ libab_result _interpreter_call_operator(struct interpreter_state* state,
     return result;
 }
 
-libab_result _interpreter_run_function_node(struct interpreter_state* state,
+libab_result _interpreter_run_call_node(struct interpreter_state* state,
                                             libab_tree* tree, libab_ref* into,
                                             libab_ref* scope) {
     libab_result result = LIBAB_SUCCESS;
@@ -931,7 +931,7 @@ libab_result _interpreter_run_function_node(struct interpreter_state* state,
          count++) {
         libab_ref_free(&param);
         child = vec_index(&tree->children, count);
-        result = _interpreter_run(state, child, &param, scope, 0);
+        result = _interpreter_run(state, child, &param, scope, SCOPE_NORMAL);
 
         if (result == LIBAB_SUCCESS) {
             result = libab_ref_vec_insert(&params, &param);
@@ -946,7 +946,7 @@ libab_result _interpreter_run_function_node(struct interpreter_state* state,
     if (result == LIBAB_SUCCESS) {
         result = _interpreter_run(
             state, vec_index(&tree->children, tree->children.size - 1), &callee,
-            scope, 0);
+            scope, SCOPE_NORMAL);
         if (result != LIBAB_SUCCESS) {
             libab_ref_vec_free(&params);
         }
@@ -1071,10 +1071,11 @@ libab_result _interpreter_create_function_value(
 
 libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
                               libab_ref* into, libab_ref* scope,
-                              int force_scope) {
+                              libab_interpreter_scope_mode mode) {
     libab_result result = LIBAB_SUCCESS;
     libab_ref new_scope;
-    int needs_scope = libab_tree_has_scope(tree->variant) || force_scope;
+    int needs_scope = (mode == SCOPE_FORCE) || 
+        (mode == SCOPE_NORMAL && libab_tree_has_scope(tree->variant));
 
     if (needs_scope) {
         result = libab_create_table(&new_scope, scope);
@@ -1089,7 +1090,7 @@ libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
         while (result == LIBAB_SUCCESS && index < tree->children.size) {
             libab_ref_free(into);
             result = _interpreter_run(state, vec_index(&tree->children, index),
-                                      into, scope, 0);
+                                      into, scope, SCOPE_NORMAL);
             index++;
         }
     } else if (tree->variant == TREE_NUM) {
@@ -1099,7 +1100,7 @@ libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
     } else if (tree->variant == TREE_ID) {
         result = _interpreter_require_value(scope, tree->string_value, into);
     } else if (tree->variant == TREE_CALL) {
-        result = _interpreter_run_function_node(state, tree, into, scope);
+        result = _interpreter_run_call_node(state, tree, into, scope);
     } else if (tree->variant == TREE_OP) {
         libab_operator* to_call = libab_table_search_operator(
             libab_ref_get(scope), tree->string_value, OPERATOR_INFIX);
@@ -1144,12 +1145,13 @@ libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
 }
 
 libab_result libab_interpreter_run(libab_interpreter* intr, libab_tree* tree,
+                                   libab_interpreter_scope_mode mode,
                                    libab_ref* into) {
     struct interpreter_state state;
     libab_result result;
 
     _interpreter_init(&state, intr);
-    result = _interpreter_run(&state, tree, into, &state.ab->table, 1);
+    result = _interpreter_run(&state, tree, into, &state.ab->table, mode);
     _interpreter_free(&state);
 
     return result;
