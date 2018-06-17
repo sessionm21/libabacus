@@ -134,6 +134,65 @@ void libab_ref_trie_get(const libab_ref_trie* trie, const char* key,
     libab_ref_null(into);
 }
 
+libab_result _ref_trie_foreach(libab_ref_trie_node* node,
+                               char** str, size_t* str_size, size_t depth,
+                               libab_result (*func)(const libab_ref*, const char*, va_list),
+                               va_list args) {
+    va_list args_copy;
+    libab_result result = LIBAB_SUCCESS;
+    if(node == NULL) {
+        return result;
+    }
+
+    if(depth + 1 >= *str_size) {
+        char* new_str = realloc(*str, (*str_size) *= 2);
+        if(new_str) {
+            *str = new_str;
+        } else {
+            result = LIBAB_MALLOC;
+        }
+    }
+
+    if (result == LIBAB_SUCCESS) {
+        (*str)[depth] = node->key;
+        (*str)[depth + 1] = '\0';
+
+        if(libab_ref_get(&node->ref)) {
+            va_copy(args_copy, args);
+            result = func(&node->ref, (*str), args_copy);
+            va_end(args_copy);
+        }
+
+        if(result == LIBAB_SUCCESS)
+            result = _ref_trie_foreach(node->child, str, str_size, depth + 1, func, args);
+        if(result == LIBAB_SUCCESS)
+            result = _ref_trie_foreach(node->next, str, str_size, depth, func, args);
+    }
+
+    return result;
+}
+
+libab_result libab_ref_trie_foreach(const libab_ref_trie* trie,
+                            libab_result (*func)(const libab_ref*, const char*, va_list),
+                            ...) {
+    va_list args;
+    libab_result result = LIBAB_SUCCESS;
+    char* str;
+    size_t string_size = 4;
+
+    if((str = malloc(sizeof(*str) * 4))) {
+        va_start(args, func);
+        result = _ref_trie_foreach(trie->head, &str, &string_size, 0, func, args);
+        va_end(args);
+    } else {
+        result = LIBAB_MALLOC;
+    }
+
+    free(str);
+
+    return result;
+}
+
 void libab_ref_trie_free(libab_ref_trie* trie) {
     _libab_ref_trie_free(trie->head);
 }

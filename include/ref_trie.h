@@ -3,6 +3,7 @@
 
 #include "refcount.h"
 #include "result.h"
+#include <stdarg.h>
 
 /**
  * A node in the trie.
@@ -75,6 +76,16 @@ libab_result libab_ref_trie_put(libab_ref_trie* trie, const char* key,
  */
 void libab_ref_trie_get(const libab_ref_trie* trie, const char* key,
                         libab_ref* into);
+/**
+ * Calls the given function on every element in the reference-counted
+ * tree.
+ * @param trie the trie to run the operation on.
+ * @param func the function to call.
+ * return the result of the functions, and any necessary allocations.
+ */
+libab_result libab_ref_trie_foreach(const libab_ref_trie* trie,
+                            libab_result (*func)(const libab_ref*, const char*, va_list),
+                            ...);
 /**
  * Releases the trie, decrementing the refcounts of all
  * the values stored inside.
