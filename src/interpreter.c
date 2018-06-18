@@ -997,22 +997,6 @@ int _interpreter_compare_function_param(
     return data->variant == TREE_FUN_PARAM;
 }
 
-int _interpreter_foreach_resolve_function_param(
-        void* data, va_list args) {
-    libab_tree* tree = data;
-    libab_ref* scope = va_arg(args, libab_ref*);
-    libab_parsetype* type = libab_ref_get(&tree->type);
-
-    return libab_resolve_parsetype(type, libab_ref_get(scope));
-}
-
-libab_result _interpreter_resolve_function_params(
-        struct interpreter_state* state, libab_tree* tree,
-        libab_ref* scope) {
-    return vec_foreach(&tree->children, NULL, _interpreter_compare_function_param,
-            _interpreter_foreach_resolve_function_param, scope);
-}
-
 int _interpreter_foreach_insert_function_param(
         void* data, va_list args) {
     libab_tree* tree = data;
