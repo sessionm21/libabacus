@@ -6,26 +6,26 @@
 #include "value.h"
 #include <stdlib.h>
 
-void free_function(void* func) {
+void libab_free_function(void* func) {
     libab_function_free(func);
     free(func);
 }
-void free_function_list(void* function_list) {
+void libab_free_function_list(void* function_list) {
     libab_function_list_free(function_list);
     free(function_list);
 }
-void free_unit(void* unit) {
+void libab_free_unit(void* unit) {
 
 }
-void free_parsetype(void* parsetype) {
+void libab_free_parsetype(void* parsetype) {
     libab_parsetype_free(parsetype);
     free(parsetype);
 }
-void free_table(void* table) {
+void libab_free_table(void* table) {
     libab_table_free(table);
     free(table);
 }
-void free_value(void* value) {
+void libab_free_value(void* value) {
     libab_value_free(value);
     free(value);
 }

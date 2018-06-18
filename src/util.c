@@ -135,7 +135,7 @@ libab_result libab_resolve_parsetype_copy(libab_parsetype* to_resolve,
     }
 
     if(result == LIBAB_SUCCESS) {
-        result = libab_ref_new(into, parsetype, free_parsetype);
+        result = libab_ref_new(into, parsetype, libab_free_parsetype);
         if(result != LIBAB_SUCCESS) libab_parsetype_free(parsetype);
     }
 
@@ -162,7 +162,7 @@ libab_result libab_instantiate_basetype(libab_basetype* to_instantiate,
     }
 
     if (result == LIBAB_SUCCESS) {
-        result = libab_ref_new(into, parsetype, free_parsetype);
+        result = libab_ref_new(into, parsetype, libab_free_parsetype);
         if (result != LIBAB_SUCCESS) {
             libab_parsetype_free(parsetype);
         }
@@ -184,10 +184,10 @@ libab_result libab_create_table(libab_ref* into, libab_ref* parent) {
     if ((table = malloc(sizeof(*table)))) {
         libab_table_init(table);
         libab_table_set_parent(table, parent);
-        result = libab_ref_new(into, table, free_table);
+        result = libab_ref_new(into, table, libab_free_table);
 
         if (result != LIBAB_SUCCESS) {
-            free_table(table);
+            libab_free_table(table);
         }
     } else {
         result = LIBAB_MALLOC;
@@ -205,10 +205,10 @@ libab_result libab_create_value_ref(libab_ref* into, libab_ref* data,
     libab_result result = LIBAB_SUCCESS;
     if ((value = malloc(sizeof(*value)))) {
         libab_value_init_ref(value, data, type);
-        result = libab_ref_new(into, value, free_value);
+        result = libab_ref_new(into, value, libab_free_value);
 
         if (result != LIBAB_SUCCESS) {
-            free_value(value);
+            libab_free_value(value);
         }
     } else {
         result = LIBAB_MALLOC;
@@ -232,7 +232,7 @@ libab_result libab_create_value_raw(libab_ref* into, void* data,
     }
 
     if (result == LIBAB_SUCCESS) {
-        result = libab_ref_new(into, value, free_value);
+        result = libab_ref_new(into, value, libab_free_value);
         if (result != LIBAB_SUCCESS) {
             libab_value_free(value);
         }

@@ -7,14 +7,14 @@
 #include <stdlib.h>
 #include "free_functions.h"
 
-static libab_basetype _basetype_function_list = {free_function_list, NULL, 0};
+static libab_basetype _basetype_function_list = {libab_free_function_list, NULL, 0};
 
 static libab_basetype_param _basetype_function_params[] = {{BT_LIST, NULL}};
 
-static libab_basetype _basetype_function = {free_function,
+static libab_basetype _basetype_function = {libab_free_function,
                                             _basetype_function_params, 1};
 
-static libab_basetype _basetype_unit = { free_unit, NULL, 0 };
+static libab_basetype _basetype_unit = { libab_free_unit, NULL, 0 };
 
 libab_result _prepare_types(libab* ab, void (*free_function)(void*));
 
@@ -154,7 +154,7 @@ libab_result _create_value_function_internal(libab_ref* into, libab_ref* type,
                                              libab_ref* scope) {
     libab_ref function_ref;
     libab_result result =
-        libab_create_function_internal(&function_ref, free_function, func, scope);
+        libab_create_function_internal(&function_ref, libab_free_function, func, scope);
     libab_ref_null(into);
     if (result == LIBAB_SUCCESS) {
         libab_ref_free(into);

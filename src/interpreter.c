@@ -224,9 +224,9 @@ libab_result _interpreter_copy_resolved_type(libab_ref* type,
             }
 
             if (result == LIBAB_SUCCESS) {
-                result = libab_ref_new(into, copy, free_parsetype);
+                result = libab_ref_new(into, copy, libab_free_parsetype);
                 if (result != LIBAB_SUCCESS) {
-                    free_parsetype(copy);
+                    libab_free_parsetype(copy);
                 }
             }
         }
@@ -1059,7 +1059,7 @@ libab_result _interpreter_wrap_function_type(
     libab_result result = _interpreter_create_function_type(state, tree, scope, &type);
 
     if(result == LIBAB_SUCCESS) {
-        result = libab_ref_new(into, type, free_parsetype);
+        result = libab_ref_new(into, type, libab_free_parsetype);
     }
 
     if(result != LIBAB_SUCCESS) {
@@ -1076,7 +1076,7 @@ libab_result _interpreter_create_function_value(
 
     libab_ref_null(&type);
     libab_ref_null(into);
-    result = libab_create_function_tree(&function, free_function, tree, scope);
+    result = libab_create_function_tree(&function, libab_free_function, tree, scope);
 
     if(result == LIBAB_SUCCESS) {
         libab_ref_free(&type);
