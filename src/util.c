@@ -95,18 +95,26 @@ libab_result libab_resolve_parsetype_copy(libab_parsetype* to_resolve,
                                           libab_ref* into) {
     libab_result result = LIBAB_SUCCESS;
     libab_parsetype* parsetype;
+    int is_placeholer = to_resolve->variant & LIBABACUS_TYPE_F_PLACE;
     if((parsetype = malloc(sizeof(*parsetype)))) {
-        parsetype->variant = to_resolve->variant | LIBABACUS_TYPE_F_RESOLVED;
+        parsetype->variant = to_resolve->variant;
+        if(!is_placeholer) {
+            parsetype->variant |= LIBABACUS_TYPE_F_RESOLVED;
+        }
     } else {
         result = LIBAB_MALLOC;
     }
 
     if(result == LIBAB_SUCCESS) {
-        libab_basetype* parent_basetype = libab_get_basetype(to_resolve, scope);
-        if(parent_basetype) {
-            parsetype->data_u.base = parent_basetype;
+        if(!is_placeholer) {
+            libab_basetype* parent_basetype = libab_get_basetype(to_resolve, scope);
+            if(parent_basetype) {
+                parsetype->data_u.base = parent_basetype;
+            } else {
+                result = LIBAB_UNKNOWN_TYPE;
+            }
         } else {
-            result = LIBAB_UNKNOWN_TYPE;
+            result = libab_copy_string(&parsetype->data_u.name, to_resolve->data_u.name);
         }
     }
 
@@ -388,7 +396,7 @@ libab_basetype* libab_get_basetype(libab_parsetype* type, libab_table* scope) {
         to_return = libab_table_search_basetype(scope, type->data_u.name);
         if(to_return == NULL) {
             libab_table_search_type_param(scope, type->data_u.name, &type_param);
-            to_return = libab_ref_get(&type_param);
+            to_return = ((libab_parsetype*)libab_ref_get(&type_param))->data_u.base;
             libab_ref_free(&type_param);
         }
     }
