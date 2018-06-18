@@ -96,6 +96,23 @@ libab_parsetype* _interpreter_search_type_param_raw(libab_ref_trie* params,
     return to_return;
 }
 
+libab_basetype* _interpreter_get_basetype(libab_parsetype* type,
+                                          libab_table* scope) {
+    libab_ref type_param;
+    libab_basetype* to_return;
+    if(type->variant & LIBABACUS_TYPE_F_RESOLVED) {
+        to_return = type->data_u.base;
+    } else {
+        to_return = libab_table_search_basetype(scope, type->data_u.name);
+        if(to_return == NULL) {
+            libab_table_search_type_param(scope, type->data_u.name, &type_param);
+            to_return = libab_ref_get(&type_param);
+            libab_ref_free(&type_param);
+        }
+    }
+    return to_return;
+}
+
 /**
  * Compares the two types, filling in any missing type parameters
  * in the respective type tries.
@@ -145,9 +162,14 @@ libab_result _interpreter_compare_types(libab_ref* left_type,
 
         if (left != NULL && right != NULL) {
             size_t index = 0;
+            libab_basetype* base_left;
+            libab_basetype* base_right;
             libab_ref temp_left;
             libab_ref temp_right;
-            result = (left->data_u.base == right->data_u.base)
+            
+            base_left = _interpreter_get_basetype(left, libab_ref_get(scope));
+            base_right = _interpreter_get_basetype(right, libab_ref_get(scope));
+            result = (base_left == base_right)
                          ? LIBAB_SUCCESS
                          : LIBAB_MISMATCHED_TYPE;
             if (result == LIBAB_SUCCESS &&
@@ -200,7 +222,7 @@ libab_result _interpreter_copy_resolved_type(libab_ref* type,
     } else if ((copy = malloc(sizeof(*copy)))) {
         size_t index = 0;
         copy->variant = original->variant;
-        copy->data_u.base = original->data_u.base;
+        copy->data_u.base = _interpreter_get_basetype(original, libab_ref_get(scope));
         if (copy->variant & LIBABACUS_TYPE_F_PARENT) {
             libab_ref child_copy;
             libab_ref temp_child;
