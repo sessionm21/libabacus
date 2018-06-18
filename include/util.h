@@ -55,8 +55,18 @@ libab_result libab_copy_string(char** destination, const char* source);
  * @param to_resolve the parsetype to resolve.
  * @param scope the scope to use for resolving the type info.
  */
-libab_result libab_resolve_parsetype(libab_parsetype* to_resolve,
+libab_result libab_resolve_parsetype_inplace(libab_parsetype* to_resolve,
                                      libab_table* scope);
+/**
+ * Resolves the given parsetype, looking through the scope to find
+ * all referenced base types, and creates a copy with these basetypes.
+ * @param to_resolve the parsetype to resolve.
+ * @param scope the scope to use for resolving the type info.
+ * @return the result of the operation.
+ */
+libab_result libab_resolve_parsetype_copy(libab_parsetype* to_resolve,
+                                          libab_table* scope,
+                                          libab_ref* into);
 /**
  * Creates a new type instance, and stores it into the given reference.
  * @param to_instantiate the basetype to instantiate.
@@ -143,6 +153,13 @@ libab_result libab_create_function_list(libab_ref* into, libab_ref* type);
  */
 libab_result libab_put_table_value(libab_table* table, const char* key,
                                    libab_ref* value);
+/**
+ * Gets the basetype of a parsetype.
+ * @param type the parsetype to get the basetype of.
+ * @param scope the scope to use for searches.
+ * @return the basetype.
+ */
+libab_basetype* libab_get_basetype(libab_parsetype* type, libab_table* scope);
 /**
  * Returns the data stored in the given reference to a libab_value.
  * This is not the same as libab_ref_get: libab_ref_get will return directly

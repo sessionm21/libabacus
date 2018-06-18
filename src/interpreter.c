@@ -96,23 +96,6 @@ libab_parsetype* _interpreter_search_type_param_raw(libab_ref_trie* params,
     return to_return;
 }
 
-libab_basetype* _interpreter_get_basetype(libab_parsetype* type,
-                                          libab_table* scope) {
-    libab_ref type_param;
-    libab_basetype* to_return;
-    if(type->variant & LIBABACUS_TYPE_F_RESOLVED) {
-        to_return = type->data_u.base;
-    } else {
-        to_return = libab_table_search_basetype(scope, type->data_u.name);
-        if(to_return == NULL) {
-            libab_table_search_type_param(scope, type->data_u.name, &type_param);
-            to_return = libab_ref_get(&type_param);
-            libab_ref_free(&type_param);
-        }
-    }
-    return to_return;
-}
-
 /**
  * Compares the two types, filling in any missing type parameters
  * in the respective type tries.
@@ -162,14 +145,10 @@ libab_result _interpreter_compare_types(libab_ref* left_type,
 
         if (left != NULL && right != NULL) {
             size_t index = 0;
-            libab_basetype* base_left;
-            libab_basetype* base_right;
             libab_ref temp_left;
             libab_ref temp_right;
             
-            base_left = _interpreter_get_basetype(left, libab_ref_get(scope));
-            base_right = _interpreter_get_basetype(right, libab_ref_get(scope));
-            result = (base_left == base_right)
+            result = (left->data_u.base == right->data_u.base)
                          ? LIBAB_SUCCESS
                          : LIBAB_MISMATCHED_TYPE;
             if (result == LIBAB_SUCCESS &&
@@ -222,7 +201,7 @@ libab_result _interpreter_copy_resolved_type(libab_ref* type,
     } else if ((copy = malloc(sizeof(*copy)))) {
         size_t index = 0;
         copy->variant = original->variant;
-        copy->data_u.base = _interpreter_get_basetype(original, libab_ref_get(scope));
+        copy->data_u.base = original->data_u.base;
         if (copy->variant & LIBABACUS_TYPE_F_PARENT) {
             libab_ref child_copy;
             libab_ref temp_child;
@@ -1019,15 +998,30 @@ int _interpreter_compare_function_param(
     return data->variant == TREE_FUN_PARAM;
 }
 
+libab_result _interpreter_resolve_and_insert_param(
+        libab_parsetype* type, libab_table* scope, libab_ref_vec* into) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_ref copy;
+    result = libab_resolve_parsetype_copy(type, scope, &copy);
+    if(result == LIBAB_SUCCESS) {
+        result = libab_ref_vec_insert(into, &copy);
+    }
+    libab_ref_free(&copy);
+    return result;
+}
+
 int _interpreter_foreach_insert_function_param(
         void* data, va_list args) {
     libab_tree* tree = data;
     libab_ref_vec* into = va_arg(args, libab_ref_vec*);
-    return libab_ref_vec_insert(into, &tree->type);
+    libab_ref* scope = va_arg(args, libab_ref*);
+    return _interpreter_resolve_and_insert_param(libab_ref_get(&tree->type),
+                                                 libab_ref_get(scope),
+                                                 into);
 }
 
 libab_result _interpreter_create_function_type(
-        struct interpreter_state* state, libab_tree* tree, libab_parsetype** type) {
+        struct interpreter_state* state, libab_tree* tree, libab_ref* scope, libab_parsetype** type) {
     libab_result result = LIBAB_SUCCESS;
     libab_basetype* funciton_type = libab_get_basetype_function(state->ab);
 
@@ -1041,9 +1035,10 @@ libab_result _interpreter_create_function_type(
 
     if(result == LIBAB_SUCCESS) {
         result = vec_foreach(&tree->children, NULL, _interpreter_compare_function_param, 
-                _interpreter_foreach_insert_function_param, &(*type)->children);
+                _interpreter_foreach_insert_function_param, &(*type)->children, scope);
         if(result == LIBAB_SUCCESS) {
-            result = libab_ref_vec_insert(&(*type)->children, &tree->type);
+            result = _interpreter_resolve_and_insert_param(libab_ref_get(&tree->type), 
+                    libab_ref_get(scope), &(*type)->children);
         }
         if(result != LIBAB_SUCCESS) {
             libab_ref_vec_free(&(*type)->children);
@@ -1059,9 +1054,9 @@ libab_result _interpreter_create_function_type(
 }
 
 libab_result _interpreter_wrap_function_type(
-        struct interpreter_state* state, libab_tree* tree, libab_ref* into) {
+        struct interpreter_state* state, libab_tree* tree, libab_ref* scope, libab_ref* into) {
     libab_parsetype* type;
-    libab_result result = _interpreter_create_function_type(state, tree, &type);
+    libab_result result = _interpreter_create_function_type(state, tree, scope, &type);
 
     if(result == LIBAB_SUCCESS) {
         result = libab_ref_new(into, type, free_parsetype);
@@ -1085,7 +1080,7 @@ libab_result _interpreter_create_function_value(
 
     if(result == LIBAB_SUCCESS) {
         libab_ref_free(&type);
-        result = _interpreter_wrap_function_type(state, tree, &type);
+        result = _interpreter_wrap_function_type(state, tree, scope, &type);
     }
 
     if(result == LIBAB_SUCCESS) {

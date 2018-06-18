@@ -340,7 +340,7 @@ libab_result libab_create_type(libab* ab, libab_ref* into, const char* type) {
         result = libab_parser_parse_type(&ab->parser, &tokens, type, into);
     }
     if (result == LIBAB_SUCCESS) {
-        result = libab_resolve_parsetype(libab_ref_get(into),
+        result = libab_resolve_parsetype_inplace(libab_ref_get(into),
                                          libab_ref_get(&ab->table));
     }
     ll_foreach(&tokens, NULL, compare_always, libab_lexer_foreach_match_free);
