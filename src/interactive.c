@@ -138,7 +138,7 @@ int main() {
         eval_result = libab_run(&ab, input_buffer, &eval_into);
 
         if (eval_result != LIBAB_SUCCESS) {
-            printf("Invalid input.\n");
+            printf("Invalid input (error code %d).\n", eval_result);
         } else {
             result = libab_run_function(&ab, "print", &call_into, 1, &eval_into);
             libab_ref_free(&call_into);
