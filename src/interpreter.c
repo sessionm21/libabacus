@@ -530,7 +530,7 @@ libab_result _interpreter_call_behavior(struct interpreter_state* state,
                                         libab_ref* into) {
     libab_result result = LIBAB_SUCCESS;
     if (behavior->variant == BIMPL_INTERNAL) {
-        result = behavior->data_u.internal(state->ab, params, into);
+        result = behavior->data_u.internal(state->ab, scope, params, into);
     } else {
         result = _interpreter_call_tree(state, behavior->data_u.tree, params, scope, into);
     }

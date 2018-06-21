@@ -38,34 +38,34 @@ libab_result create_double_value(libab* ab, double val, libab_ref* into) {
     return result;
 }
 
-libab_result function_atan(libab* ab, libab_ref_vec* params, libab_ref* into) {
+libab_result function_atan(libab* ab, libab_ref* scope, libab_ref_vec* params, libab_ref* into) {
     printf("atan called\n");
     double* val = libab_unwrap_param(params, 0);
     return create_double_value(ab, atan(*val), into);
 }
 
-libab_result function_atan2(libab* ab, libab_ref_vec* params, libab_ref* into) {
+libab_result function_atan2(libab* ab, libab_ref* scope, libab_ref_vec* params, libab_ref* into) {
     printf("atan2 called\n");
     double* left = libab_unwrap_param(params, 0);
     double* right = libab_unwrap_param(params, 1);
     return create_double_value(ab, atan2(*left, *right), into);
 }
 
-libab_result function_print_num(libab* ab, libab_ref_vec* params, libab_ref* into) {
+libab_result function_print_num(libab* ab, libab_ref* scope, libab_ref_vec* params, libab_ref* into) {
     double* param = libab_unwrap_param(params, 0);
     printf("%f\n", *param);
     libab_get_unit_value(ab, into);
     return LIBAB_SUCCESS;
 }
 
-libab_result function_print_unit(libab* ab, libab_ref_vec* params, libab_ref* into) {
+libab_result function_print_unit(libab* ab, libab_ref* scope, libab_ref_vec* params, libab_ref* into) {
     printf("()\n");
     libab_get_unit_value(ab, into);
     return LIBAB_SUCCESS;
 }
 
 #define OP_FUNCTION(name, expression) \
-    libab_result name(libab* ab, libab_ref_vec* params, libab_ref* into) { \
+    libab_result name(libab* ab, libab_ref* scope, libab_ref_vec* params, libab_ref* into) { \
         libab_result result = LIBAB_SUCCESS; \
         double right; \
         double left; \
