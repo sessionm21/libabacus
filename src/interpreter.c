@@ -21,9 +21,10 @@ struct interpreter_state {
 };
 
 void _interpreter_init(struct interpreter_state* state,
-                       libab_interpreter* intr) {
+                       libab_interpreter* intr,
+                       libab_ref* scope) {
     state->ab = intr->ab;
-    state->base_table = libab_ref_get(&intr->ab->table);
+    state->base_table = libab_ref_get(scope);
 }
 
 void _interpreter_free(struct interpreter_state* state) {}
@@ -1174,19 +1175,21 @@ libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
 }
 
 libab_result libab_interpreter_run(libab_interpreter* intr, libab_tree* tree,
+                                   libab_ref* scope,
                                    libab_interpreter_scope_mode mode,
                                    libab_ref* into) {
     struct interpreter_state state;
     libab_result result;
 
-    _interpreter_init(&state, intr);
-    result = _interpreter_run(&state, tree, into, &state.ab->table, mode);
+    _interpreter_init(&state, intr, scope);
+    result = _interpreter_run(&state, tree, into, scope, mode);
     _interpreter_free(&state);
 
     return result;
 }
 
 libab_result libab_interpreter_run_function(libab_interpreter* intr,
+                                            libab_ref* scope,
                                             const char* function,
                                             libab_ref_vec* params,
                                             libab_ref* into) {
@@ -1194,10 +1197,10 @@ libab_result libab_interpreter_run_function(libab_interpreter* intr,
     libab_ref function_value;
     libab_result result;
 
-    _interpreter_init(&state, intr);
+    _interpreter_init(&state, intr, scope);
 
     libab_ref_null(into);
-    result = _interpreter_require_value(&state.ab->table, 
+    result = _interpreter_require_value(scope, 
                                         function, &function_value);
     if(result == LIBAB_SUCCESS) {
         libab_ref_free(into);

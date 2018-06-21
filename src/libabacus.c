@@ -394,7 +394,7 @@ libab_result libab_run(libab* ab, const char* string, libab_ref* value) {
 
     if (result == LIBAB_SUCCESS) {
         libab_ref_free(value);
-        result = libab_interpreter_run(&ab->intr, root, SCOPE_NORMAL, value);
+        result = libab_interpreter_run(&ab->intr, root, &ab->table, SCOPE_NORMAL, value);
         libab_tree_free_recursive(root);
     }
 
@@ -421,7 +421,7 @@ libab_result libab_run_function(libab* ab, const char* function,
 
         if(result == LIBAB_SUCCESS) {
             libab_ref_free(into);
-            result = libab_interpreter_run_function(&ab->intr, function, &params, into);
+            result = libab_interpreter_run_function(&ab->intr, &ab->table, function, &params, into);
         }
 
         libab_ref_vec_free(&params);

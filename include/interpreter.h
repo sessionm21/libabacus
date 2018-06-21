@@ -43,23 +43,27 @@ libab_result libab_interpreter_init(libab_interpreter* intr, struct libab_s* ab)
  * Uses the interpreter to run the given parse tree.
  * @param intr the interpreter to use to run the code.
  * @param tree the tree to run.
+ * @param scope the parent scope to use for running the tree.
  * @param mode the scope mode to use.
  * @param into the reference into which the result of the execution will be
  * stored.
  * @return the result of the execution.
  */
 libab_result libab_interpreter_run(libab_interpreter* intr, libab_tree* tree,
+                                   libab_ref* scope,
                                    libab_interpreter_scope_mode mode,
                                    libab_ref* into);
 /**
  * Calls a function with the given parameters.
  * @param intr the interpreter to use to call the function.
+ * @param scope the scope in which the function should be searched for.
  * @param function the function to call.
  * @param params the parameters to pass to the function.
  * @param into the reference to store the result into.
  * @return the result of the call.
  */
 libab_result libab_interpreter_run_function(libab_interpreter* intr,
+                                            libab_ref* scope,
                                             const char* function,
                                             libab_ref_vec* params,
                                             libab_ref* into);
