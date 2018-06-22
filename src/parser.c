@@ -1071,7 +1071,6 @@ libab_result _parse_expression(struct parser_state* state,
         result = LIBAB_UNEXPECTED;
     }
 
-    ll_foreach(&op_stack, NULL, compare_always, _parser_foreach_free_tree);
     ll_foreach(&out_stack, NULL, compare_always, _parser_foreach_free_tree);
     ll_free(&op_stack);
     ll_free(&out_stack);
