@@ -378,28 +378,49 @@ void libab_get_unit_value(libab* ab, libab_ref* into) {
     libab_interpreter_unit_value(&ab->intr, into);
 }
 
-libab_result libab_run(libab* ab, const char* string, libab_ref* value) {
+libab_result _create_tree(libab* ab, const char* string, libab_tree** into) {
     libab_result result = LIBAB_SUCCESS;
     ll tokens;
-    libab_tree* root;
 
     ll_init(&tokens);
-    libab_ref_null(value);
-
+    *into = NULL;
     result = libab_lexer_lex(&ab->lexer, string, &tokens);
 
-    if (result == LIBAB_SUCCESS) {
-        result = libab_parser_parse(&ab->parser, &tokens, string, &root);
-    }
-
-    if (result == LIBAB_SUCCESS) {
-        libab_ref_free(value);
-        result = libab_interpreter_run(&ab->intr, root, &ab->table, SCOPE_NORMAL, value);
-        libab_tree_free_recursive(root);
+    if(result == LIBAB_SUCCESS) {
+        result = libab_parser_parse(&ab->parser, &tokens, string, into);
     }
 
     ll_foreach(&tokens, NULL, compare_always, libab_lexer_foreach_match_free);
     ll_free(&tokens);
+    return result;
+}
+
+libab_result _handle_va_params(libab* ab, libab_ref_vec* into, size_t param_count, va_list args) {
+    libab_result result = libab_ref_vec_init(into);
+    if(result == LIBAB_SUCCESS) {
+        while(result == LIBAB_SUCCESS && param_count--) {
+            result = libab_ref_vec_insert(into, va_arg(args, libab_ref*));
+        }
+
+        if(result != LIBAB_SUCCESS) {
+            libab_ref_vec_free(into);
+        }
+    }
+    return result;
+}
+
+libab_result libab_run(libab* ab, const char* string, libab_ref* value) {
+    libab_result result;
+    libab_tree* root;
+
+    libab_ref_null(value);
+    result = _create_tree(ab, string, &root);
+
+    if (result == LIBAB_SUCCESS) {
+        libab_ref_free(value);
+        result = libab_interpreter_run(&ab->intr, root, &ab->table, SCOPE_FORCE, value);
+        libab_tree_free_recursive(root);
+    }
 
     return result;
 }
@@ -413,22 +434,59 @@ libab_result libab_run_function(libab* ab, const char* function,
 
     va_start(args, param_count);
     libab_ref_null(into);
-    result = libab_ref_vec_init(&params);
+    result = _handle_va_params(ab, &params, param_count, args);
     if(result == LIBAB_SUCCESS) {
-        while(result == LIBAB_SUCCESS && param_count--) {
-            result = libab_ref_vec_insert(&params, va_arg(args, libab_ref*));
-        }
-
-        if(result == LIBAB_SUCCESS) {
-            libab_ref_free(into);
-            result = libab_interpreter_run_function(&ab->intr, &ab->table, function, &params, into);
-        }
+        libab_ref_free(into);
+        result = libab_interpreter_run_function(&ab->intr, &ab->table, function, &params, into);
 
         libab_ref_vec_free(&params);
     }
     va_end(args);
 
     return result;
+}
+
+libab_result libab_run_tree(libab* ab, libab_tree* tree, libab_ref* value) {
+    return libab_interpreter_run(&ab->intr, tree, &ab->table, SCOPE_FORCE, value);
+}
+
+libab_result libab_run_scoped(libab* ab, const char* string, libab_ref* scope, libab_ref* into) {
+    libab_result result;
+    libab_tree* root;
+
+    libab_ref_null(into);
+    result = _create_tree(ab, string, &root);
+    if(result == LIBAB_SUCCESS) {
+        libab_ref_free(into);
+        result = libab_interpreter_run(&ab->intr, root, scope, SCOPE_NONE, into);
+        libab_tree_free_recursive(root);
+    }
+
+    return result;
+}
+
+libab_result libab_run_function_scoped(libab* ab, const char* function, libab_ref* scope, libab_ref* into,
+        size_t param_count, ...) {
+    libab_ref_vec params;
+    libab_result result;
+    va_list args;
+
+    va_start(args, param_count);
+    libab_ref_null(into);
+    result = _handle_va_params(ab, &params, param_count, args);
+    if(result == LIBAB_SUCCESS) {
+        libab_ref_free(into);
+        result = libab_interpreter_run_function(&ab->intr, scope, function, &params, into);
+
+        libab_ref_vec_free(&params);
+    }
+    va_end(args);
+
+    return result;
+}
+
+libab_result libab_run_tree_scoped(libab* ab, libab_tree* tree, libab_ref* scope, libab_ref* into) {
+    return libab_interpreter_run(&ab->intr, tree, scope, SCOPE_NONE, into);
 }
 
 libab_result libab_free(libab* ab) {

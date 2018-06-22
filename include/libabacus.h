@@ -198,16 +198,54 @@ void libab_get_unit_value(libab* ab, libab_ref* into);
  */
 libab_result libab_run(libab* ab, const char* string, libab_ref* value);
 /**
+ * Runs an already-compiled tree.
+ * @param ab the libabacus instance to use for executing code.
+ * @param tree the tree the run.
+ * @param value the reference into which to store the output.
+ * @return the result of the computation.
+ */
+libab_result libab_run_tree(libab* ab, libab_tree* tree, libab_ref* value);
+/**
  * Calls a function with the given name and parameters.
  * @param ab the libabacus instance to use to call the function.
  * @param function the name of the function to call.
- * @param iunto the reference into which to store the result.
+ * @param into the reference into which to store the result.
  * @param param_count the number of parameters given to this function.
  * @return the result of the call.
  */
 libab_result libab_run_function(libab* ab, const char* function,
                                 libab_ref* into,
                                 size_t param_count, ...);
+/**
+ * Calls a string in a given surrounding scope.
+ * @param ab the libabacus instance to use to call the function.
+ * @param strign the string to run.
+ * @param scope the scope to use for calling the string.
+ * @param value the reference into which to store the output of the computation.
+ * @return the result of the computation.
+ */
+libab_result libab_run_scoped(libab* ab, const char* string, libab_ref* scope, libab_ref* value);
+/**
+ * Calls a tree in a given scope.
+ * @param ab the libabacus instance to use to call the tree.
+ * @param tree the tree to call.
+ * @param scope the scope to use for the call.
+ * @param value the reference into which to store the output.
+ * @return the result of the call.
+ */
+libab_result libab_run_tree_scoped(libab* ab, libab_tree* tree, libab_ref* scope, libab_ref* value);
+/**
+ * Calls a function with the given name and parameters using a given scope.
+ * @param ab the libabacus instance to use to call the function.
+ * @param function the name of the function to call.
+ * @param scope the scope in which to perform the call.
+ * @param into the reference into which to store the result.
+ * @param param_count the number of parameters given to this function.
+ * @return the result of the call.
+ */
+libab_result libab_run_function_scoped(libab* ab, const char* function, libab_ref* scope,
+                                       libab_ref* into,
+                                       size_t param_count, ...);
 
 /**
  * Releases all the resources allocated by libabacus.
