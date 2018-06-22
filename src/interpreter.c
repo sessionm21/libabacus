@@ -1212,7 +1212,7 @@ libab_result libab_interpreter_run_function(libab_interpreter* intr,
                                         function, &function_value);
     if(result == LIBAB_SUCCESS) {
         libab_ref_free(into);
-        _interpreter_try_call(&state, &function_value, params, into);
+        result = _interpreter_try_call(&state, &function_value, params, into);
     }
 
     _interpreter_free(&state);
