@@ -117,13 +117,33 @@ libab_result register_functions(libab* ab) {
     return result;
 }
 
-int main() {
+libab_result loop(libab* ab, int interaction_count, libab_ref* scope) {
+    libab_result result = LIBAB_SUCCESS;
     char input_buffer[2048];
-    int interaction_count = INTERACTIONS;
     libab_ref eval_into;
     libab_ref call_into;
-    libab_result result;
     libab_result eval_result;
+
+    while (interaction_count-- && result == LIBAB_SUCCESS) {
+        printf("(%d) > ", INTERACTIONS - interaction_count);
+        fgets(input_buffer, 2048, stdin);
+        eval_result = libab_run_scoped(ab, input_buffer, scope, &eval_into);
+
+        if (eval_result != LIBAB_SUCCESS) {
+            printf("Invalid input (error code %d).\n", eval_result);
+        } else {
+            result = libab_run_function_scoped(ab, "print", scope, &call_into, 1, &eval_into);
+            libab_ref_free(&call_into);
+        }
+        libab_ref_free(&eval_into);
+    }
+
+    return result;
+}
+
+int main() {
+    libab_result result;
+    libab_ref scope;
     libab ab;
 
     if (libab_init(&ab, impl_parse, impl_free) != LIBAB_SUCCESS) {
@@ -132,18 +152,12 @@ int main() {
     }
 
     result = register_functions(&ab);
-    while (interaction_count-- && result == LIBAB_SUCCESS) {
-        printf("(%d) > ", INTERACTIONS - interaction_count);
-        fgets(input_buffer, 2048, stdin);
-        eval_result = libab_run(&ab, input_buffer, &eval_into);
-
-        if (eval_result != LIBAB_SUCCESS) {
-            printf("Invalid input (error code %d).\n", eval_result);
-        } else {
-            result = libab_run_function(&ab, "print", &call_into, 1, &eval_into);
-            libab_ref_free(&call_into);
-        }
-        libab_ref_free(&eval_into);
+    if(result == LIBAB_SUCCESS) {
+        result = libab_create_table(&scope, &ab.table);
+    }
+    if(result == LIBAB_SUCCESS) {
+        loop(&ab, INTERACTIONS, &scope);
+        libab_ref_free(&scope);
     }
 
     libab_free(&ab);
