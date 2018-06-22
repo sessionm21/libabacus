@@ -2,6 +2,7 @@
 #include "util.h"
 #include "value.h"
 #include "free_functions.h"
+#include "reserved.h"
 
 libab_result libab_interpreter_init(libab_interpreter* intr, libab* ab) {
     libab_result result;
@@ -1163,6 +1164,13 @@ libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
 
         libab_ref_copy(&function, into);
         libab_ref_free(&function);
+    } else if(tree->variant == TREE_RESERVED_OP) {
+        const libab_reserved_operator* op = 
+            libab_find_reserved_operator(tree->string_value);
+        result = op->function(state->ab, scope,
+                vec_index(&tree->children, 0),
+                vec_index(&tree->children, 1),
+                into);
     } else {
         libab_get_unit_value(state->ab, into);
     }

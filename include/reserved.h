@@ -23,6 +23,11 @@ struct libab_reserved_operator_s {
      * The associativity of this operator.
      */
     int associativity;
+    /**
+     * The function this operator performs.
+     */
+    libab_result (*function)(libab*, libab_ref*, libab_tree*, 
+                             libab_tree*, libab_ref*);
 };
 
 typedef struct libab_reserved_operator_s libab_reserved_operator;
