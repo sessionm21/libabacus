@@ -1208,6 +1208,10 @@ libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
                 vec_index(&tree->children, 0),
                 vec_index(&tree->children, 1),
                 into);
+    } else if(tree->variant == TREE_TRUE) {
+        libab_get_true_value(state->ab, into);
+    } else if(tree->variant == TREE_FALSE) {
+        libab_get_false_value(state->ab, into);
     } else {
         libab_get_unit_value(state->ab, into);
     }

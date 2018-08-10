@@ -406,6 +406,38 @@ libab_result _parse_void(struct parser_state* state, libab_tree** store_into) {
     return result;
 }
 
+libab_result _parse_true(struct parser_state* state, libab_tree** store_into) {
+    libab_result result = _parser_consume_type(state, TOKEN_KW_TRUE);
+    if(result == LIBAB_SUCCESS) {
+        if ((*store_into = malloc(sizeof(**store_into)))) {
+            (*store_into)->variant = TREE_TRUE;
+        } else {
+            result = LIBAB_MALLOC;
+        }
+    }
+
+    if(result != LIBAB_SUCCESS) {
+        *store_into = NULL;
+    }
+    return result;
+}
+
+libab_result _parse_false(struct parser_state* state, libab_tree** store_into) {
+    libab_result result = _parser_consume_type(state, TOKEN_KW_FALSE);
+    if(result == LIBAB_SUCCESS) {
+        if ((*store_into = malloc(sizeof(**store_into)))) {
+            (*store_into)->variant = TREE_FALSE;
+        } else {
+            result = LIBAB_MALLOC;
+        }
+    }
+
+    if(result != LIBAB_SUCCESS) {
+        *store_into = NULL;
+    }
+    return result;
+}
+
 libab_result _parse_if(struct parser_state* state, libab_tree** store_into) {
     libab_result result = LIBAB_SUCCESS;
     libab_tree* condition = NULL;
@@ -736,6 +768,10 @@ libab_result _parse_atom(struct parser_state* state, libab_tree** store_into) {
         result = _parse_fun(state, store_into);
     } else if (_parser_is_type(state, TOKEN_KW_RETURN)) {
         result = _parse_return(state, store_into);
+    } else if (_parser_is_type(state, TOKEN_KW_TRUE)) {
+        result = _parse_true(state, store_into);
+    } else if (_parser_is_type(state, TOKEN_KW_FALSE)) {
+        result = _parse_false(state, store_into);
     } else {
         result = LIBAB_UNEXPECTED;
     }

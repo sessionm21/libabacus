@@ -10,6 +10,8 @@ libab_result libab_lexer_init(libab_lexer* lexer) {
     const char* words[] = {".",
                            "[a-zA-Z][a-zA-Z0-9_]*",
                            "[0-9]+(\\.[0-9]*)?",
+                           "true",
+                           "false",
                            "if",
                            "else",
                            "while",
@@ -18,9 +20,9 @@ libab_result libab_lexer_init(libab_lexer* lexer) {
                            "fun",
                            "return"};
     libab_lexer_token tokens[] = {
-        TOKEN_CHAR,    TOKEN_ID,        TOKEN_NUM,    TOKEN_KW_IF,
-        TOKEN_KW_ELSE, TOKEN_KW_WHILE,  TOKEN_KW_DO,  TOKEN_KW_ARROW,
-        TOKEN_KW_FUN,  TOKEN_KW_RETURN };
+        TOKEN_CHAR,     TOKEN_ID,       TOKEN_NUM,     TOKEN_KW_TRUE,
+        TOKEN_KW_FALSE, TOKEN_KW_IF,    TOKEN_KW_ELSE, TOKEN_KW_WHILE,
+        TOKEN_KW_DO,    TOKEN_KW_ARROW, TOKEN_KW_FUN,  TOKEN_KW_RETURN};
     const size_t count = sizeof(tokens) / sizeof(libab_lexer_token);
 
     eval_config_init(&lexer->config);

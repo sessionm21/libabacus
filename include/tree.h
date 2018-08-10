@@ -19,6 +19,8 @@ enum libab_tree_variant_e {
     TREE_POSTFIX_OP,
     TREE_BLOCK,
     TREE_VOID,
+    TREE_TRUE,
+    TREE_FALSE,
     TREE_IF,
     TREE_WHILE,
     TREE_DOWHILE,
