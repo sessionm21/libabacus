@@ -7,6 +7,10 @@
 #define TRY(expression)                                                        \
     if (result == LIBAB_SUCCESS)                                               \
         result = expression;
+#define FUNCTION(name)                                                         \
+    libab_result function_##name (libab* ab, libab_ref* scope,                 \
+        libab_ref_vec* params, libab_ref* into)
+    
 #define INTERACTIONS 5
 
 void* impl_parse(const char* string) {
@@ -42,55 +46,55 @@ void get_boolean_value(libab* ab, int val, libab_ref* into) {
     val ? libab_get_true_value(ab, into) : libab_get_false_value(ab, into);
 }
 
-libab_result function_and(libab* ab, libab_ref* scope, libab_ref_vec* params, libab_ref* into) {
+FUNCTION(and) {
     int* left = libab_unwrap_param(params, 0);
     int* right = libab_unwrap_param(params, 1);
     get_boolean_value(ab, *left & *right, into);
     return LIBAB_SUCCESS;
 }
 
-libab_result function_or(libab* ab, libab_ref* scope, libab_ref_vec* params, libab_ref* into) {
+FUNCTION(or) {
     int* left = libab_unwrap_param(params, 0);
     int* right = libab_unwrap_param(params, 1);
     get_boolean_value(ab, *left | *right, into);
     return LIBAB_SUCCESS;
 }
 
-libab_result function_xor(libab* ab, libab_ref* scope, libab_ref_vec* params, libab_ref* into) {
+FUNCTION(xor) {
     int* left = libab_unwrap_param(params, 0);
     int* right = libab_unwrap_param(params, 1);
     get_boolean_value(ab, *left ^ *right, into);
     return LIBAB_SUCCESS;
 }
 
-libab_result function_atan(libab* ab, libab_ref* scope, libab_ref_vec* params, libab_ref* into) {
+FUNCTION(atan) {
     printf("atan called\n");
     double* val = libab_unwrap_param(params, 0);
     return create_double_value(ab, atan(*val), into);
 }
 
-libab_result function_atan2(libab* ab, libab_ref* scope, libab_ref_vec* params, libab_ref* into) {
+FUNCTION(atan2) {
     printf("atan2 called\n");
     double* left = libab_unwrap_param(params, 0);
     double* right = libab_unwrap_param(params, 1);
     return create_double_value(ab, atan2(*left, *right), into);
 }
 
-libab_result function_print_num(libab* ab, libab_ref* scope, libab_ref_vec* params, libab_ref* into) {
+FUNCTION(print_num) {
     double* param = libab_unwrap_param(params, 0);
     printf("%f\n", *param);
     libab_get_unit_value(ab, into);
     return LIBAB_SUCCESS;
 }
 
-libab_result function_print_bool(libab* ab, libab_ref* scope, libab_ref_vec* params, libab_ref* into) {
+FUNCTION(print_bool) {
     int* param = libab_unwrap_param(params, 0);
     printf("%s\n", *param ? "true" : "false");
     libab_get_unit_value(ab, into);
     return LIBAB_SUCCESS;
 }
 
-libab_result function_print_unit(libab* ab, libab_ref* scope, libab_ref_vec* params, libab_ref* into) {
+FUNCTION(print_unit) {
     printf("()\n");
     libab_get_unit_value(ab, into);
     return LIBAB_SUCCESS;
