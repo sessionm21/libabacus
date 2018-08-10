@@ -38,6 +38,31 @@ libab_result create_double_value(libab* ab, double val, libab_ref* into) {
     return result;
 }
 
+void get_boolean_value(libab* ab, int val, libab_ref* into) {
+    val ? libab_get_true_value(ab, into) : libab_get_false_value(ab, into);
+}
+
+libab_result function_and(libab* ab, libab_ref* scope, libab_ref_vec* params, libab_ref* into) {
+    int* left = libab_unwrap_param(params, 0);
+    int* right = libab_unwrap_param(params, 1);
+    get_boolean_value(ab, *left & *right, into);
+    return LIBAB_SUCCESS;
+}
+
+libab_result function_or(libab* ab, libab_ref* scope, libab_ref_vec* params, libab_ref* into) {
+    int* left = libab_unwrap_param(params, 0);
+    int* right = libab_unwrap_param(params, 1);
+    get_boolean_value(ab, *left | *right, into);
+    return LIBAB_SUCCESS;
+}
+
+libab_result function_xor(libab* ab, libab_ref* scope, libab_ref_vec* params, libab_ref* into) {
+    int* left = libab_unwrap_param(params, 0);
+    int* right = libab_unwrap_param(params, 1);
+    get_boolean_value(ab, *left ^ *right, into);
+    return LIBAB_SUCCESS;
+}
+
 libab_result function_atan(libab* ab, libab_ref* scope, libab_ref_vec* params, libab_ref* into) {
     printf("atan called\n");
     double* val = libab_unwrap_param(params, 0);
@@ -96,6 +121,7 @@ libab_result register_functions(libab* ab) {
     libab_ref print_num_type;
     libab_ref print_unit_type;
     libab_ref print_bool_type;
+    libab_ref bool_logic_type;
 
     result = libab_create_type(ab, &trig_type, "(num)->num");
     TRY(libab_create_type(ab, &atan2_type, "(num, num)->num"));
@@ -103,6 +129,7 @@ libab_result register_functions(libab* ab) {
     TRY(libab_create_type(ab, &print_num_type, "(num)->unit"));
     TRY(libab_create_type(ab, &print_unit_type, "(unit)->unit"));
     TRY(libab_create_type(ab, &print_bool_type, "(bool)->unit"));
+    TRY(libab_create_type(ab, &bool_logic_type, "(bool,bool)->bool"));
 
     TRY(libab_register_function(ab, "atan", &trig_type, function_atan));
     TRY(libab_register_function(ab, "atan2", &atan2_type, function_atan2));
@@ -110,6 +137,9 @@ libab_result register_functions(libab* ab) {
     TRY(libab_register_function(ab, "minus", &atan2_type, function_minus));
     TRY(libab_register_function(ab, "times", &atan2_type, function_times));
     TRY(libab_register_function(ab, "divide", &atan2_type, function_divide));
+    TRY(libab_register_function(ab, "and", &bool_logic_type, function_and));
+    TRY(libab_register_function(ab, "or", &bool_logic_type, function_or));
+    TRY(libab_register_function(ab, "xor", &bool_logic_type, function_xor));
     TRY(libab_register_function(ab, "print", &print_num_type, function_print_num));
     TRY(libab_register_function(ab, "print", &print_unit_type, function_print_unit));
     TRY(libab_register_function(ab, "print", &print_bool_type, function_print_bool));
@@ -117,6 +147,9 @@ libab_result register_functions(libab* ab) {
     TRY(libab_register_operator_infix(ab, "-", 0, -1, "minus"));
     TRY(libab_register_operator_infix(ab, "*", 1, -1, "times"));
     TRY(libab_register_operator_infix(ab, "/", 1, -1, "divide"));
+    TRY(libab_register_operator_infix(ab, "&", 1, -1, "and"));
+    TRY(libab_register_operator_infix(ab, "|", 1, -1, "or"));
+    TRY(libab_register_operator_infix(ab, "^", 1, -1, "xor"));
 
     libab_ref_free(&trig_type);
     libab_ref_free(&atan2_type);
