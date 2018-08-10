@@ -144,6 +144,10 @@ libab_result loop(libab* ab, int interaction_count, libab_ref* scope) {
             printf("Invalid input (error code %d).\n", eval_result);
         } else {
             result = libab_run_function_scoped(ab, "print", scope, &call_into, 1, &eval_into);
+            if(result == LIBAB_BAD_CALL) {
+                printf("(?)\n");
+                result = LIBAB_SUCCESS;
+            }
             libab_ref_free(&call_into);
         }
         libab_ref_free(&eval_into);
