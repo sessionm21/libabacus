@@ -1212,6 +1212,28 @@ libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
         libab_get_true_value(state->ab, into);
     } else if(tree->variant == TREE_FALSE) {
         libab_get_false_value(state->ab, into);
+    } else if (tree->variant == TREE_IF) {
+        libab_ref condition;
+        libab_value* condition_value;
+        libab_parsetype* condition_type;
+        result = _interpreter_run(state, vec_index(&tree->children, 0),
+                &condition, scope, SCOPE_NORMAL);
+
+        if(result == LIBAB_SUCCESS) {
+            condition_value = libab_ref_get(&condition);
+            condition_type = libab_ref_get(&condition_value->type);
+            if(condition_type->data_u.base != libab_get_basetype_bool(state->ab)) {
+                result = LIBAB_MISMATCHED_TYPE;
+            }
+        }
+
+        if(result == LIBAB_SUCCESS) {
+            int* boolean = libab_ref_get(&condition_value->data);
+            result = _interpreter_run(state, vec_index(&tree->children,
+                        *boolean ? 1 : 2), into, scope, SCOPE_NORMAL);
+        }
+
+        libab_ref_free(&condition);
     } else {
         libab_get_unit_value(state->ab, into);
     }
