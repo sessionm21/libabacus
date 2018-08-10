@@ -48,6 +48,10 @@ struct libab_s {
      */
     libab_ref type_num;
     /**
+     * The boolean type instance.
+     */
+    libab_ref type_bool;
+    /**
      * The function list type instance.
      */
     libab_ref type_function_list;
@@ -145,6 +149,12 @@ libab_result libab_create_type(libab* ab, libab_ref* into, const char* type);
  */
 libab_basetype* libab_get_basetype_num(libab* ab);
 /**
+ * Finds and returns the built-in libabacus boolean type.
+ * @param ab the ab instance for which to return a type.
+ * @return the boolean basetype.
+ */
+libab_basetype* libab_get_basetype_bool(libab* ab);
+/**
  * Finds and returns the built-in libabacus function type.
  * @param ab the ab instance for which to return a type.
  * @return the function basetype.
@@ -169,6 +179,12 @@ libab_basetype* libab_get_basetype_unit(libab* ab);
  * @param into the reference to store the type into.
  */
 void libab_get_type_num(libab* ab, libab_ref* into);
+/**
+ * Get the type of a boolean in this libabacus instance.
+ * @param ab the instance to get the type for.
+ * @param into the reference to store the type into.
+ */
+void libab_get_type_bool(libab* ab, libab_ref* into);
 /**
  * Get the type of the function list in this libabacus instance.
  * @param ab the instance to get the type for.

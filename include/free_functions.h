@@ -25,6 +25,11 @@ void libab_free_function_list(void* func_list);
  */
 void libab_free_unit(void* unit);
 /**
+ * Frees a boolean value.
+ * @param b the bool to free.
+ */
+void libab_free_bool(void* b);
+/**
  * Frees a parsetype.
  * @param parsetype the parsetype to free.
  */

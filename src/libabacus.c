@@ -16,6 +16,8 @@ static libab_basetype _basetype_function = {libab_free_function,
 
 static libab_basetype _basetype_unit = { libab_free_unit, NULL, 0 };
 
+static libab_basetype _basetype_bool = { libab_free_bool, NULL, 0 };
+
 libab_result _prepare_types(libab* ab, void (*free_function)(void*));
 
 libab_result libab_init(libab* ab, void* (*parse_function)(const char*),
@@ -27,6 +29,7 @@ libab_result libab_init(libab* ab, void* (*parse_function)(const char*),
     libab_result result;
     libab_ref_null(&null_ref);
     libab_ref_null(&ab->type_num);
+    libab_ref_null(&ab->type_bool);
     libab_ref_null(&ab->type_function_list);
     libab_ref_null(&ab->type_unit);
 
@@ -35,6 +38,7 @@ libab_result libab_init(libab* ab, void* (*parse_function)(const char*),
 
     if (result == LIBAB_SUCCESS) {
         libab_ref_free(&ab->type_num);
+        libab_ref_free(&ab->type_bool);
         libab_ref_free(&ab->type_function_list);
         libab_ref_free(&ab->type_unit);
         result = _prepare_types(ab, free_function);
@@ -59,6 +63,7 @@ libab_result libab_init(libab* ab, void* (*parse_function)(const char*),
     if (result != LIBAB_SUCCESS) {
         libab_ref_free(&ab->table);
         libab_ref_free(&ab->type_num);
+        libab_ref_free(&ab->type_bool);
         libab_ref_free(&ab->type_function_list);
         libab_ref_free(&ab->type_unit);
 
@@ -282,6 +287,7 @@ libab_result _prepare_types(libab* ab, void (*free_function)(void*)) {
     ab->basetype_num.free_function = free_function;
 
     libab_ref_null(&ab->type_num);
+    libab_ref_null(&ab->type_bool);
     libab_ref_null(&ab->type_function_list);
     libab_ref_null(&ab->type_unit);
 
@@ -289,6 +295,12 @@ libab_result _prepare_types(libab* ab, void (*free_function)(void*)) {
         libab_ref_free(&ab->type_num);
         result =
             libab_instantiate_basetype(&ab->basetype_num, &ab->type_num, 0);
+    }
+
+    if (result == LIBAB_SUCCESS) {
+        libab_ref_free(&ab->type_bool);
+        result =
+            libab_instantiate_basetype(&_basetype_bool, &ab->type_bool, 0);
     }
 
     if (result == LIBAB_SUCCESS) {
@@ -306,6 +318,10 @@ libab_result _prepare_types(libab* ab, void (*free_function)(void*)) {
         result = libab_register_basetype(ab, "num", &ab->basetype_num);
     }
 
+    if(result == LIBAB_SUCCESS) {
+        result = libab_register_basetype(ab, "bool", &_basetype_bool);
+    }
+
     if (result == LIBAB_SUCCESS) {
         result = libab_register_basetype(ab, "function", &_basetype_function);
     }
@@ -321,9 +337,11 @@ libab_result _prepare_types(libab* ab, void (*free_function)(void*)) {
 
     if (result != LIBAB_SUCCESS) {
         libab_ref_free(&ab->type_num);
+        libab_ref_free(&ab->type_bool);
         libab_ref_free(&ab->type_function_list);
         libab_ref_free(&ab->type_unit);
         libab_ref_null(&ab->type_num);
+        libab_ref_null(&ab->type_bool);
         libab_ref_null(&ab->type_function_list);
         libab_ref_null(&ab->type_unit);
     }
@@ -350,6 +368,8 @@ libab_result libab_create_type(libab* ab, libab_ref* into, const char* type) {
 
 libab_basetype* libab_get_basetype_num(libab* ab) { return &ab->basetype_num; }
 
+libab_basetype* libab_get_basetype_bool(libab* ab) { return &_basetype_bool; }
+
 libab_basetype* libab_get_basetype_function(libab* ab) {
     return &_basetype_function;
 }
@@ -364,6 +384,10 @@ libab_basetype* libab_get_basetype_unit(libab* ab) {
 
 void libab_get_type_num(libab* ab, libab_ref* into) {
     libab_ref_copy(&ab->type_num, into);
+}
+
+void libab_get_type_bool(libab* ab, libab_ref* into) {
+    libab_ref_copy(&ab->type_bool, into);
 }
 
 void libab_get_type_function_list(libab* ab, libab_ref* into) {
@@ -493,6 +517,7 @@ libab_result libab_free(libab* ab) {
     libab_table_free(libab_ref_get(&ab->table));
     libab_ref_free(&ab->table);
     libab_ref_free(&ab->type_num);
+    libab_ref_free(&ab->type_bool);
     libab_ref_free(&ab->type_function_list);
     libab_ref_free(&ab->type_unit);
     libab_parser_free(&ab->parser);

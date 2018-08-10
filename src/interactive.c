@@ -58,6 +58,13 @@ libab_result function_print_num(libab* ab, libab_ref* scope, libab_ref_vec* para
     return LIBAB_SUCCESS;
 }
 
+libab_result function_print_bool(libab* ab, libab_ref* scope, libab_ref_vec* params, libab_ref* into) {
+    int* param = libab_unwrap_param(params, 0);
+    printf("%s\n", *param ? "true" : "false");
+    libab_get_unit_value(ab, into);
+    return LIBAB_SUCCESS;
+}
+
 libab_result function_print_unit(libab* ab, libab_ref* scope, libab_ref_vec* params, libab_ref* into) {
     printf("()\n");
     libab_get_unit_value(ab, into);
@@ -88,12 +95,14 @@ libab_result register_functions(libab* ab) {
     libab_ref difficult_type;
     libab_ref print_num_type;
     libab_ref print_unit_type;
+    libab_ref print_bool_type;
 
     result = libab_create_type(ab, &trig_type, "(num)->num");
     TRY(libab_create_type(ab, &atan2_type, "(num, num)->num"));
     TRY(libab_create_type(ab, &difficult_type, "((num)->num)->num"));
     TRY(libab_create_type(ab, &print_num_type, "(num)->unit"));
     TRY(libab_create_type(ab, &print_unit_type, "(unit)->unit"));
+    TRY(libab_create_type(ab, &print_bool_type, "(bool)->unit"));
 
     TRY(libab_register_function(ab, "atan", &trig_type, function_atan));
     TRY(libab_register_function(ab, "atan2", &atan2_type, function_atan2));
@@ -103,6 +112,7 @@ libab_result register_functions(libab* ab) {
     TRY(libab_register_function(ab, "divide", &atan2_type, function_divide));
     TRY(libab_register_function(ab, "print", &print_num_type, function_print_num));
     TRY(libab_register_function(ab, "print", &print_unit_type, function_print_unit));
+    TRY(libab_register_function(ab, "print", &print_bool_type, function_print_bool));
     TRY(libab_register_operator_infix(ab, "+", 0, -1, "plus"));
     TRY(libab_register_operator_infix(ab, "-", 0, -1, "minus"));
     TRY(libab_register_operator_infix(ab, "*", 1, -1, "times"));
@@ -113,6 +123,7 @@ libab_result register_functions(libab* ab) {
     libab_ref_free(&difficult_type);
     libab_ref_free(&print_num_type);
     libab_ref_free(&print_unit_type);
+    libab_ref_free(&print_bool_type);
 
     return result;
 }

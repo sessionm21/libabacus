@@ -17,6 +17,9 @@ void libab_free_function_list(void* function_list) {
 void libab_free_unit(void* unit) {
 
 }
+void libab_free_bool(void* b) {
+    free(b);
+}
 void libab_free_parsetype(void* parsetype) {
     libab_parsetype_free(parsetype);
     free(parsetype);
