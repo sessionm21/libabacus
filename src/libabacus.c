@@ -87,7 +87,9 @@ libab_result libab_init(libab* ab, void* (*parse_function)(const char*),
 void _sanitize(char* to, const char* from, size_t buffer_size) {
     size_t index = 0;
     while (*from && index < (buffer_size - 2)) {
-        if (*from == '+' || *from == '*' || *from == '\\')
+        if (*from == '+' || *from == '*' || *from == '\\' ||
+                *from == '|' || *from == '[' || *from == ']' || *from == '(' ||
+                *from == ')')
             to[index++] = '\\';
         to[index++] = *(from++);
     }
