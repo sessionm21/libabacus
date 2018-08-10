@@ -28,6 +28,14 @@ struct libab_interpreter_s {
      * The unit value, which doesn't need more than one instance.
      */
     libab_ref value_unit;
+    /**
+     * The "true" boolean value, which doesn't need more than one instance.
+     */
+    libab_ref value_true;
+    /**
+     * The "false" boolean value, which doesn't need more than one instance.
+     */
+    libab_ref value_false;
 };
 
 typedef enum libab_interpreter_scope_mode_e libab_interpreter_scope_mode;
@@ -73,6 +81,18 @@ libab_result libab_interpreter_run_function(libab_interpreter* intr,
  * @param into the reference into which to store the unit value.
  */
 void libab_interpreter_unit_value(libab_interpreter* intr, libab_ref* into);
+/**
+ * Gets the true value from this interpreter.
+ * @param intr the interpreter from which to get the true value.
+ * @param into the reference into which to store the true value.
+ */
+void libab_interpreter_true_value(libab_interpreter* intr, libab_ref* into);
+/**
+ * Gets the false value from this interpreter.
+ * @param intr the interpreter from which to get the false value.
+ * @param into the reference into which to store the false value.
+ */
+void libab_interpreter_false_value(libab_interpreter* intr, libab_ref* into);
 /**
  * Frees the given interpreter.
  * @param intr the interpreter to free.

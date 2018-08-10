@@ -4,14 +4,51 @@
 #include "free_functions.h"
 #include "reserved.h"
 
+libab_result _create_bool_value(libab* ab, int val, libab_ref* into) {
+    libab_ref type_bool;
+    int* new_bool;
+    libab_result result = LIBAB_SUCCESS;
+
+    libab_get_type_bool(ab, &type_bool);
+    new_bool = malloc(sizeof(*new_bool));
+    if(new_bool) {
+        *new_bool = val;
+        result = libab_create_value_raw(into, new_bool, &type_bool);
+        if(result != LIBAB_SUCCESS) {
+            free(new_bool);
+        }
+    } else {
+        result = LIBAB_MALLOC;
+        libab_ref_null(into);
+    }
+    libab_ref_free(&type_bool);
+    return result;
+}
+
 libab_result libab_interpreter_init(libab_interpreter* intr, libab* ab) {
     libab_result result;
     libab_ref unit_data;
     intr->ab = ab;
+    libab_ref_null(&intr->value_true);
+    libab_ref_null(&intr->value_false);
 
     libab_ref_null(&unit_data);
     result = libab_create_value_ref(&intr->value_unit, &unit_data, &ab->type_unit);
+    if(result == LIBAB_SUCCESS) {
+        libab_ref_free(&intr->value_true);
+        result = _create_bool_value(ab, 1, &intr->value_true);
+    }
+    if(result == LIBAB_SUCCESS) {
+        libab_ref_free(&intr->value_false);
+        result = _create_bool_value(ab, 0, &intr->value_false);
+    }
     libab_ref_free(&unit_data);
+
+    if(result != LIBAB_SUCCESS) {
+        libab_ref_free(&intr->value_unit);
+        libab_ref_free(&intr->value_true);
+        libab_ref_free(&intr->value_false);
+    }
 
     return result;
 }
@@ -1225,6 +1262,16 @@ void libab_interpreter_unit_value(libab_interpreter* intr, libab_ref* into) {
     libab_ref_copy(&intr->value_unit, into);
 }
 
+void libab_interpreter_true_value(libab_interpreter* intr, libab_ref* into) {
+    libab_ref_copy(&intr->value_true, into);
+}
+
+void libab_interpreter_false_value(libab_interpreter* intr, libab_ref* into) {
+    libab_ref_copy(&intr->value_false, into);
+}
+
 void libab_interpreter_free(libab_interpreter* intr) {
     libab_ref_free(&intr->value_unit);
+    libab_ref_free(&intr->value_true);
+    libab_ref_free(&intr->value_false);
 }

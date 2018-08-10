@@ -204,6 +204,18 @@ void libab_get_type_unit(libab* ab, libab_ref* into);
  * @param into the reference into which to store the unit value.
  */
 void libab_get_unit_value(libab* ab, libab_ref* into);
+/**
+ * Gets the true value form this libab instance.
+ * @param ab the instance to get the true value from.
+ * @param into the reference into which to store the true value.
+ */
+void libab_get_true_value(libab* ab, libab_ref* into);
+/**
+ * Gets the false value form this libab instance.
+ * @param ab the instance to get the false value from.
+ * @param into the reference into which to store the false value.
+ */
+void libab_get_false_value(libab* ab, libab_ref* into);
 
 /**
  * Executes the given string of code.

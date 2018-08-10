@@ -402,6 +402,14 @@ void libab_get_unit_value(libab* ab, libab_ref* into) {
     libab_interpreter_unit_value(&ab->intr, into);
 }
 
+void libab_get_true_value(libab* ab, libab_ref* into) {
+    libab_interpreter_true_value(&ab->intr, into);
+}
+
+void libab_get_false_value(libab* ab, libab_ref* into) {
+    libab_interpreter_false_value(&ab->intr, into);
+}
+
 libab_result _create_tree(libab* ab, const char* string, libab_tree** into) {
     libab_result result = LIBAB_SUCCESS;
     ll tokens;
