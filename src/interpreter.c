@@ -1166,6 +1166,9 @@ libab_result _interpreter_expect_boolean(struct interpreter_state* state,
 libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
                               libab_ref* into, libab_ref* scope,
                               libab_interpreter_scope_mode mode) {
+    #define RUN_CHECK(i) _interpreter_expect_boolean(state, \
+        vec_index(&tree->children, i), &value, scope, SCOPE_NORMAL)
+
     libab_result result = LIBAB_SUCCESS;
     libab_ref new_scope;
     int needs_scope = (mode == SCOPE_FORCE) || 
@@ -1245,20 +1248,26 @@ libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
 
         if(result == LIBAB_SUCCESS) {
             result = _interpreter_run(state, vec_index(&tree->children,
-                        value ? 1 : 2), into, scope, SCOPE_NORMAL);
+                        value ? 1 : 2), into, scope, SCOPE_FORCE);
         } else {
             libab_ref_null(into);
         }
     } else if(tree->variant == TREE_WHILE) {
-        #define RUN_CHECK _interpreter_expect_boolean(state, \
-                vec_index(&tree->children, 0), &value, scope, SCOPE_NORMAL)
         int value;
         libab_get_unit_value(state->ab, into);
-        while(result == LIBAB_SUCCESS && (result = RUN_CHECK) == LIBAB_SUCCESS && value) {
+        while(result == LIBAB_SUCCESS && (result = RUN_CHECK(0)) == LIBAB_SUCCESS && value) {
             libab_ref_free(into);
             result = _interpreter_run(state, vec_index(&tree->children, 1), 
-                                      into, scope, SCOPE_NORMAL);
+                                      into, scope, SCOPE_FORCE);
         }
+    } else if(tree->variant == TREE_DOWHILE) {
+        int value;
+        libab_get_unit_value(state->ab, into);
+        do {
+            libab_ref_free(into);
+            result = _interpreter_run(state, vec_index(&tree->children, 0),
+                                      into, scope, SCOPE_FORCE);
+        } while(result == LIBAB_SUCCESS && (result = RUN_CHECK(1)) == LIBAB_SUCCESS && value);
     } else {
         libab_get_unit_value(state->ab, into);
     }
