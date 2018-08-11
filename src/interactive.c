@@ -42,6 +42,7 @@ libab_result create_double_value(libab* ab, double val, libab_ref* into) {
     return result;
 }
 
+
 FUNCTION(not) {
     int* left = libab_unwrap_param(params, 0);
     libab_get_bool_value(ab, !(*left), into);
@@ -80,6 +81,13 @@ FUNCTION(atan2) {
     double* left = libab_unwrap_param(params, 0);
     double* right = libab_unwrap_param(params, 1);
     return create_double_value(ab, atan2(*left, *right), into);
+}
+
+FUNCTION(equals_num) {
+    double* left = libab_unwrap_param(params, 0);
+    double* right = libab_unwrap_param(params, 1);
+    libab_get_bool_value(ab, *left == *right, into);
+    return LIBAB_SUCCESS;
 }
 
 FUNCTION(print_num) {
@@ -129,9 +137,11 @@ libab_result register_functions(libab* ab) {
     libab_ref print_bool_type;
     libab_ref bool_logic_type;
     libab_ref bool_not_type;
+    libab_ref equals_num_type;
 
     result = libab_create_type(ab, &trig_type, "(num)->num");
     TRY(libab_create_type(ab, &atan2_type, "(num, num)->num"));
+    TRY(libab_create_type(ab, &equals_num_type, "(num, num)->bool"));
     TRY(libab_create_type(ab, &difficult_type, "((num)->num)->num"));
     TRY(libab_create_type(ab, &print_num_type, "(num)->unit"));
     TRY(libab_create_type(ab, &print_unit_type, "(unit)->unit"));
@@ -149,9 +159,11 @@ libab_result register_functions(libab* ab) {
     TRY(libab_register_function(ab, "or", &bool_logic_type, function_or));
     TRY(libab_register_function(ab, "xor", &bool_logic_type, function_xor));
     TRY(libab_register_function(ab, "not", &bool_not_type, function_not));
+    TRY(libab_register_function(ab, "equals", &equals_num_type, function_equals_num));
     TRY(libab_register_function(ab, "print", &print_num_type, function_print_num));
     TRY(libab_register_function(ab, "print", &print_unit_type, function_print_unit));
     TRY(libab_register_function(ab, "print", &print_bool_type, function_print_bool));
+    TRY(libab_register_operator_infix(ab, "==", 0, -1, "equals"));
     TRY(libab_register_operator_infix(ab, "+", 0, -1, "plus"));
     TRY(libab_register_operator_infix(ab, "-", 0, -1, "minus"));
     TRY(libab_register_operator_infix(ab, "*", 1, -1, "times"));
