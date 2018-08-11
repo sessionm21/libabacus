@@ -416,3 +416,15 @@ void* libab_unwrap_param(libab_ref_vec* vec, size_t index) {
     libab_ref_free(&temp);
     return data;
 }
+
+void libab_sanitize(char* to, const char* from, size_t buffer_size) {
+    size_t index = 0;
+    while (*from && index < (buffer_size - 2)) {
+        if (*from == '+' || *from == '*' || *from == '\\' ||
+                *from == '|' || *from == '[' || *from == ']' || *from == '(' ||
+                *from == ')')
+            to[index++] = '\\';
+        to[index++] = *(from++);
+    }
+    to[index] = '\0';
+}

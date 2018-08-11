@@ -178,5 +178,12 @@ void* libab_unwrap_value(libab_ref* ref);
  * @return the value at the given index.
  */
 void* libab_unwrap_param(libab_ref_vec* vec, size_t index);
+/**
+ * Sanitizes a string to avoid liblex compilation errors.
+ * @param to the buffer to store the sanitized string to.
+ * @param from the string to sanitize.
+ * @param buffer_size the size of the to buffer.
+ */
+void libab_sanitize(char* to, const char* from, size_t buffer_size);
 
 #endif

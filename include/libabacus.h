@@ -216,6 +216,14 @@ void libab_get_true_value(libab* ab, libab_ref* into);
  * @param into the reference into which to store the false value.
  */
 void libab_get_false_value(libab* ab, libab_ref* into);
+/**
+ * Get the boolean value corresponding to val from this
+ * libab instance.
+ * @param ab the instance to get the value from.
+ * @param val the true or false value to represent.
+ * @param into the reference into which to store the value.
+ */
+void libab_get_bool_value(libab* ab, int val, libab_ref* into);
 
 /**
  * Executes the given string of code.

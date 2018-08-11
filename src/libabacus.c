@@ -84,18 +84,6 @@ libab_result libab_init(libab* ab, void* (*parse_function)(const char*),
     return result;
 }
 
-void _sanitize(char* to, const char* from, size_t buffer_size) {
-    size_t index = 0;
-    while (*from && index < (buffer_size - 2)) {
-        if (*from == '+' || *from == '*' || *from == '\\' ||
-                *from == '|' || *from == '[' || *from == ']' || *from == '(' ||
-                *from == ')')
-            to[index++] = '\\';
-        to[index++] = *(from++);
-    }
-    to[index] = '\0';
-}
-
 void _initialize_behavior(libab_behavior* behavior, libab_ref* type,
                           libab_function_ptr func) {
     behavior->variant = BIMPL_INTERNAL;
@@ -120,7 +108,7 @@ libab_result _register_operator(libab* ab, const char* op,
     }
 
     if (result == LIBAB_SUCCESS) {
-        _sanitize(op_buffer, op, 8);
+        libab_sanitize(op_buffer, op, 8);
         result = libab_convert_lex_result(
             eval_config_add(&ab->lexer.config, op_buffer, TOKEN_OP));
     }
@@ -410,6 +398,10 @@ void libab_get_true_value(libab* ab, libab_ref* into) {
 
 void libab_get_false_value(libab* ab, libab_ref* into) {
     libab_interpreter_false_value(&ab->intr, into);
+}
+
+void libab_get_bool_value(libab* ab, int val, libab_ref* into) {
+    val ? libab_get_true_value(ab, into) : libab_get_false_value(ab, into);
 }
 
 libab_result _create_tree(libab* ab, const char* string, libab_tree** into) {
