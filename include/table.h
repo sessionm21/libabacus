@@ -95,6 +95,17 @@ libab_table_entry* libab_table_search(libab_table* table, const char* string);
 libab_operator* libab_table_search_operator(libab_table* table,
                                             const char* string, int type);
 /**
+ * Searches for a given string in the table,
+ * returning the entry that holds it only if it is an operator.
+ * @param table the table to search.
+ * @param string the string to search for.
+ * @param type the type of operator to search for (infix, prefix, postfix)
+ * @return the entry, or NULL if it was not found.
+ */
+libab_table_entry* libab_table_search_entry_operator(libab_table* table,
+                                                     const char* string,
+                                                     int type);
+/**
  * Searches for the given basetype in the table, returning a value
  * only if it's a basetype.
  * @param table the table to search.
@@ -102,6 +113,15 @@ libab_operator* libab_table_search_operator(libab_table* table,
  * @return the found basetype, or NULL if it was not found.
  */
 libab_basetype* libab_table_search_basetype(libab_table* table,
+                                            const char* string);
+/**
+ * Searches for the given basetype in the table, returning a table
+ * entry only if it holds a basetype.
+ * @param table to table to search.
+ * @param string the string to search for.
+ * @return the entry holding the basetype, or NULL if it was not found.
+ */
+libab_table_entry* libab_table_search_entry_basetype(libab_table* table,
                                             const char* string);
 /**
  * Searches for the given value in the table.
@@ -112,13 +132,30 @@ libab_basetype* libab_table_search_basetype(libab_table* table,
 void libab_table_search_value(libab_table* table, const char* string,
                               libab_ref* ref);
 /**
- * Searches for the given type parameter in the talb.e
+ * Searches for a value with the given name in the table,
+ * and returns an entry that holds it.
+ * @param table the table to search.
+ * @param string the tabe entry key.
+ * @return the table entry holding the value, or NULL if it was not found.
+ */
+libab_table_entry* libab_table_search_entry_value(libab_table* table,
+                                                  const char* string);
+/**
+ * Searches for the given type parameter in the table.
  * @param table the table to search in.
- * @param string the key ot search for.
+ * @param string the key to search for.
  * @param ref the reference to store the type into.
  */
 void libab_table_search_type_param(libab_table* table, const char* string,
                                    libab_ref* ref);
+/**
+ * Searches for the given type parameter in the table.
+ * @param table the table to search in.
+ * @param string the key to search for.
+ * @return the table entry holding the type parameter, or NULL.
+ */
+libab_table_entry* libab_table_search_entry_type_param(libab_table* table,
+                                                        const char* string);
 /**
  * Stores the given entry in the table under the given key.
  * @param table the table to store the entry into.

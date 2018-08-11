@@ -54,6 +54,12 @@ int libab_table_compare_type_param(const void* left, const void* right) {
 
 libab_operator* libab_table_search_operator(libab_table* table,
                                             const char* string, int type) {
+    libab_table_entry* entry =
+        libab_table_search_entry_operator(table, string, type);
+    return entry ? &entry->data_u.op : NULL;
+}
+libab_table_entry* libab_table_search_entry_operator(libab_table* table,
+                                                     const char* string, int type) {
     libab_table_entry* entry = NULL;
     if (type == OPERATOR_PREFIX) {
         entry = libab_table_search_filter(table, string, NULL,
@@ -65,36 +71,51 @@ libab_operator* libab_table_search_operator(libab_table* table,
         entry = libab_table_search_filter(table, string, NULL,
                                           libab_table_compare_op_postfix);
     }
-    return entry ? &entry->data_u.op : NULL;
+    return entry;
 }
 
 libab_basetype* libab_table_search_basetype(libab_table* table,
                                             const char* string) {
-    libab_table_entry* entry = libab_table_search_filter(
-        table, string, NULL, libab_table_compare_basetype);
+    libab_table_entry* entry =
+        libab_table_search_entry_basetype(table, string);
     return entry ? entry->data_u.basetype : NULL;
+}
+libab_table_entry* libab_table_search_entry_basetype(libab_table* table,
+                                                     const char* string) {
+    return libab_table_search_filter(table, string, NULL, 
+                                     libab_table_compare_basetype);
 }
 
 void libab_table_search_value(libab_table* table, const char* string,
                               libab_ref* ref) {
-    libab_table_entry* entry = libab_table_search_filter(
-        table, string, NULL, libab_table_compare_value);
+    libab_table_entry* entry =
+        libab_table_search_entry_value(table, string);
     if (entry) {
         libab_ref_copy(&entry->data_u.value, ref);
     } else {
         libab_ref_null(ref);
     }
 }
+libab_table_entry* libab_table_search_entry_value(libab_table* table,
+                                                  const char* string) {
+    return libab_table_search_filter(table, string, NULL,
+                                     libab_table_compare_value);
+}
 
 void libab_table_search_type_param(libab_table* table, const char* string,
                                    libab_ref* ref) {
-    libab_table_entry* entry = libab_table_search_filter(
-        table, string, NULL, libab_table_compare_type_param);
+    libab_table_entry* entry =
+        libab_table_search_entry_type_param(table, string);
     if (entry) {
         libab_ref_copy(&entry->data_u.type_param, ref);
     } else {
         libab_ref_null(ref);
     }
+}
+libab_table_entry* libab_table_search_entry_type_param(libab_table* table,
+                                                       const char* string) {
+    return libab_table_search_filter(
+        table, string, NULL, libab_table_compare_type_param);
 }
 
 libab_result libab_table_put(libab_table* table, const char* string,
