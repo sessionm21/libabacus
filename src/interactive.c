@@ -176,6 +176,7 @@ libab_result register_functions(libab* ab) {
     libab_ref_free(&trig_type);
     libab_ref_free(&atan2_type);
     libab_ref_free(&difficult_type);
+    libab_ref_free(&equals_num_type);
     libab_ref_free(&print_num_type);
     libab_ref_free(&print_unit_type);
     libab_ref_free(&print_bool_type);
