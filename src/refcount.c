@@ -11,6 +11,7 @@ libab_result libab_ref_new(libab_ref* ref, void* data,
         ref->count->data = data;
         ref->count->strong = ref->count->weak = 1;
         ref->count->free_func = free_func;
+        ref->count->visit_children = NULL;
         ref->count->prev = NULL;
         ref->count->next = NULL;
     } else {
