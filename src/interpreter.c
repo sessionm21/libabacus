@@ -939,6 +939,7 @@ libab_result _interpreter_call_operator(struct interpreter_state* state,
     libab_ref_vec params;
     libab_ref temp;
 
+    libab_ref_null(into);
     libab_ref_null(&function_value);
     va_start(args, scope);
     result = libab_ref_vec_init(&params);
@@ -972,6 +973,7 @@ libab_result _interpreter_call_operator(struct interpreter_state* state,
         }
 
         if(result == LIBAB_SUCCESS) {
+            libab_ref_free(into);
             result = _interpreter_try_call(state, &function_value, &params, into);
         }
 
@@ -1151,7 +1153,7 @@ libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
     }
 
     if (result != LIBAB_SUCCESS) {
-
+        libab_ref_null(into);
     } else if (tree->variant == TREE_BASE || tree->variant == TREE_BLOCK) {
         size_t index = 0;
         libab_get_unit_value(state->ab, into);
@@ -1231,6 +1233,8 @@ libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
             int* boolean = libab_ref_get(&condition_value->data);
             result = _interpreter_run(state, vec_index(&tree->children,
                         *boolean ? 1 : 2), into, scope, SCOPE_NORMAL);
+        } else {
+            libab_ref_null(into);
         }
 
         libab_ref_free(&condition);
