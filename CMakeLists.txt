@@ -8,7 +8,7 @@ project(libabacus)
 
 add_compile_options(-pedantic -Wall)
 
-add_library(abacus STATIC src/lexer.c src/util.c src/table.c src/parser.c src/libabacus.c src/tree.c src/debug.c src/parsetype.c src/reserved.c src/trie.c src/refcount.c src/ref_vec.c src/ref_trie.c src/basetype.c src/value.c src/custom.c src/interpreter.c src/function_list.c src/free_functions.c)
+add_library(abacus STATIC src/lexer.c src/util.c src/table.c src/parser.c src/libabacus.c src/tree.c src/debug.c src/parsetype.c src/reserved.c src/trie.c src/refcount.c src/ref_vec.c src/ref_trie.c src/basetype.c src/value.c src/custom.c src/interpreter.c src/function_list.c src/free_functions.c src/gc.c)
 add_executable(libabacus src/main.c)
 add_executable(interactive src/interactive.c)
 add_subdirectory(external/liblex)
@@ -20,4 +20,4 @@ target_include_directories(libabacus PUBLIC include)
 
 target_link_libraries(abacus lex)
 target_link_libraries(libabacus abacus)
-target_link_libraries(interactive abacus)
+target_link_libraries(interactive abacus m)
