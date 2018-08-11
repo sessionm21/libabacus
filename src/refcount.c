@@ -29,6 +29,8 @@ void _libab_ref_changed(libab_ref* ref) {
         }
     }
     if (ref->count->weak == 0) {
+        if(ref->count->prev) ref->count->prev->next = ref->count->next;
+        if(ref->count->next) ref->count->next->prev = ref->count->prev;
         free(ref->count);
     }
 }
