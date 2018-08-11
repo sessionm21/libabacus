@@ -48,20 +48,24 @@ const libab_reserved_operator* libab_find_reserved_operator(const char* name) {
 
 libab_result libab_register_reserved_operators(libab_lexer* lexer) {
     libab_result result = LIBAB_SUCCESS;
+    char buffer[16];
     size_t i;
     for (i = 0; i < element_count && result == LIBAB_SUCCESS; i++) {
+        libab_sanitize(buffer, libab_reserved_operators[i].op, 16);
         result = libab_convert_lex_result(eval_config_add(
-            &lexer->config, libab_reserved_operators[i].op, TOKEN_OP_RESERVED));
+            &lexer->config, buffer, TOKEN_OP_RESERVED));
     }
     return result;
 }
 
 libab_result libab_remove_reserved_operators(libab_lexer* lexer) {
     libab_result result = LIBAB_SUCCESS;
+    char buffer[16];
     size_t i;
     for (i = 0; i < element_count && result == LIBAB_SUCCESS; i++) {
+        libab_sanitize(buffer, libab_reserved_operators[i].op, 16);
         result = libab_convert_lex_result(eval_config_remove(
-            &lexer->config, libab_reserved_operators[i].op, TOKEN_OP_RESERVED));
+            &lexer->config, buffer, TOKEN_OP_RESERVED));
     }
     return result;
 }
