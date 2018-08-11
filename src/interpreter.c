@@ -1139,6 +1139,30 @@ libab_result _interpreter_create_function_value(
     return result;
 }
 
+libab_result _interpreter_expect_boolean(struct interpreter_state* state,
+                                         libab_tree* tree, int* into,
+                                         libab_ref* scope,
+                                         libab_interpreter_scope_mode mode) {
+    libab_ref output;
+    libab_result result = _interpreter_run(state, tree, &output, scope, mode);
+    libab_value* value;
+    libab_parsetype* type;
+    if(result == LIBAB_SUCCESS) {
+        value = libab_ref_get(&output);
+        type = libab_ref_get(&value->type);
+
+        if(type->data_u.base != libab_get_basetype_bool(state->ab)) {
+            result = LIBAB_BAD_CALL;
+        }
+
+        if(result == LIBAB_SUCCESS) {
+            *into = *((int*) libab_ref_get(&value->data));
+        }
+    }
+    libab_ref_free(&output);
+    return result;
+}
+
 libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
                               libab_ref* into, libab_ref* scope,
                               libab_interpreter_scope_mode mode) {
@@ -1215,29 +1239,26 @@ libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
     } else if(tree->variant == TREE_FALSE) {
         libab_get_false_value(state->ab, into);
     } else if (tree->variant == TREE_IF) {
-        libab_ref condition;
-        libab_value* condition_value;
-        libab_parsetype* condition_type;
-        result = _interpreter_run(state, vec_index(&tree->children, 0),
-                &condition, scope, SCOPE_NORMAL);
+        int value;
+        result = _interpreter_expect_boolean(state,
+                vec_index(&tree->children, 0), &value, scope, SCOPE_NORMAL);
 
         if(result == LIBAB_SUCCESS) {
-            condition_value = libab_ref_get(&condition);
-            condition_type = libab_ref_get(&condition_value->type);
-            if(condition_type->data_u.base != libab_get_basetype_bool(state->ab)) {
-                result = LIBAB_MISMATCHED_TYPE;
-            }
-        }
-
-        if(result == LIBAB_SUCCESS) {
-            int* boolean = libab_ref_get(&condition_value->data);
             result = _interpreter_run(state, vec_index(&tree->children,
-                        *boolean ? 1 : 2), into, scope, SCOPE_NORMAL);
+                        value ? 1 : 2), into, scope, SCOPE_NORMAL);
         } else {
             libab_ref_null(into);
         }
-
-        libab_ref_free(&condition);
+    } else if(tree->variant == TREE_WHILE) {
+        #define RUN_CHECK _interpreter_expect_boolean(state, \
+                vec_index(&tree->children, 0), &value, scope, SCOPE_NORMAL)
+        int value;
+        libab_get_unit_value(state->ab, into);
+        while(result == LIBAB_SUCCESS && (result = RUN_CHECK) == LIBAB_SUCCESS && value) {
+            libab_ref_free(into);
+            result = _interpreter_run(state, vec_index(&tree->children, 1), 
+                                      into, scope, SCOPE_NORMAL);
+        }
     } else {
         libab_get_unit_value(state->ab, into);
     }
