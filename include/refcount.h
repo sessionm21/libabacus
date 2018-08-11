@@ -3,6 +3,12 @@
 
 #include "result.h"
 
+struct libab_ref_s;
+struct libab_ref_count_s;
+
+typedef void (*libab_visitor_function_ptr)(struct libab_ref_count_s* , void*);
+typedef void (*libab_visit_function_ptr)(void*, libab_visitor_function_ptr, void*);
+
 /**
  * A struct for holding
  * the number of references
@@ -10,6 +16,10 @@
  * to free the value.
  */
 struct libab_ref_count_s {
+    /**
+     * The value this reference holds.
+     */
+    void* data;
     /**
      * The fucntion to free the value.
      * Can be NULL for no-op.
@@ -25,6 +35,41 @@ struct libab_ref_count_s {
      * that still exist, even to a freed instance.
      */
     int weak;
+    /**
+     * The number of outside references.
+     * This is used for garbage collection.
+     */
+    int gc;
+    /**
+     * Previous pointer for garbage collection
+     * linked list.
+     */
+    struct libab_ref_count_s* prev;
+    /**
+     * Next pointer for garbage collection
+     * linked list.
+     */
+    struct libab_ref_count_s* next;
+    /**
+     * Function used to visit child containers,
+     * used by GC.
+     */
+    libab_visit_function_ptr visit_children;
+};
+
+/**
+ * Struct used to create an interface
+ * for a set of objects to be collected.
+ */
+struct libab_ref_gc_list_s {
+    /**
+     * The head of the linked list.
+     */
+    struct libab_ref_count_s* head;
+    /**
+     * The tail of the linked list.
+     */
+    struct libab_ref_count_s* tail;
 };
 
 /**
@@ -44,14 +89,11 @@ struct libab_ref_s {
      * of how many references are pointing to the value.
      */
     struct libab_ref_count_s* count;
-    /**
-     * The value this reference holds.
-     */
-    void* data;
 };
 
 typedef struct libab_ref_s libab_ref;
 typedef struct libab_ref_count_s libab_ref_count;
+typedef struct libab_ref_gc_list_s  libab_ref_gc_list;
 
 /**
  * Creates a new referene, using the given data and free function.
@@ -69,6 +111,11 @@ libab_result libab_ref_new(libab_ref* ref, void* data,
  * @param ref the reference to initialize with null.
  */
 void libab_ref_null(libab_ref* ref);
+void libab_ref_gc_visit(libab_ref*, libab_visitor_function_ptr visitor, void*);
+void libab_ref_gc_add(libab_ref* ref,
+                      libab_visit_function_ptr visit_children,
+                      libab_ref_gc_list* list);
+void libab_ref_gc_run(libab_ref_gc_list* list);
 /**
  * Turns the given reference into a weak reference,
  * making it not keep the data allocated.
