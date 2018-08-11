@@ -1,6 +1,8 @@
 #include "reserved.h"
 #include "string.h"
 #include "util.h"
+#include "value.h"
+#include "libabacus.h"
 
 libab_result _behavior_assign(libab* ab, libab_ref* scope, 
                               libab_tree* left, libab_tree* right,
@@ -27,12 +29,85 @@ libab_result _behavior_assign(libab* ab, libab_ref* scope,
     return result;
 }
 
-static const libab_reserved_operator libab_reserved_operators[] = {{
-    "=", /* Assignment */
-    0,   /* Lowest precedence */
-    1,   /* Right associative, a = b = 6 should be a = (b = 6) */
-    _behavior_assign
-}};
+libab_result _expect_boolean(libab* ab, libab_ref* scope,
+                          libab_tree* to_run, int* into) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_ref output;
+    libab_value* value;
+    libab_parsetype* type;
+
+    result = libab_run_tree_scoped(ab, to_run, scope, &output);
+    if(result == LIBAB_SUCCESS) {
+        value = libab_ref_get(&output);
+        type = libab_ref_get(&value->type);
+        if(type->data_u.base != libab_get_basetype_bool(ab)) {
+            result = LIBAB_BAD_CALL;
+        } else {
+            *into = *((int*) libab_ref_get(&value->data));
+        }
+    }
+    libab_ref_free(&output);
+    return result;
+}
+
+libab_result _behavior_land(libab* ab, libab_ref* scope,
+                            libab_tree* left, libab_tree* right,
+                            libab_ref* into) {
+    libab_result result = LIBAB_SUCCESS;
+    int temp;
+    result = _expect_boolean(ab, scope, left, &temp);
+    if(result == LIBAB_SUCCESS && temp) {
+        result = _expect_boolean(ab, scope, right, &temp);
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        libab_get_bool_value(ab, temp, into);
+    } else {
+        libab_ref_null(into);
+    }
+
+    return result;
+}
+
+libab_result _behavior_lor(libab* ab, libab_ref* scope,
+                           libab_tree* left, libab_tree* right,
+                           libab_ref* into) {
+    libab_result result = LIBAB_SUCCESS;
+    int temp = 0;
+    result = _expect_boolean(ab, scope, left, &temp);
+    if(result == LIBAB_SUCCESS && !temp) {
+        result = _expect_boolean(ab, scope, right, &temp);
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        libab_get_bool_value(ab, temp, into);
+    } else {
+        libab_ref_null(into);
+    }
+
+    return result;
+}
+
+static const libab_reserved_operator libab_reserved_operators[] = {
+    {
+        "=", /* Assignment */
+        0,   /* Lowest precedence */
+        1,   /* Right associative, a = b = 6 should be a = (b = 6) */
+        _behavior_assign
+    },
+    {
+        "&&", /* Logical and */
+        0,    /* Low precedence */
+        -1,   /* Left associative. */
+        _behavior_land
+    },
+    {
+        "||", /* Logical or */
+        0,    /* Low precedence */
+        -1,   /* Left associative. */
+        _behavior_lor
+    },
+};
 
 static const size_t element_count =
     sizeof(libab_reserved_operators) / sizeof(libab_reserved_operator);
