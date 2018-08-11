@@ -20,4 +20,4 @@ target_include_directories(libabacus PUBLIC include)
 
 target_link_libraries(abacus lex)
 target_link_libraries(libabacus abacus)
-target_link_libraries(interactive abacus)
+target_link_libraries(interactive abacus m)
