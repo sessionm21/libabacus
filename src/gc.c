@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory.h>
-#include "refcount_internal.h"
 
 void libab_gc_list_init(libab_gc_list* list) {
     memset(&list->head_sentinel, 0, sizeof(list->head_sentinel));
