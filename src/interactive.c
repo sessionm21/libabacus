@@ -71,13 +71,11 @@ FUNCTION(xor) {
 }
 
 FUNCTION(atan) {
-    printf("atan called\n");
     double* val = libab_unwrap_param(params, 0);
     return create_double_value(ab, atan(*val), into);
 }
 
 FUNCTION(atan2) {
-    printf("atan2 called\n");
     double* left = libab_unwrap_param(params, 0);
     double* right = libab_unwrap_param(params, 1);
     return create_double_value(ab, atan2(*left, *right), into);
@@ -115,7 +113,6 @@ FUNCTION(print_unit) {
         libab_result result = LIBAB_SUCCESS; \
         double right; \
         double left; \
-        printf(#name " called\n"); \
         left = *((double*)libab_unwrap_param(params, 0)); \
         right = *((double*)libab_unwrap_param(params, 1)); \
         create_double_value(ab, expression, into); \
