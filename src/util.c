@@ -189,13 +189,14 @@ libab_result libab_instantiate_basetype(libab_basetype* to_instantiate,
 
 void _gc_visit_table_entry(libab_table_entry* entry, libab_visitor_function_ptr visitor, void* data) {
     if (entry->variant == ENTRY_VALUE) {
-        libab_gc_visit_children(&entry->data_u.value, visitor, data);
+        libab_gc_visit(&entry->data_u.value, visitor, data);
     }
 }
 
 void _gc_visit_table_trie(libab_trie_node* parent, libab_visitor_function_ptr visitor, void* data) {
-    ll_node* head = parent->values.head;
+    ll_node* head;
     if(parent == NULL) return;
+    head = parent->values.head;
     _gc_visit_table_trie(parent->child, visitor, data);
     _gc_visit_table_trie(parent->next, visitor, data);
     while(head != NULL) {
@@ -206,7 +207,8 @@ void _gc_visit_table_trie(libab_trie_node* parent, libab_visitor_function_ptr vi
 
 void _gc_visit_table_children(void* parent, libab_visitor_function_ptr visitor, void* data) {
     libab_table* table = parent;
-    libab_gc_visit_children(&table->parent, visitor, data);
+    libab_gc_visit(&table->parent, visitor, data);
+    _gc_visit_table_trie(table->trie.head, visitor, data);
 }
 
 libab_result libab_create_table(libab* ab, libab_ref* into, libab_ref* parent) {
@@ -234,7 +236,7 @@ libab_result libab_create_table(libab* ab, libab_ref* into, libab_ref* parent) {
 
 void _gc_visit_value_children(void* val, libab_visitor_function_ptr visitor, void* data) {
     libab_value* value = val;
-    libab_gc_visit_children(&value->data, visitor, data);
+    libab_gc_visit(&value->data, visitor, data);
 }
 
 libab_result libab_create_value_ref(libab* ab, libab_ref* into, 
@@ -290,7 +292,7 @@ libab_result libab_create_value_raw(libab* ab, libab_ref* into,
 
 void _gc_visit_function_children(void* function, libab_visitor_function_ptr visitor, void* data) {
     libab_function* func = function;
-    libab_gc_visit_children(&func->scope, visitor, data);
+    libab_gc_visit(&func->scope, visitor, data);
 }
 
 libab_result libab_create_function_internal(libab* ab, libab_ref* into,

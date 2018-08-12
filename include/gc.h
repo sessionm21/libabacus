@@ -34,6 +34,10 @@ void libab_gc_list_init(libab_gc_list* list);
  */
 void libab_gc_visit_children(struct libab_ref_s* ref, libab_visitor_function_ptr visitor, void* data);
 /**
+ * Applies the given visitor function to this reference.
+ */
+void libab_gc_visit(struct libab_ref_s* ref, libab_visitor_function_ptr visitor, void* data);
+/**
  * Adds the given reference to the given garbage collection list,
  * and specifies a function used to reach its children.
  * @param ref the reference whose children to visit.
