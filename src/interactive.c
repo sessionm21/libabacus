@@ -217,7 +217,6 @@ libab_result loop(libab* ab, int interaction_count, libab_ref* scope) {
 int main() {
     libab_result result;
     libab_ref scope;
-    libab_ref test;
     libab ab;
 
     if (libab_init(&ab, impl_parse, impl_free) != LIBAB_SUCCESS) {
@@ -231,8 +230,6 @@ int main() {
     }
     if(result == LIBAB_SUCCESS) {
         loop(&ab, INTERACTIONS, &scope);
-        libab_table_search_value(libab_ref_get(&scope), "test", &test);
-        printf("%p\n", libab_ref_get(&test));
         libab_ref_free(&scope);
     }
 
