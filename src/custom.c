@@ -15,6 +15,9 @@ void libab_behavior_init_tree(libab_behavior* behavior, libab_tree* tree) {
 void libab_behavior_copy(libab_behavior* behavior, libab_behavior* into) {
     into->variant = behavior->variant;
     into->data_u = behavior->data_u;
+    if(into->variant == BIMPL_TREE) {
+        into->data_u.tree->int_value++;
+    }
 }
 
 void libab_behavior_free(libab_behavior* behavior) {
