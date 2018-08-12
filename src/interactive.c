@@ -30,7 +30,7 @@ libab_result create_double_value(libab* ab, double val, libab_ref* into) {
     double* new_double = malloc(sizeof(*new_double));
     if(new_double) {
         *new_double = val;
-        result = libab_create_value_raw(into, new_double, &type_num);
+        result = libab_create_value_raw(ab, into, new_double, &type_num);
         if(result != LIBAB_SUCCESS) {
             free(new_double);
         }
@@ -216,6 +216,7 @@ libab_result loop(libab* ab, int interaction_count, libab_ref* scope) {
 int main() {
     libab_result result;
     libab_ref scope;
+    libab_ref test;
     libab ab;
 
     if (libab_init(&ab, impl_parse, impl_free) != LIBAB_SUCCESS) {
@@ -225,10 +226,12 @@ int main() {
 
     result = register_functions(&ab);
     if(result == LIBAB_SUCCESS) {
-        result = libab_create_table(&scope, &ab.table);
+        result = libab_create_table(&ab, &scope, &ab.table);
     }
     if(result == LIBAB_SUCCESS) {
         loop(&ab, INTERACTIONS, &scope);
+        libab_table_search_value(libab_ref_get(&scope), "test", &test);
+        printf("%p\n", libab_ref_get(&test));
         libab_ref_free(&scope);
     }
 

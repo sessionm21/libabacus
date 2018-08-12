@@ -2,6 +2,7 @@
 #include "value.h"
 #include <stdarg.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include "free_functions.h"
 
 libab_result libab_convert_lex_result(liblex_result to_convert) {
@@ -186,7 +187,29 @@ libab_result libab_instantiate_basetype(libab_basetype* to_instantiate,
     return result;
 }
 
-libab_result libab_create_table(libab_ref* into, libab_ref* parent) {
+void _gc_visit_table_entry(libab_table_entry* entry, libab_visitor_function_ptr visitor, void* data) {
+    if (entry->variant == ENTRY_VALUE) {
+        libab_gc_visit_children(&entry->data_u.value, visitor, data);
+    }
+}
+
+void _gc_visit_table_trie(libab_trie_node* parent, libab_visitor_function_ptr visitor, void* data) {
+    ll_node* head = parent->values.head;
+    if(parent == NULL) return;
+    _gc_visit_table_trie(parent->child, visitor, data);
+    _gc_visit_table_trie(parent->next, visitor, data);
+    while(head != NULL) {
+        _gc_visit_table_entry(head->data, visitor, data);
+        head = head->next;
+    }
+}
+
+void _gc_visit_table_children(void* parent, libab_visitor_function_ptr visitor, void* data) {
+    libab_table* table = parent;
+    libab_gc_visit_children(&table->parent, visitor, data);
+}
+
+libab_result libab_create_table(libab* ab, libab_ref* into, libab_ref* parent) {
     libab_table* table;
     libab_result result = LIBAB_SUCCESS;
     if ((table = malloc(sizeof(*table)))) {
@@ -203,12 +226,19 @@ libab_result libab_create_table(libab_ref* into, libab_ref* parent) {
 
     if (result != LIBAB_SUCCESS) {
         libab_ref_null(into);
+    } else {
+        libab_gc_add(into, _gc_visit_table_children, &ab->containers);
     }
     return result;
 }
 
-libab_result libab_create_value_ref(libab_ref* into, libab_ref* data,
-                                    libab_ref* type) {
+void _gc_visit_value_children(void* val, libab_visitor_function_ptr visitor, void* data) {
+    libab_value* value = val;
+    libab_gc_visit_children(&value->data, visitor, data);
+}
+
+libab_result libab_create_value_ref(libab* ab, libab_ref* into, 
+                                    libab_ref* data, libab_ref* type) {
     libab_value* value;
     libab_result result = LIBAB_SUCCESS;
     if ((value = malloc(sizeof(*value)))) {
@@ -224,12 +254,14 @@ libab_result libab_create_value_ref(libab_ref* into, libab_ref* data,
 
     if (result != LIBAB_SUCCESS) {
         libab_ref_null(into);
+    } else {
+        libab_gc_add(into, _gc_visit_value_children, &ab->containers);
     }
     return result;
 }
 
-libab_result libab_create_value_raw(libab_ref* into, void* data,
-                                    libab_ref* type) {
+libab_result libab_create_value_raw(libab* ab, libab_ref* into,
+                                    void* data, libab_ref* type) {
     libab_value* value;
     libab_result result = LIBAB_SUCCESS;
 
@@ -249,12 +281,19 @@ libab_result libab_create_value_raw(libab_ref* into, void* data,
     if (result != LIBAB_SUCCESS) {
         libab_ref_null(into);
         free(value);
+    } else {
+        libab_gc_add(into, _gc_visit_value_children, &ab->containers);
     }
 
     return result;
 }
 
-libab_result libab_create_function_internal(libab_ref* into,
+void _gc_visit_function_children(void* function, libab_visitor_function_ptr visitor, void* data) {
+    libab_function* func = function;
+    libab_gc_visit_children(&func->scope, visitor, data);
+}
+
+libab_result libab_create_function_internal(libab* ab, libab_ref* into,
                                             void (*free_function)(void*),
                                             libab_function_ptr fun,
                                             libab_ref* scope) {
@@ -277,12 +316,14 @@ libab_result libab_create_function_internal(libab_ref* into,
     if (result != LIBAB_SUCCESS) {
         libab_ref_null(into);
         free(new_function);
+    } else {
+        libab_gc_add(into, _gc_visit_function_children, &ab->containers);
     }
 
     return result;
 }
 
-libab_result libab_create_function_tree(libab_ref* into,
+libab_result libab_create_function_tree(libab* ab, libab_ref* into,
                                         void (*free_function)(void*),
                                         libab_tree* tree,
                                         libab_ref* scope) {
@@ -305,12 +346,14 @@ libab_result libab_create_function_tree(libab_ref* into,
     if (result != LIBAB_SUCCESS) {
         libab_ref_null(into);
         free(new_function);
+    } else {
+        libab_gc_add(into, _gc_visit_function_children, &ab->containers);
     }
 
     return result;
 }
 
-libab_result libab_create_function_behavior(libab_ref* into,
+libab_result libab_create_function_behavior(libab* ab, libab_ref* into,
                                             void (*free_function)(void*),
                                             libab_behavior* behavior,
                                             libab_ref* scope) {
@@ -333,12 +376,14 @@ libab_result libab_create_function_behavior(libab_ref* into,
     if(result != LIBAB_SUCCESS) {
         libab_ref_null(into);
         free(new_function);
+    } else {
+        libab_gc_add(into, _gc_visit_function_children, &ab->containers);
     }
 
     return result;
 }
 
-libab_result libab_create_function_list(libab_ref* into, libab_ref* type) {
+libab_result libab_create_function_list(libab* ab, libab_ref* into, libab_ref* type) {
     libab_function_list* list;
     libab_result result = LIBAB_SUCCESS;
 
@@ -360,6 +405,8 @@ libab_result libab_create_function_list(libab_ref* into, libab_ref* type) {
     if (result != LIBAB_SUCCESS) {
         libab_ref_null(into);
         free(list);
+    } else {
+        libab_gc_add(into, _gc_visit_function_children, &ab->containers);
     }
 
     return result;

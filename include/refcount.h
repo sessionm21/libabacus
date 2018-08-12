@@ -2,7 +2,7 @@
 #define LIBABACUS_REFCOUNT_H
 
 #include "result.h"
-#include "gc.h"
+#include "gc_functions.h"
 
 /**
  * A struct for holding

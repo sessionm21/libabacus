@@ -7,6 +7,7 @@
 #include "parsetype.h"
 #include "result.h"
 #include "table.h"
+#include "libabacus.h"
 #include <string.h>
 
 /**
@@ -78,11 +79,12 @@ libab_result libab_instantiate_basetype(libab_basetype* to_instantiate,
                                         libab_ref* into, size_t n, ...);
 /**
  * Creates a new libab_table, and stores it into the given reference.
+ * @param ab the libabacus instance in which the table is being created.
  * @param into the reference to store the table into.
  * @param parent the parent reference to store.
  * @return the result of the instantiation.
  */
-libab_result libab_create_table(libab_ref* into, libab_ref* parent);
+libab_result libab_create_table(libab* ab, libab_ref* into, libab_ref* parent);
 /**
  * Allocates a new reference counted value with the given type and data.
  * @param into the reference to store the allocated data into.
@@ -90,8 +92,8 @@ libab_result libab_create_table(libab_ref* into, libab_ref* parent);
  * @param type the type to give the value.
  * @return the result of necessary allocations.
  */
-libab_result libab_create_value_ref(libab_ref* into, libab_ref* data,
-                                    libab_ref* type);
+libab_result libab_create_value_ref(libab* ab, libab_ref* into, 
+                                    libab_ref* data, libab_ref* type);
 /**
  * Allocates a new reference counted value with the given type and data.
  * @param into the reference to store the allocated data into.
@@ -99,8 +101,8 @@ libab_result libab_create_value_ref(libab_ref* into, libab_ref* data,
  * @param type the type to give the value.
  * @return the result of necessary allocations.
  */
-libab_result libab_create_value_raw(libab_ref* into, void* data,
-                                    libab_ref* type);
+libab_result libab_create_value_raw(libab* ab, libab_ref* into,
+                                    void* data, libab_ref* type);
 /**
  * Allocates a function that uses internal code to run.
  * @param into the reference into which to store the new function.
@@ -109,7 +111,7 @@ libab_result libab_create_value_raw(libab_ref* into, void* data,
  * @param scope the scope in which this function was declared.
  * @return libab_result the result of any necessary allocations.
  */
-libab_result libab_create_function_internal(libab_ref* into,
+libab_result libab_create_function_internal(libab* ab, libab_ref* into,
                                             void (*free_function)(void*),
                                             libab_function_ptr fun,
                                             libab_ref* scope);
@@ -121,7 +123,7 @@ libab_result libab_create_function_internal(libab_ref* into,
  * @param scope the scope in which this function was declared.
  * @return libab_result the result of any necessary allocations.
  */
-libab_result libab_create_function_tree(libab_ref* into,
+libab_result libab_create_function_tree(libab* ab, libab_ref* into,
                                         void (*free_function)(void*),
                                         libab_tree* tree,
                                         libab_ref* scope);
@@ -133,7 +135,7 @@ libab_result libab_create_function_tree(libab_ref* into,
  * @param scope the scope in which this function was declared.
  * @return libab_result the result of any necessary allocations.
  */
-libab_result libab_create_function_behavior(libab_ref* into,
+libab_result libab_create_function_behavior(libab* ab, libab_ref* into,
                                             void (*free_function)(void*),
                                             libab_behavior* behavior,
                                             libab_ref* scope);
@@ -143,7 +145,7 @@ libab_result libab_create_function_behavior(libab_ref* into,
  * @param the function_list type.
  * @return the result of the allocations.
  */
-libab_result libab_create_function_list(libab_ref* into, libab_ref* type);
+libab_result libab_create_function_list(libab* ab, libab_ref* into, libab_ref* type);
 /**
  * Creates a new table entry that holds the given value.
  * @param table the table to store the entry into.

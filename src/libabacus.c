@@ -27,6 +27,7 @@ libab_result libab_init(libab* ab, void* (*parse_function)(const char*),
     int interpreter_initialized = 0;
     libab_ref null_ref;
     libab_result result;
+    libab_gc_list_init(&ab->containers);
     libab_ref_null(&null_ref);
     libab_ref_null(&ab->type_num);
     libab_ref_null(&ab->type_bool);
@@ -34,7 +35,7 @@ libab_result libab_init(libab* ab, void* (*parse_function)(const char*),
     libab_ref_null(&ab->type_unit);
 
     ab->impl.parse_num = parse_function;
-    result = libab_create_table(&ab->table, &null_ref);
+    result = libab_create_table(ab, &ab->table, &null_ref);
 
     if (result == LIBAB_SUCCESS) {
         libab_ref_free(&ab->type_num);
@@ -144,28 +145,29 @@ libab_result libab_register_operator_postfix(libab* ab, const char* op,
     return _register_operator(ab, op, OPERATOR_POSTFIX, 0, 0, function);
 }
 
-libab_result _create_value_function_internal(libab_ref* into, libab_ref* type,
+libab_result _create_value_function_internal(libab* ab, 
+                                             libab_ref* into, libab_ref* type,
                                              libab_function_ptr func, 
                                              libab_ref* scope) {
     libab_ref function_ref;
     libab_result result =
-        libab_create_function_internal(&function_ref, libab_free_function, func, scope);
+        libab_create_function_internal(ab, &function_ref, libab_free_function, func, scope);
     libab_ref_null(into);
     if (result == LIBAB_SUCCESS) {
         libab_ref_free(into);
-        result = libab_create_value_ref(into, &function_ref, type);
+        result = libab_create_value_ref(ab, into, &function_ref, type);
     }
     libab_ref_free(&function_ref);
     return result;
 }
 
-libab_result _create_value_function_list(libab_ref* into, libab_ref* type) {
+libab_result _create_value_function_list(libab* ab, libab_ref* into, libab_ref* type) {
     libab_ref list_ref;
-    libab_result result = libab_create_function_list(&list_ref, type);
+    libab_result result = libab_create_function_list(ab, &list_ref, type);
     libab_ref_null(into);
     if (result == LIBAB_SUCCESS) {
         libab_ref_free(into);
-        result = libab_create_value_ref(into, &list_ref, type);
+        result = libab_create_value_ref(ab, into, &list_ref, type);
     }
     libab_ref_free(&list_ref);
     return result;
@@ -187,7 +189,7 @@ libab_result _libab_register_function_existing(libab* ab,
     } else if (old_type->data_u.base == &_basetype_function) {
         libab_ref new_list;
         result =
-            _create_value_function_list(&new_list, &ab->type_function_list);
+            _create_value_function_list(ab, &new_list, &ab->type_function_list);
         if (result == LIBAB_SUCCESS) {
             libab_function_list* list =
                 libab_ref_get(&((libab_value*)libab_ref_get(&new_list))->data);
@@ -232,7 +234,7 @@ libab_result libab_register_function(libab* ab, const char* name,
     libab_table_entry* existing_entry;
     libab_ref function_value;
     libab_result result =
-        _create_value_function_internal(&function_value, type, func, &ab->table);
+        _create_value_function_internal(ab, &function_value, type, func, &ab->table);
 
     if (result == LIBAB_SUCCESS) {
         existing_entry = libab_table_search_filter(
@@ -516,6 +518,7 @@ libab_result libab_run_tree_scoped(libab* ab, libab_tree* tree, libab_ref* scope
 }
 
 libab_result libab_free(libab* ab) {
+    libab_result result = LIBAB_SUCCESS;
     libab_table_free(libab_ref_get(&ab->table));
     libab_ref_free(&ab->table);
     libab_ref_free(&ab->type_num);
@@ -524,5 +527,7 @@ libab_result libab_free(libab* ab) {
     libab_ref_free(&ab->type_unit);
     libab_parser_free(&ab->parser);
     libab_interpreter_free(&ab->intr);
-    return libab_lexer_free(&ab->lexer);
+    result = libab_lexer_free(&ab->lexer);
+    libab_gc_run(&ab->containers);
+    return result;
 }

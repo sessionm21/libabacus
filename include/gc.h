@@ -1,8 +1,8 @@
 #ifndef LIBABACUS_GC_H
 #define LIBABACUS_GC_H
 
-struct libab_ref_s;
-struct libab_ref_count_s;
+#include "refcount.h"
+#include "gc_functions.h"
 
 /**
  * Struct used to create an interface
@@ -10,18 +10,16 @@ struct libab_ref_count_s;
  */
 struct libab_gc_list_s {
     /**
-     * The head of the linked list.
+     * The head sentinel node.
      */
-    struct libab_ref_count_s* head;
+    struct libab_ref_count_s head_sentinel;
     /**
-     * The tail of the linked list.
+     * The tail sentinel node.
      */
-    struct libab_ref_count_s* tail;
+    struct libab_ref_count_s tail_sentinel;
 };
 
 typedef struct libab_gc_list_s libab_gc_list;
-typedef void (*libab_visitor_function_ptr)(struct libab_ref_count_s* , void*);
-typedef void (*libab_visit_function_ptr)(void*, libab_visitor_function_ptr, void*);
 
 /**
  * Initializes a garbage collection tracking list.
@@ -34,7 +32,7 @@ void libab_gc_list_init(libab_gc_list* list);
  * @param visitor the function to call for each child.
  * @param data the data to pass to the visitor.
  */
-void libab_gc_visit_chilren(struct libab_ref_s* ref, libab_visitor_function_ptr visitor, void* data);
+void libab_gc_visit_children(struct libab_ref_s* ref, libab_visitor_function_ptr visitor, void* data);
 /**
  * Adds the given reference to the given garbage collection list,
  * and specifies a function used to reach its children.

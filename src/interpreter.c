@@ -13,7 +13,7 @@ libab_result _create_bool_value(libab* ab, int val, libab_ref* into) {
     new_bool = malloc(sizeof(*new_bool));
     if(new_bool) {
         *new_bool = val;
-        result = libab_create_value_raw(into, new_bool, &type_bool);
+        result = libab_create_value_raw(ab, into, new_bool, &type_bool);
         if(result != LIBAB_SUCCESS) {
             free(new_bool);
         }
@@ -33,7 +33,7 @@ libab_result libab_interpreter_init(libab_interpreter* intr, libab* ab) {
     libab_ref_null(&intr->value_false);
 
     libab_ref_null(&unit_data);
-    result = libab_create_value_ref(&intr->value_unit, &unit_data, &ab->type_unit);
+    result = libab_create_value_ref(ab, &intr->value_unit, &unit_data, &ab->type_unit);
     if(result == LIBAB_SUCCESS) {
         libab_ref_free(&intr->value_true);
         result = _create_bool_value(ab, 1, &intr->value_true);
@@ -75,7 +75,7 @@ libab_result _interpreter_create_num_val(struct interpreter_state* state,
 
     if ((data = state->ab->impl.parse_num(from))) {
         libab_ref_free(into);
-        result = libab_create_value_raw(into, data, &state->ab->type_num);
+        result = libab_create_value_raw(state->ab, into, data, &state->ab->type_num);
 
         if (result != LIBAB_SUCCESS) {
             ((libab_parsetype*)libab_ref_get(&state->ab->type_num))
@@ -466,13 +466,14 @@ libab_result _interpreter_find_match(libab_function_list* function_values,
  * @param type the new type.
  * @param into the reference into which to store the new value.
  */
-libab_result _interpreter_cast_param(libab_ref* param, libab_ref* type,
+libab_result _interpreter_cast_param(libab* ab, libab_ref* param,
+                                     libab_ref* type,
                                      libab_ref_vec* into) {
     libab_result result = LIBAB_SUCCESS;
     libab_value* old_value = libab_ref_get(param);
     libab_ref new_value;
 
-    result = libab_create_value_ref(&new_value, &old_value->data, type);
+    result = libab_create_value_ref(ab, &new_value, &old_value->data, type);
     if (result == LIBAB_SUCCESS) {
         result = libab_ref_vec_insert(into, &new_value);
     }
@@ -488,7 +489,8 @@ libab_result _interpreter_cast_param(libab_ref* param, libab_ref* type,
  * @param into the pre-initialized vector to store the new values into.
  * @return the result of any allocations.
  */
-libab_result _interpreter_cast_params(libab_ref_vec* params,
+libab_result _interpreter_cast_params(libab* ab,
+                                      libab_ref_vec* params,
                                       libab_ref_vec* new_types,
                                       libab_ref_vec* into) {
     libab_result result = LIBAB_SUCCESS;
@@ -500,7 +502,7 @@ libab_result _interpreter_cast_params(libab_ref_vec* params,
         libab_ref_vec_index(params, index, &temp_param);
         libab_ref_vec_index(new_types, index, &temp_type);
 
-        result = _interpreter_cast_param(&temp_param, &temp_type, into);
+        result = _interpreter_cast_param(ab, &temp_param, &temp_type, into);
 
         libab_ref_free(&temp_param);
         libab_ref_free(&temp_type);
@@ -531,7 +533,7 @@ libab_result _interpreter_call_tree(struct interpreter_state* state,
     libab_ref param;
     libab_table* new_scope_raw;
     size_t i;
-    libab_result result = libab_create_table(&new_scope, scope);
+    libab_result result = libab_create_table(state->ab, &new_scope, scope);
 
     if(result == LIBAB_SUCCESS) {
         new_scope_raw = libab_ref_get(&new_scope);
@@ -581,22 +583,24 @@ libab_result _interpreter_call_behavior(struct interpreter_state* state,
  * @param function the function to copy.
  * @param into the reference to store the copy into.
  */
-libab_result _interpreter_copy_function_basic(libab_ref* function,
+libab_result _interpreter_copy_function_basic(libab* ab,
+                                              libab_ref* function,
                                               libab_ref* scope,
                                               libab_ref* into) {
     libab_function* func = libab_ref_get(function);
     void (*free_function)(void*) = function->count->free_func;
-    return libab_create_function_behavior(into, free_function, &func->behavior, scope);
+    return libab_create_function_behavior(ab, into, free_function, &func->behavior, scope);
 }
 
-libab_result _interpreter_copy_function_with_params(libab_ref* function,
+libab_result _interpreter_copy_function_with_params(libab* ab,
+                                                    libab_ref* function,
                                                     libab_ref_vec* params,
                                                     libab_ref* scope,
                                                     libab_ref* into) {
     int index = 0;
     libab_ref param;
     libab_function* func;
-    libab_result result = _interpreter_copy_function_basic(function, scope, into);
+    libab_result result = _interpreter_copy_function_basic(ab, function, scope, into);
     func = libab_ref_get(into);
 
     for(; index < params->size && result == LIBAB_SUCCESS; index++) {
@@ -669,14 +673,14 @@ libab_result _interpreter_partially_apply(struct interpreter_state* state,
 
     value = libab_ref_get(function);
     libab_ref_null(&new_type);
-    result = _interpreter_copy_function_with_params(&value->data, params, scope, &new_function);
+    result = _interpreter_copy_function_with_params(state->ab, &value->data, params, scope, &new_function);
     if(result == LIBAB_SUCCESS) {
         libab_ref_free(&new_type);
         result = _interpreter_copy_type_offset(&value->type, 0, &new_type);
     }
 
     if(result == LIBAB_SUCCESS) {
-        result = libab_create_value_ref(into, &new_function, &new_type);
+        result = libab_create_value_ref(state->ab, into, &new_function, &new_type);
     } else {
         libab_ref_null(into);
     }
@@ -711,10 +715,11 @@ libab_result _interpreter_foreach_insert_param(const libab_ref* param,
     return result;
 }
 
-libab_result _interpreter_create_scope(libab_ref* into,
+libab_result _interpreter_create_scope(libab* ab,
+                                       libab_ref* into,
                                        libab_ref* parent_scope,
                                        libab_ref_trie* param_map) {
-    libab_result result = libab_create_table(into, parent_scope);
+    libab_result result = libab_create_table(ab, into, parent_scope);
     if (result == LIBAB_SUCCESS) {
         result = libab_ref_trie_foreach(param_map, _interpreter_foreach_insert_param, into);
 
@@ -750,7 +755,7 @@ libab_result _interpreter_perform_function_call(struct interpreter_state* state,
     function_type = libab_ref_get(&function_value->type);
     new_params = params->size - function->params.size;
 
-    result = _interpreter_create_scope(&new_scope, &function->scope, param_map);
+    result = _interpreter_create_scope(state->ab, &new_scope, &function->scope, param_map);
 
     if(result != LIBAB_SUCCESS) {
         libab_ref_null(into);
@@ -789,7 +794,7 @@ libab_result _interpreter_cast_and_perform_function_call(
     function = libab_ref_get(&function_value->data);
     result = libab_ref_vec_init_copy(&new_params, &function->params);
     if (result == LIBAB_SUCCESS) {
-        result = _interpreter_cast_params(params, new_types, &new_params);
+        result = _interpreter_cast_params(state->ab, params, new_types, &new_params);
 
         if (result == LIBAB_SUCCESS) {
             result = _interpreter_perform_function_call(state, to_call,
@@ -1117,7 +1122,7 @@ libab_result _interpreter_create_function_value(
 
     libab_ref_null(&type);
     libab_ref_null(into);
-    result = libab_create_function_tree(&function, libab_free_function, tree, scope);
+    result = libab_create_function_tree(state->ab, &function, libab_free_function, tree, scope);
 
     if(result == LIBAB_SUCCESS) {
         libab_ref_free(&type);
@@ -1126,7 +1131,7 @@ libab_result _interpreter_create_function_value(
 
     if(result == LIBAB_SUCCESS) {
         libab_ref_free(into);
-        result = libab_create_value_ref(into, &function, &type);
+        result = libab_create_value_ref(state->ab, into, &function, &type);
     }
 
     if(result != LIBAB_SUCCESS) {
@@ -1175,7 +1180,7 @@ libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
         (mode == SCOPE_NORMAL && libab_tree_has_scope(tree->variant));
 
     if (needs_scope) {
-        result = libab_create_table(&new_scope, scope);
+        result = libab_create_table(state->ab, &new_scope, scope);
         scope = &new_scope;
     }
 
