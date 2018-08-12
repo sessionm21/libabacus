@@ -623,7 +623,6 @@ libab_result _interpreter_copy_type_offset(libab_ref* type,
     libab_result result = LIBAB_SUCCESS;
     libab_parsetype* new_type;
     libab_parsetype* copy_of = libab_ref_get(type);
-    size_t index = 0;
     if((new_type = malloc(sizeof(*new_type)))) {
         new_type->variant = copy_of->variant;
         new_type->data_u = copy_of->data_u;
@@ -632,9 +631,9 @@ libab_result _interpreter_copy_type_offset(libab_ref* type,
         if(result == LIBAB_SUCCESS) {
             libab_ref child_type_ref;
 
-            for(; index < copy_of->children.size - 1 - offset &&
-                    result == LIBAB_SUCCESS; index++) {
-                libab_ref_vec_index(&copy_of->children, offset + index, &child_type_ref);
+            for(; offset < copy_of->children.size &&
+                    result == LIBAB_SUCCESS; offset++) {
+                libab_ref_vec_index(&copy_of->children, offset, &child_type_ref);
                 result = libab_ref_vec_insert(&new_type->children, &child_type_ref);
                 libab_ref_free(&child_type_ref);
             }
@@ -676,7 +675,7 @@ libab_result _interpreter_partially_apply(struct interpreter_state* state,
     result = _interpreter_copy_function_with_params(state->ab, &value->data, params, scope, &new_function);
     if(result == LIBAB_SUCCESS) {
         libab_ref_free(&new_type);
-        result = _interpreter_copy_type_offset(&value->type, 0, &new_type);
+        result = _interpreter_copy_type_offset(&value->type, params->size, &new_type);
     }
 
     if(result == LIBAB_SUCCESS) {
