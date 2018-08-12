@@ -187,5 +187,19 @@ void* libab_unwrap_param(libab_ref_vec* vec, size_t index);
  * @param buffer_size the size of the to buffer.
  */
 void libab_sanitize(char* to, const char* from, size_t buffer_size);
+/**
+ * Creates a new instance of libabacus allocated on the heap.
+ * @param into the pointer into which to store the newly allocated libab instance.
+ * @param parse_function the function used to parse numbers.
+ * @param free_function the function used to free parsed numbers.
+ */
+libab_result libab_create_instance(libab** into, 
+                                   void* (*parse_function)(const char*),
+                                   void (*free_function)(void*));
+/**
+ * Destroys the given libabacus instance allocated on the stack.
+ * @param into the reference to destroy.
+ */
+void libab_destroy_instance(libab* into);
 
 #endif

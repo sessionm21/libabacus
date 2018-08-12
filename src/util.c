@@ -481,3 +481,23 @@ void libab_sanitize(char* to, const char* from, size_t buffer_size) {
     }
     to[index] = '\0';
 }
+
+libab_result libab_create_instance(libab** into, 
+                                   void* (*parse_function)(const char*),
+                                   void (*free_function)(void*)) {
+    libab_result result = LIBAB_SUCCESS;
+    if((*into = malloc(sizeof(**into)))) {
+        result = libab_init(*into, parse_function, free_function);
+        if(result != LIBAB_SUCCESS) {
+            free(*into);
+            *into = NULL;
+        }
+    } else {
+        result = LIBAB_MALLOC;
+    }
+    return result;
+}
+void libab_destroy_instance(libab* into) {
+    libab_free(into);
+    free(into);
+}
