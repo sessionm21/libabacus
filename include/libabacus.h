@@ -9,6 +9,7 @@
 #include "parser.h"
 #include "result.h"
 #include "table.h"
+#include "gc.h"
 
 /**
  * The main struct of libabacus,
@@ -59,6 +60,12 @@ struct libab_s {
      * The unit type instance.
      */
     libab_ref type_unit;
+    /**
+     * List of containers references
+     * that should be tracked by the
+     * garbage collector for cycles.
+     */
+    libab_gc_list containers;
 
     /**
      * Internal; the number basetype. This cannot be a static

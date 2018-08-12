@@ -2,6 +2,7 @@
 #define LIBABACUS_REFCOUNT_H
 
 #include "result.h"
+#include "gc_functions.h"
 
 /**
  * A struct for holding
@@ -10,6 +11,10 @@
  * to free the value.
  */
 struct libab_ref_count_s {
+    /**
+     * The value this reference holds.
+     */
+    void* data;
     /**
      * The fucntion to free the value.
      * Can be NULL for no-op.
@@ -25,6 +30,26 @@ struct libab_ref_count_s {
      * that still exist, even to a freed instance.
      */
     int weak;
+    /**
+     * The number of outside references.
+     * This is used for garbage collection.
+     */
+    int gc;
+    /**
+     * Previous pointer for garbage collection
+     * linked list.
+     */
+    struct libab_ref_count_s* prev;
+    /**
+     * Next pointer for garbage collection
+     * linked list.
+     */
+    struct libab_ref_count_s* next;
+    /**
+     * Function used to visit child containers,
+     * used by GC.
+     */
+    libab_visit_function_ptr visit_children;
 };
 
 /**
@@ -44,10 +69,6 @@ struct libab_ref_s {
      * of how many references are pointing to the value.
      */
     struct libab_ref_count_s* count;
-    /**
-     * The value this reference holds.
-     */
-    void* data;
 };
 
 typedef struct libab_ref_s libab_ref;
