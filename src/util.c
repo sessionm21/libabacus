@@ -291,8 +291,12 @@ libab_result libab_create_value_raw(libab* ab, libab_ref* into,
 }
 
 void _gc_visit_function_children(void* function, libab_visitor_function_ptr visitor, void* data) {
+    size_t index = 0;
     libab_function* func = function;
     libab_gc_visit(&func->scope, visitor, data);
+    for(; index < func->params.size; index++) {
+        libab_gc_visit(&func->params.data[index], visitor, data);
+    }
 }
 
 libab_result libab_create_function_internal(libab* ab, libab_ref* into,
