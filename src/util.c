@@ -389,6 +389,15 @@ libab_result libab_create_function_behavior(libab* ab, libab_ref* into,
     return result;
 }
 
+
+void _gc_visit_function_list_children(void* list, libab_visitor_function_ptr visitor, void* data) {
+    size_t index = 0;
+    libab_function_list* func_list = list;
+    for(; index < func_list->functions.size; index++) {
+        libab_gc_visit(&func_list->functions.data[index], visitor, data);
+    }
+}
+
 libab_result libab_create_function_list(libab* ab, libab_ref* into, libab_ref* type) {
     libab_function_list* list;
     libab_result result = LIBAB_SUCCESS;
@@ -412,7 +421,7 @@ libab_result libab_create_function_list(libab* ab, libab_ref* into, libab_ref* t
         libab_ref_null(into);
         free(list);
     } else {
-        libab_gc_add(into, _gc_visit_function_children, &ab->containers);
+        libab_gc_add(into, _gc_visit_function_list_children, &ab->containers);
     }
 
     return result;
