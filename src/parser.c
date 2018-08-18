@@ -1056,16 +1056,15 @@ libab_result _parse_expression(struct parser_state* state,
             while (result == LIBAB_SUCCESS && op_stack.tail &&
                    _parser_match_is_op(op_stack.tail->data)) {
                 libab_lexer_match* other_token = op_stack.tail->data;
-                if(other_token->type == TOKEN_OP_INFIX) {
-                    _parser_find_operator_infix(state, op_stack.tail->data,
-                            &other_operator);
+                if(other_token->type == TOKEN_OP_INFIX || other_token->type == TOKEN_OP_RESERVED) {
+                    _parser_find_operator_infix(state, other_token, &other_operator);
                 }
 
                 if (other_token->type == TOKEN_OP_PREFIX ||
                     (operator.associativity == - 1 &&
                      operator.precedence <= other_operator.precedence) ||
                     (operator.associativity == 1 &&
-                     operator.precedence<other_operator.precedence)) {
+                     operator.precedence < other_operator.precedence)) {
                     libab_lexer_match* match = ll_poptail(&op_stack);
                     result = _parser_append_op_node(state, match, &out_stack);
                 } else {
