@@ -67,7 +67,7 @@ libab_table_entry* libab_table_search_entry_operator(libab_table* table,
     } else if (type == OPERATOR_INFIX) {
         entry = libab_table_search_filter(table, string, NULL,
                                           libab_table_compare_op_infix);
-    } else if (type == OPERATOR_PREFIX) {
+    } else if (type == OPERATOR_POSTFIX) {
         entry = libab_table_search_filter(table, string, NULL,
                                           libab_table_compare_op_postfix);
     }
