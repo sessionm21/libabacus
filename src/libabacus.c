@@ -102,7 +102,7 @@ libab_result _register_operator(libab* ab, const char* op,
     if ((new_entry = malloc(sizeof(*new_entry)))) {
         new_entry->variant = ENTRY_OP;
         new_operator = &(new_entry->data_u.op);
-        libab_operator_init(new_operator, token_type, precedence, associativity,
+        result = libab_operator_init(new_operator, token_type, precedence, associativity,
                             function);
     } else {
         result = LIBAB_MALLOC;

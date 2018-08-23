@@ -135,8 +135,9 @@ void libab_behavior_free(libab_behavior* behavior);
  * @param associativity the associativity (left = -1, right = 1) of the
  * operator.
  * @param function the function this operator represents.
+ * @result the result of the initialization.
  */
-void libab_operator_init(libab_operator* op, libab_operator_variant variant,
+libab_result libab_operator_init(libab_operator* op, libab_operator_variant variant,
                          int precedence, int associativity, const char* function);
 /**
  * Frees the given operator.

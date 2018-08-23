@@ -1,4 +1,5 @@
 #include "custom.h"
+#include "util.h"
 
 void libab_behavior_init_internal(libab_behavior* behavior,
                                   libab_function_ptr func) {
@@ -26,16 +27,20 @@ void libab_behavior_free(libab_behavior* behavior) {
     }
 }
 
-void libab_operator_init(libab_operator* op, libab_operator_variant variant,
+libab_result libab_operator_init(libab_operator* op, libab_operator_variant variant,
                          int precedence, int associativity, const char* function) {
+    libab_result result = LIBAB_SUCCESS;
+    char* into;
     op->variant = variant;
     op->precedence = precedence;
     op->associativity = associativity;
-    op->function = function;
+    result = libab_copy_string(&into, function);
+    op->function = into;
+    return result;
 }
 
 void libab_operator_free(libab_operator* op) {
-
+    free((char*) op->function);
 }
 
 libab_result _function_init(libab_function* function, libab_ref* scope) {
