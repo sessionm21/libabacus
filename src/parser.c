@@ -525,6 +525,7 @@ libab_result _parse_fun(struct parser_state* state, libab_tree** store_into) {
     libab_result result = LIBAB_SUCCESS;
     int is_parenth, is_comma;
     libab_tree* temp;
+    *store_into = NULL;
     result = _parser_consume_type(state, TOKEN_KW_FUN);
     if (result == LIBAB_SUCCESS) {
         if (_parser_is_type(state, TOKEN_ID)) {
