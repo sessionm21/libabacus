@@ -233,6 +233,13 @@ void libab_get_false_value(libab* ab, libab_ref* into);
 void libab_get_bool_value(libab* ab, int val, libab_ref* into);
 
 /**
+ * Parses the given piece of code using the given libabacus instance.
+ * @param ab the instance to use to parse the code.
+ * @param string the source code to parse.
+ * @param into the value to store the newly parsed tree into.
+ */
+libab_result libab_parse(libab* ab, const char* string, libab_tree** into);
+/**
  * Executes the given string of code.
  * @param ab the libabacus instance to use for executing code.
  * @param string the string to execute.

@@ -406,7 +406,7 @@ void libab_get_bool_value(libab* ab, int val, libab_ref* into) {
     val ? libab_get_true_value(ab, into) : libab_get_false_value(ab, into);
 }
 
-libab_result _create_tree(libab* ab, const char* string, libab_tree** into) {
+libab_result libab_parse(libab* ab, const char* string, libab_tree** into) {
     libab_result result = LIBAB_SUCCESS;
     ll tokens;
 
@@ -442,7 +442,7 @@ libab_result libab_run(libab* ab, const char* string, libab_ref* value) {
     libab_tree* root;
 
     libab_ref_null(value);
-    result = _create_tree(ab, string, &root);
+    result = libab_parse(ab, string, &root);
 
     if (result == LIBAB_SUCCESS) {
         libab_ref_free(value);
@@ -483,7 +483,7 @@ libab_result libab_run_scoped(libab* ab, const char* string, libab_ref* scope, l
     libab_tree* root;
 
     libab_ref_null(into);
-    result = _create_tree(ab, string, &root);
+    result = libab_parse(ab, string, &root);
     if(result == LIBAB_SUCCESS) {
         libab_ref_free(into);
         result = libab_interpreter_run(&ab->intr, root, scope, SCOPE_NONE, into);
