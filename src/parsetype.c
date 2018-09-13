@@ -45,7 +45,7 @@ libab_result libab_parsetype_init_va(libab_parsetype* type,
         result = libab_ref_vec_insert(&type->children, ref);
     }
 
-    if (free_vec) {
+    if (result != LIBAB_SUCCESS && free_vec) {
         libab_ref_vec_free(&type->children);
     }
 
