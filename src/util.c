@@ -290,6 +290,94 @@ libab_result libab_create_value_raw(libab* ab, libab_ref* into,
     return result;
 }
 
+libab_result _create_value_function_list(libab* ab, libab_ref* into, libab_ref* type) {
+    libab_ref list_ref;
+    libab_result result = libab_create_function_list(ab, &list_ref, type);
+    libab_ref_null(into);
+    if (result == LIBAB_SUCCESS) {
+        libab_ref_free(into);
+        result = libab_create_value_ref(ab, into, &list_ref, type);
+    }
+    libab_ref_free(&list_ref);
+    return result;
+}
+
+
+libab_result _register_function_existing(libab* ab,
+                                         libab_table_entry* entry,
+                                         libab_ref* function_val) {
+    libab_value* old_value;
+    libab_parsetype* old_type;
+    libab_result result = LIBAB_SUCCESS;
+
+    old_value = libab_ref_get(&entry->data_u.value);
+    old_type = libab_ref_get(&old_value->type);
+
+    if (old_type->data_u.base == libab_get_basetype_function_list(ab)) {
+        libab_function_list* list = libab_ref_get(&old_value->data);
+        result = libab_function_list_insert(list, function_val);
+    } else if (old_type->data_u.base == libab_get_basetype_function(ab)) {
+        libab_ref new_list;
+        result =
+            _create_value_function_list(ab, &new_list, &ab->type_function_list);
+        if (result == LIBAB_SUCCESS) {
+            libab_function_list* list =
+                libab_ref_get(&((libab_value*)libab_ref_get(&new_list))->data);
+            result = libab_function_list_insert(list, &entry->data_u.value);
+            if (result == LIBAB_SUCCESS) {
+                result = libab_function_list_insert(list, function_val);
+            }
+        }
+        if (result == LIBAB_SUCCESS) {
+            libab_ref_swap(&entry->data_u.value, &new_list);
+        }
+        libab_ref_free(&new_list);
+    } else {
+        libab_ref_swap(&entry->data_u.value, function_val);
+    }
+
+    return result;
+}
+
+libab_result _register_function_new(libab* ab, const char* name,
+                                          libab_ref* function_val) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_table_entry* entry;
+    if ((entry = malloc(sizeof(*entry)))) {
+        entry->variant = ENTRY_VALUE;
+        libab_ref_copy(function_val, &entry->data_u.value);
+        result = libab_table_put(libab_ref_get(&ab->table), name, entry);
+
+        if (result != LIBAB_SUCCESS) {
+            libab_table_entry_free(entry);
+            free(entry);
+        }
+    } else {
+        result = LIBAB_MALLOC;
+    }
+
+    return result;
+}
+
+
+libab_result libab_overload_function(libab* ab,
+                                     libab_table* table,
+                                     const char* name,
+                                     libab_ref* function) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_table_entry* existing_entry = libab_table_search_filter(
+            table, name, NULL, libab_table_compare_value);
+
+    if (existing_entry) {
+        result = _register_function_existing(ab, existing_entry,
+                function);
+    } else {
+        result = _register_function_new(ab, name, function);
+    }
+
+    return result;
+}
+
 void _gc_visit_function_children(void* function, libab_visitor_function_ptr visitor, void* data) {
     size_t index = 0;
     libab_function* func = function;

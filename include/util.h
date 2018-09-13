@@ -104,6 +104,17 @@ libab_result libab_create_value_ref(libab* ab, libab_ref* into,
 libab_result libab_create_value_raw(libab* ab, libab_ref* into,
                                     void* data, libab_ref* type);
 /**
+ * Overloads a function of the given name.
+ * @param table the table to insert the function into.
+ * @param name the name of the function.
+ * @param function the function to register.
+ * @return the result of the overload.
+ */
+libab_result libab_overload_function(libab* ab,
+                                     libab_table* table,
+                                     const char* name,
+                                     libab_ref* function);
+/**
  * Allocates a function that uses internal code to run.
  * @param into the reference into which to store the new function.
  * @param free_function the free function used to free function instances.

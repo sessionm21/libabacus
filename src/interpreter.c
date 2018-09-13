@@ -1224,7 +1224,7 @@ libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
             _interpreter_create_function_value(state, tree, scope, &function);
 
         if(result == LIBAB_SUCCESS) {
-            result = libab_put_table_value(libab_ref_get(scope),
+            result = libab_overload_function(state->ab, libab_ref_get(scope),
                     tree->string_value, &function);
             if(result != LIBAB_SUCCESS) {
                 libab_ref_free(&function);
