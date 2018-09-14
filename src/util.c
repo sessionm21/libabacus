@@ -378,6 +378,20 @@ libab_result libab_overload_function(libab* ab,
     return result;
 }
 
+libab_result libab_set_variable(libab_table* table,
+                                const char* name,
+                                libab_ref* value) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_table_entry* value_entry = libab_table_search_entry_value(table, name);
+    if(value_entry) {
+        libab_ref_free(&value_entry->data_u.value);
+        libab_ref_copy(value, &value_entry->data_u.value);
+    } else {
+        result = libab_put_table_value(table, name, value);
+    }
+    return result;
+}
+
 void _gc_visit_function_children(void* function, libab_visitor_function_ptr visitor, void* data) {
     size_t index = 0;
     libab_function* func = function;

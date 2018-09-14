@@ -115,6 +115,17 @@ libab_result libab_overload_function(libab* ab,
                                      const char* name,
                                      libab_ref* function);
 /**
+ * Sets a value under the given name, overriding
+ * an existing value if it exists.
+ * @param table the table to store the value into.
+ * @param name the name of the variable.
+ * @param the value of the new variable.
+ * @return the result of setting the variable.
+ */
+libab_result libab_set_variable(libab_table* table,
+                                const char* name,
+                                libab_ref* value);
+/**
  * Allocates a function that uses internal code to run.
  * @param into the reference into which to store the new function.
  * @param free_function the free function used to free function instances.

@@ -4,18 +4,6 @@
 #include "value.h"
 #include "libabacus.h"
 
-libab_result _update_entry(libab_table* table, const char* name, libab_ref* value) {
-    libab_result result = LIBAB_SUCCESS;
-    libab_table_entry* value_entry = libab_table_search_entry_value(table, name);
-    if(value_entry) {
-        libab_ref_free(&value_entry->data_u.value);
-        libab_ref_copy(value, &value_entry->data_u.value);
-    } else {
-        result = libab_put_table_value(table, name, value);
-    }
-    return result;
-}
-
 libab_result _behavior_assign(libab* ab, libab_ref* scope, 
                               libab_tree* left, libab_tree* right,
                               libab_ref* into) {
@@ -24,7 +12,7 @@ libab_result _behavior_assign(libab* ab, libab_ref* scope,
     if(left->variant == TREE_ID) {
         result = libab_run_tree_scoped(ab, right, scope, into);
         if(result == LIBAB_SUCCESS) {
-            result = _update_entry(libab_ref_get(scope), left->string_value, into);
+            result = libab_set_variable(libab_ref_get(scope), left->string_value, into);
         }
 
         if(result != LIBAB_SUCCESS) {
