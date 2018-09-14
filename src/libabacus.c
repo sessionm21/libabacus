@@ -377,7 +377,7 @@ libab_result libab_run(libab* ab, const char* string, libab_ref* value) {
     return result;
 }
 
-libab_result libab_run_function(libab* ab, const char* function, 
+libab_result libab_call_function(libab* ab, const char* function, 
                                 libab_ref* into,
                                 size_t param_count, ...) {
     libab_ref_vec params;
@@ -389,7 +389,7 @@ libab_result libab_run_function(libab* ab, const char* function,
     result = _handle_va_params(ab, &params, param_count, args);
     if(result == LIBAB_SUCCESS) {
         libab_ref_free(into);
-        result = libab_interpreter_run_function(&ab->intr, &ab->table, function, &params, into);
+        result = libab_interpreter_call_function(&ab->intr, &ab->table, function, &params, into);
 
         libab_ref_vec_free(&params);
     }
@@ -417,7 +417,7 @@ libab_result libab_run_scoped(libab* ab, const char* string, libab_ref* scope, l
     return result;
 }
 
-libab_result libab_run_function_scoped(libab* ab, const char* function, libab_ref* scope, libab_ref* into,
+libab_result libab_call_function_scoped(libab* ab, const char* function, libab_ref* scope, libab_ref* into,
         size_t param_count, ...) {
     libab_ref_vec params;
     libab_result result;
@@ -428,7 +428,7 @@ libab_result libab_run_function_scoped(libab* ab, const char* function, libab_re
     result = _handle_va_params(ab, &params, param_count, args);
     if(result == LIBAB_SUCCESS) {
         libab_ref_free(into);
-        result = libab_interpreter_run_function(&ab->intr, scope, function, &params, into);
+        result = libab_interpreter_call_function(&ab->intr, scope, function, &params, into);
 
         libab_ref_vec_free(&params);
     }

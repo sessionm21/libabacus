@@ -41,6 +41,61 @@ libab_result _behavior_assign(libab* ab, libab_ref* scope,
     return result;
 }
 
+libab_result _behavior_method(libab* ab, libab_ref* scope,
+                              libab_tree* left, libab_tree* right,
+                              libab_ref* into) {
+    libab_result result = LIBAB_SUCCESS;
+    libab_ref param;
+    libab_ref callee;
+    libab_ref_vec params;
+    int free_params = 0;
+    size_t index = 0;
+
+    libab_ref_null(&callee);
+    if(right->variant == TREE_CALL) {
+        result = libab_ref_vec_init(&params);
+    } else {
+        result = LIBAB_BAD_CALL;
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        free_params = 1;
+        result = libab_run_tree_scoped(ab, left, scope, &param);
+        if(result == LIBAB_SUCCESS) {
+            result = libab_ref_vec_insert(&params, &param);
+        }
+        libab_ref_free(&param);
+    }
+
+    for(; index < right->children.size - 1 && result == LIBAB_SUCCESS; index++) {
+        result = libab_run_tree_scoped(ab, vec_index(&right->children, index),
+                                       scope, &param);
+        if(result == LIBAB_SUCCESS) {
+            result = libab_ref_vec_insert(&params, &param);
+        }
+        libab_ref_free(&param);
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        libab_ref_free(&callee);
+        result = libab_run_tree_scoped(ab, vec_index(&right->children, right->children.size - 1),
+                                      scope, &callee);
+    }
+
+    if(result == LIBAB_SUCCESS) {
+        result = libab_interpreter_call_value(&ab->intr, scope, &callee, &params, into);
+    } else {
+        libab_ref_null(into);
+    }
+
+    if(free_params) {
+        libab_ref_vec_free(&params);
+    }
+    libab_ref_free(&callee);
+
+    return result;
+}
+
 libab_result _expect_boolean(libab* ab, libab_ref* scope,
                           libab_tree* to_run, int* into) {
     libab_result result = LIBAB_SUCCESS;
@@ -103,19 +158,25 @@ libab_result _behavior_lor(libab* ab, libab_ref* scope,
 static const libab_reserved_operator libab_reserved_operators[] = {
     {
         "=", /* Assignment */
-        0,   /* Lowest precedence */
+        -3,  /* Lowest precedence */
         1,   /* Right associative, a = b = 6 should be a = (b = 6) */
         _behavior_assign
     },
     {
+        ".",
+        -2,
+        -1,
+        _behavior_method
+    },
+    {
         "&&", /* Logical and */
-        0,    /* Low precedence */
+        -1,   /* Low precedence */
         -1,   /* Left associative. */
         _behavior_land
     },
     {
         "||", /* Logical or */
-        0,    /* Low precedence */
+        -1,   /* Low precedence */
         -1,   /* Left associative. */
         _behavior_lor
     },

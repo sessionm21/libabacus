@@ -70,11 +70,25 @@ libab_result libab_interpreter_run(libab_interpreter* intr, libab_tree* tree,
  * @param into the reference to store the result into.
  * @return the result of the call.
  */
-libab_result libab_interpreter_run_function(libab_interpreter* intr,
+libab_result libab_interpreter_call_function(libab_interpreter* intr,
                                             libab_ref* scope,
                                             const char* function,
                                             libab_ref_vec* params,
                                             libab_ref* into);
+/**
+ * Calls a function value with the given parameters.
+ * @param intr the interpreter to use to call the function.
+ * @param scope the scope in which the function should be searched for.
+ * @param function the function to call.
+ * @param params the parameters to pass to the function.
+ * @param into the reference to store the result into.
+ * @return the result of the call.
+ */
+libab_result libab_interpreter_call_value(libab_interpreter* intr,
+                                         libab_ref* scope,
+                                         libab_ref* function,
+                                         libab_ref_vec* params,
+                                         libab_ref* into);
 /**
  * Gets the unit value from this interpreter.
  * @param intr the interpreter from which to get the unit value.

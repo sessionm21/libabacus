@@ -1297,7 +1297,7 @@ libab_result libab_interpreter_run(libab_interpreter* intr, libab_tree* tree,
     return result;
 }
 
-libab_result libab_interpreter_run_function(libab_interpreter* intr,
+libab_result libab_interpreter_call_function(libab_interpreter* intr,
                                             libab_ref* scope,
                                             const char* function,
                                             libab_ref_vec* params,
@@ -1319,6 +1319,21 @@ libab_result libab_interpreter_run_function(libab_interpreter* intr,
     _interpreter_free(&state);
     libab_ref_free(&function_value);
 
+    return result;
+}
+
+libab_result libab_interpreter_call_value(libab_interpreter* intr,
+                                         libab_ref* scope,
+                                         libab_ref* function,
+                                         libab_ref_vec* params,
+                                         libab_ref* into) {
+    struct interpreter_state state;
+    libab_result result = LIBAB_SUCCESS;
+
+    _interpreter_init(&state, intr, scope);
+    result = _interpreter_try_call(&state, function, params, into);
+    _interpreter_free(&state);
+    
     return result;
 }
 

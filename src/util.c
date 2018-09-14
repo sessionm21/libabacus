@@ -572,7 +572,7 @@ void libab_sanitize(char* to, const char* from, size_t buffer_size) {
     while (*from && index < (buffer_size - 2)) {
         if (*from == '+' || *from == '*' || *from == '\\' ||
                 *from == '|' || *from == '[' || *from == ']' || *from == '(' ||
-                *from == ')')
+                *from == ')' || *from == '.')
             to[index++] = '\\';
         to[index++] = *(from++);
     }

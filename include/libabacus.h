@@ -263,7 +263,7 @@ libab_result libab_run_tree(libab* ab, libab_tree* tree, libab_ref* value);
  * @param param_count the number of parameters given to this function.
  * @return the result of the call.
  */
-libab_result libab_run_function(libab* ab, const char* function,
+libab_result libab_call_function(libab* ab, const char* function,
                                 libab_ref* into,
                                 size_t param_count, ...);
 /**
@@ -293,7 +293,7 @@ libab_result libab_run_tree_scoped(libab* ab, libab_tree* tree, libab_ref* scope
  * @param param_count the number of parameters given to this function.
  * @return the result of the call.
  */
-libab_result libab_run_function_scoped(libab* ab, const char* function, libab_ref* scope,
+libab_result libab_call_function_scoped(libab* ab, const char* function, libab_ref* scope,
                                        libab_ref* into,
                                        size_t param_count, ...);
 
