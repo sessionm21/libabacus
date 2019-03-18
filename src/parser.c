@@ -5,6 +5,7 @@
 #include "util.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 struct parser_state {
     ll_node* current_node;
@@ -12,6 +13,7 @@ struct parser_state {
     libab_lexer_match* last_match;
     const char* string;
     libab_table* base_table;
+    libab* ab;
 };
 
 struct operator_data {
@@ -58,12 +60,13 @@ void _parser_state_update(struct parser_state* state) {
         state->last_match = state->current_match;
 }
 
-void _parser_state_init(struct parser_state* state, ll* tokens,
+void _parser_state_init(struct parser_state* state, libab_parser* parser, ll* tokens,
                         const char* string, libab_table* table) {
     state->last_match = NULL;
     state->current_node = tokens->head;
     state->string = string;
     state->base_table = table;
+    state->ab = parser->ab;
     _parser_state_update(state);
 }
 
@@ -151,6 +154,11 @@ libab_result _parser_append_type(struct parser_state* state,
     if (result == LIBAB_SUCCESS) {
         result = libab_ref_vec_insert(into, &temp);
         libab_ref_free(&temp);
+    } else {
+        state->ab->errormsg = realloc(state->ab->errormsg, strlen(state->ab->errormsg)+47);
+        snprintf(state->ab->errormsg + strlen(state->ab->errormsg), 47, "%s\n",
+                "Parser error: unable to determine parse type");
+        state->ab->error = 1;
     }
     return result;
 }
@@ -176,6 +184,11 @@ libab_result _parse_type_list(struct parser_state* state, libab_ref_vec* into,
 
     if (result == LIBAB_SUCCESS) {
         result = _parser_consume_char(state, end_char);
+    } else {
+        state->ab->errormsg = realloc(state->ab->errormsg, strlen(state->ab->errormsg)+65);
+        snprintf(state->ab->errormsg + strlen(state->ab->errormsg), 65, "%s\n",
+                "Parser error: incorrect combination of parenthesis and commas.");
+        state->ab->error = 1;
     }
 
     return result;
@@ -260,6 +273,11 @@ libab_result _parse_type_function(struct parser_state* state,
     if (result != LIBAB_SUCCESS && *into) {
         libab_parsetype_free(*into);
         *into = NULL;
+
+        state->ab->errormsg = realloc(state->ab->errormsg, strlen(state->ab->errormsg)+48);
+        snprintf(state->ab->errormsg + strlen(state->ab->errormsg), 48, "%s\n",
+                 "Parser error: error parsing the function call");
+        state->ab->error = 1;
     }
 
     return result;
@@ -290,6 +308,11 @@ libab_result _parse_type_array(struct parser_state* state,
     if (result != LIBAB_SUCCESS && *into) {
         libab_parsetype_free(*into);
         *into = NULL;
+
+        state->ab->errormsg = realloc(state->ab->errormsg, strlen(state->ab->errormsg)+40);
+        snprintf(state->ab->errormsg + strlen(state->ab->errormsg), 40, "%s\n",
+                 "Parser error: error parsing the array");
+        state->ab->error = 1;
     }
 
     return result;
@@ -359,6 +382,11 @@ libab_result _parser_construct_node_string(struct parser_state* state,
     if (result != LIBAB_SUCCESS) {
         free(*into);
         *into = NULL;
+
+        state->ab->errormsg = realloc(state->ab->errormsg, strlen(state->ab->errormsg)+52);
+        snprintf(state->ab->errormsg + strlen(state->ab->errormsg), 52, "%s\n",
+                 "Parser error: error allocating / extracting string");
+        state->ab->error = 1;
     }
 
     return result;
@@ -402,6 +430,10 @@ libab_result _parse_void(struct parser_state* state, libab_tree** store_into) {
         (*store_into)->variant = TREE_VOID;
     } else {
         result = LIBAB_MALLOC;
+        state->ab->errormsg = realloc(state->ab->errormsg, strlen(state->ab->errormsg)+30);
+        snprintf(state->ab->errormsg + strlen(state->ab->errormsg), 30, "%s\n",
+                 "Parser error: malloc error");
+        state->ab->error = 1;
     }
     return result;
 }
@@ -418,6 +450,11 @@ libab_result _parse_true(struct parser_state* state, libab_tree** store_into) {
 
     if(result != LIBAB_SUCCESS) {
         *store_into = NULL;
+
+        state->ab->errormsg = realloc(state->ab->errormsg, strlen(state->ab->errormsg)+44);
+        snprintf(state->ab->errormsg + strlen(state->ab->errormsg), 44, "%s\n",
+                 "Parser error: failed trying to parse true");
+        state->ab->error = 1;
     }
     return result;
 }
@@ -434,6 +471,11 @@ libab_result _parse_false(struct parser_state* state, libab_tree** store_into) {
 
     if(result != LIBAB_SUCCESS) {
         *store_into = NULL;
+
+        state->ab->errormsg = realloc(state->ab->errormsg, strlen(state->ab->errormsg)+45);
+        snprintf(state->ab->errormsg + strlen(state->ab->errormsg), 45, "%s\n",
+                 "Parser error: failed trying to parse false");
+        state->ab->error = 1;
     }
     return result;
 }
@@ -487,6 +529,11 @@ libab_result _parse_if(struct parser_state* state, libab_tree** store_into) {
         if (*store_into)
             libab_tree_free_recursive(*store_into);
         *store_into = NULL;
+
+        state->ab->errormsg = realloc(state->ab->errormsg, strlen(state->ab->errormsg)+52);
+        snprintf(state->ab->errormsg + strlen(state->ab->errormsg), 52, "%s\n",
+                 "Parser error: failed trying to parse if statement");
+        state->ab->error = 1;
     }
 
     return result;
@@ -517,6 +564,11 @@ libab_result _parse_fun_param(struct parser_state* state,
     if (result != LIBAB_SUCCESS && *store_into) {
         libab_tree_free_recursive(*store_into);
         *store_into = NULL;
+
+        state->ab->errormsg = realloc(state->ab->errormsg, strlen(state->ab->errormsg)+60);
+        snprintf(state->ab->errormsg + strlen(state->ab->errormsg), 60, "%s\n",
+                 "Parser error: failed trying to parse function parameters");
+        state->ab->error = 1;
     }
     return result;
 }
@@ -579,6 +631,11 @@ libab_result _parse_fun(struct parser_state* state, libab_tree** store_into) {
     if (result != LIBAB_SUCCESS && *store_into) {
         libab_tree_free_recursive(*store_into);
         *store_into = NULL;
+
+        state->ab->errormsg = realloc(state->ab->errormsg, strlen(state->ab->errormsg)+55);
+        snprintf(state->ab->errormsg + strlen(state->ab->errormsg), 55, "%s\n",
+                 "Parser error: failed trying to parse functions");
+        state->ab->error = 1;
     }
 
     return result;
@@ -607,6 +664,11 @@ libab_result _parse_return(struct parser_state* state,
         if (*store_into)
             libab_tree_free_recursive(*store_into);
         *store_into = NULL;
+
+        state->ab->errormsg = realloc(state->ab->errormsg, strlen(state->ab->errormsg)+60);
+        snprintf(state->ab->errormsg + strlen(state->ab->errormsg), 60, "%s\n",
+                 "Parser error: failed trying to parse return statement");
+        state->ab->error = 1;
     }
 
     return result;
@@ -649,6 +711,11 @@ libab_result _parse_while(struct parser_state* state, libab_tree** store_into) {
         if (*store_into)
             libab_tree_free_recursive(*store_into);
         *store_into = NULL;
+
+        state->ab->errormsg = realloc(state->ab->errormsg, strlen(state->ab->errormsg)+60);
+        snprintf(state->ab->errormsg + strlen(state->ab->errormsg), 60, "%s\n",
+                 "Parser error: failed trying to parse while statement");
+        state->ab->error = 1;
     }
 
     return result;
@@ -692,6 +759,13 @@ libab_result _parse_dowhile(struct parser_state* state,
         result = _parser_consume_char(state, ')');
     }
 
+    if (result != LIBAB_SUCCESS) {
+        state->ab->errormsg = realloc(state->ab->errormsg, strlen(state->ab->errormsg)+60);
+        snprintf(state->ab->errormsg + strlen(state->ab->errormsg), 60, "%s\n",
+                 "Parser error: failed trying to parse do-while loop");
+        state->ab->error = 1;
+    }
+
     return result;
 }
 
@@ -729,6 +803,11 @@ libab_result _parse_call(struct parser_state* state, libab_tree** store_into) {
         if (*store_into)
             libab_tree_free_recursive(*store_into);
         *store_into = NULL;
+
+        state->ab->errormsg = realloc(state->ab->errormsg, strlen(state->ab->errormsg)+60);
+        snprintf(state->ab->errormsg + strlen(state->ab->errormsg), 60, "%s\n",
+                 "Parser error: failed trying to parse function call");
+        state->ab->error = 1;
     }
 
     return result;
@@ -775,6 +854,10 @@ libab_result _parse_atom(struct parser_state* state, libab_tree** store_into) {
         result = _parse_false(state, store_into);
     } else {
         result = LIBAB_UNEXPECTED;
+        state->ab->errormsg = realloc(state->ab->errormsg, strlen(state->ab->errormsg)+50);
+        snprintf(state->ab->errormsg + strlen(state->ab->errormsg), 50, "%s\n",
+                 "Parser error: failed trying to parse atom");
+        state->ab->error = 1;
     }
     return result;
 }
@@ -1160,12 +1243,16 @@ libab_result libab_parser_parse(libab_parser* parser, ll* tokens,
                                 const char* string, libab_tree** store_into) {
     libab_result result;
     struct parser_state state;
-    _parser_state_init(&state, tokens, string,
+    _parser_state_init(&state, parser, tokens, string,
                        libab_ref_get(&parser->ab->table));
 
     result = _parse_block(&state, store_into, 0);
     if (result == LIBAB_SUCCESS) {
         (*store_into)->variant = TREE_BASE;
+    } else {
+        parser->ab->errormsg = realloc(parser->ab->errormsg, strlen(parser->ab->errormsg)+45);
+        snprintf(parser->ab->errormsg + + strlen(parser->ab->errormsg), 45, "%s\n", "Parser error: error parsing through input.");
+        parser->ab->error = 1;
     }
 
     return result;
@@ -1174,7 +1261,7 @@ libab_result libab_parser_parse_type(libab_parser* parser, ll* tokens,
                                      const char* string,
                                      libab_ref* store_into) {
     struct parser_state state;
-    _parser_state_init(&state, tokens, string,
+    _parser_state_init(&state, parser, tokens, string,
                        libab_ref_get(&parser->ab->table));
 
     return _parse_type(&state, store_into);
