@@ -56,8 +56,6 @@ libab_result libab_interpreter_init(libab_interpreter* intr, libab* ab) {
 struct interpreter_state {
     libab* ab;
     libab_table* base_table;
-    char *errormsg;
-    int error;
 };
 
 void _interpreter_init(struct interpreter_state* state,
@@ -65,9 +63,6 @@ void _interpreter_init(struct interpreter_state* state,
                        libab_ref* scope) {
     state->ab = intr->ab;
     state->base_table = libab_ref_get(scope);
-    state->errormsg = malloc(sizeof(char));
-    state->errormsg[0] = '\0';
-    state->error = 0;
 }
 
 void _interpreter_free(struct interpreter_state* state) {}
@@ -983,10 +978,12 @@ libab_result _interpreter_call_operator(struct interpreter_state* state,
             result = _interpreter_require_value(scope, to_call->function, &function_value);
 
         } else {
-            state->errormsg = realloc(state->errormsg, strlen(state->errormsg)+strlen(to_call->function)+50);
-            sprintf(state->errormsg + strlen(state->errormsg), "unexpected error in function call to %s\n", to_call->function);
-            state->error=1;
+            state->ab->errormsg = realloc(state->ab->errormsg, strlen(state->ab->errormsg)+strlen(to_call->function)+50);
+            sprintf(state->ab->errormsg + strlen(state->ab->errormsg), "unexpected error in function call to %s\n", to_call->function);
+            state->ab->error=1;
+
 	      }
+            printf("%s %d -- ref_vec: %d, %d\n\n", __FILE__, __LINE__, params.capacity, params.size);
 
         if(result == LIBAB_SUCCESS) {
             libab_ref_free(into);
@@ -1309,10 +1306,6 @@ libab_result libab_interpreter_run(libab_interpreter* intr, libab_tree* tree,
 
     _interpreter_init(&state, intr, scope);
     result = _interpreter_run(&state, tree, into, scope, mode);
-    if(state.error == 1) {
-      printf("add errormsg here %s %d\n\n", __FUNCTION__, __LINE__);
-      puts(state.errormsg);
-    }
     _interpreter_free(&state);
 
     return result;

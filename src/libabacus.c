@@ -37,6 +37,10 @@ libab_result libab_init(libab* ab, void* (*parse_function)(const char*),
     ab->impl.parse_num = parse_function;
     result = libab_create_table(ab, &ab->table, &null_ref);
 
+    ab->error = 0;
+    ab->errormsg = malloc(sizeof(char));
+    ab->errormsg[0] = '\0';
+
     if (result == LIBAB_SUCCESS) {
         libab_ref_free(&ab->type_num);
         libab_ref_free(&ab->type_bool);

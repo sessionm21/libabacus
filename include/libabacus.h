@@ -73,6 +73,9 @@ struct libab_s {
      * specified by the user.
      */
     libab_basetype basetype_num;
+
+    int error;
+    char *errormsg;
 };
 
 typedef struct libab_s libab;
