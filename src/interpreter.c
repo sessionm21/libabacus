@@ -1264,6 +1264,11 @@ libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
             result = _interpreter_run(state, vec_index(&tree->children, 1), 
                                       into, scope, SCOPE_FORCE);
         }
+
+        if(result != LIBAB_SUCCESS) {
+            libab_ref_free(into);
+            libab_ref_null(into);
+        }
     } else if(tree->variant == TREE_DOWHILE) {
         int value;
         libab_get_unit_value(state->ab, into);
@@ -1272,6 +1277,11 @@ libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
             result = _interpreter_run(state, vec_index(&tree->children, 0),
                                       into, scope, SCOPE_FORCE);
         } while(result == LIBAB_SUCCESS && (result = RUN_CHECK(1)) == LIBAB_SUCCESS && value);
+
+        if(result != LIBAB_SUCCESS) {
+            libab_ref_free(into);
+            libab_ref_null(into);
+        }
     } else {
         libab_get_unit_value(state->ab, into);
     }
