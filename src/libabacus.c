@@ -413,7 +413,11 @@ libab_result libab_run_scoped(libab* ab, const char* string, libab_ref* scope, l
         result = libab_interpreter_run(&ab->intr, root, scope, SCOPE_NONE, into);
         libab_tree_free_recursive(root);
     }
+    if(result != LIBAB_SUCCESS){
+      //printf("Errors: \n%s\n", interpreter_get_errormsg(&ab->intr));
+    }
 
+    printf("run_scoped : %d\n", result == LIBAB_SUCCESS);
     return result;
 }
 
