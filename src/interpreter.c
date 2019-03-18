@@ -56,6 +56,8 @@ libab_result libab_interpreter_init(libab_interpreter* intr, libab* ab) {
 struct interpreter_state {
     libab* ab;
     libab_table* base_table;
+    char *errormsg;
+    int error;
 };
 
 void _interpreter_init(struct interpreter_state* state,
@@ -63,6 +65,8 @@ void _interpreter_init(struct interpreter_state* state,
                        libab_ref* scope) {
     state->ab = intr->ab;
     state->base_table = libab_ref_get(scope);
+    state->errormsg = malloc(sizeof(char));
+    state->error = 0;
 }
 
 void _interpreter_free(struct interpreter_state* state) {}
@@ -926,6 +930,8 @@ libab_result _interpreter_try_call(struct interpreter_state* state,
 libab_result _interpreter_require_value(libab_ref* scope, const char* name,
                                         libab_ref* into) {
     libab_result result = LIBAB_SUCCESS;
+    printf("%s %d name = %s\n", __FUNCTION__, __LINE__, name);
+    
     libab_table_search_value(libab_ref_get(scope), name, into);
     if(libab_ref_get(into) == NULL) {
         result = LIBAB_UNEXPECTED;
@@ -974,7 +980,12 @@ libab_result _interpreter_call_operator(struct interpreter_state* state,
         if(result == LIBAB_SUCCESS) {
             libab_ref_free(&function_value);
             result = _interpreter_require_value(scope, to_call->function, &function_value);
-        }
+
+        } else {
+            state->errormsg = realloc(state->errormsg, strlen(state->errormsg)+strlen(to_call->function)+50);
+            sprintf(state->errormsg + strlen(state->errormsg), "unexpected error in function call to %s\n", to_call->function);
+            state->error=1;
+	      }
 
         if(result == LIBAB_SUCCESS) {
             libab_ref_free(into);
@@ -1180,6 +1191,7 @@ libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
 
     if (needs_scope) {
         result = libab_create_table(state->ab, &new_scope, scope);
+
         scope = &new_scope;
     }
 
@@ -1223,6 +1235,10 @@ libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
         result = 
             _interpreter_create_function_value(state, tree, scope, &function);
 
+	if(result != LIBAB_SUCCESS) {
+	  puts("FUNCTION_CREATION_FAILED\n");
+	  
+	}
         if(result == LIBAB_SUCCESS) {
             result = libab_overload_function(state->ab, libab_ref_get(scope),
                     tree->string_value, &function);
@@ -1292,6 +1308,10 @@ libab_result libab_interpreter_run(libab_interpreter* intr, libab_tree* tree,
 
     _interpreter_init(&state, intr, scope);
     result = _interpreter_run(&state, tree, into, scope, mode);
+    if(state.error == 1) {
+      puts("add errormsg here");
+      puts(state.errormsg);
+    }
     _interpreter_free(&state);
 
     return result;
