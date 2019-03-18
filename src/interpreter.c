@@ -37,10 +37,18 @@ libab_result libab_interpreter_init(libab_interpreter* intr, libab* ab) {
     if(result == LIBAB_SUCCESS) {
         libab_ref_free(&intr->value_true);
         result = _create_bool_value(ab, 1, &intr->value_true);
+    } else {
+        intr->ab->errormsg = realloc(intr->ab->errormsg, 50);
+        sprintf(intr->ab->errormsg + strlen(intr->ab->errormsg), "could not create bool value");
+        intr->ab->error=1;
     }
     if(result == LIBAB_SUCCESS) {
         libab_ref_free(&intr->value_false);
         result = _create_bool_value(ab, 0, &intr->value_false);
+    } else {
+        intr->ab->errormsg = realloc(intr->ab->errormsg, 50);
+        sprintf(intr->ab->errormsg + strlen(intr->ab->errormsg), "could not create bool value");
+        intr->ab->error=1;
     }
     libab_ref_free(&unit_data);
 
@@ -350,6 +358,7 @@ libab_result _interpreter_check_types(libab_ref_vec* reference_types,
                 result = libab_ref_vec_insert(types, &produced_type);
                 libab_ref_free(&produced_type);
             }
+            
 
             libab_ref_free(&left_temp);
             libab_ref_free(&right_value_temp);
@@ -843,7 +852,7 @@ libab_result _interpreter_call_function_list(struct interpreter_state* state,
                                                              &new_types, &param_map, into);
         libab_ref_trie_free(&param_map);
         libab_ref_vec_free(&new_types);
-    }
+    } 
 
     libab_ref_free(&to_call);
 
@@ -1242,10 +1251,6 @@ libab_result _interpreter_run(struct interpreter_state* state, libab_tree* tree,
     result = 
       _interpreter_create_function_value(state, tree, scope, &function);
 
-    if(result != LIBAB_SUCCESS) {
-      puts("FUNCTION_CREATION_FAILED\n");
-
-    }
     if(result == LIBAB_SUCCESS) {
       result = libab_overload_function(state->ab, libab_ref_get(scope),
           tree->string_value, &function);
