@@ -66,6 +66,7 @@ void _interpreter_init(struct interpreter_state* state,
     state->ab = intr->ab;
     state->base_table = libab_ref_get(scope);
     state->errormsg = malloc(sizeof(char));
+    state->errormsg[0] = '\0';
     state->error = 0;
 }
 
@@ -1309,7 +1310,7 @@ libab_result libab_interpreter_run(libab_interpreter* intr, libab_tree* tree,
     _interpreter_init(&state, intr, scope);
     result = _interpreter_run(&state, tree, into, scope, mode);
     if(state.error == 1) {
-      puts("add errormsg here");
+      printf("add errormsg here %s %d\n\n", __FUNCTION__, __LINE__);
       puts(state.errormsg);
     }
     _interpreter_free(&state);
