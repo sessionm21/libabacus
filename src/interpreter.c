@@ -926,7 +926,6 @@ libab_result _interpreter_try_call(struct interpreter_state* state,
 libab_result _interpreter_require_value(libab_ref* scope, const char* name,
                                         libab_ref* into) {
     libab_result result = LIBAB_SUCCESS;
-    printf("%s %d name = %s\n", __FUNCTION__, __LINE__, name);
     
     libab_table_search_value(libab_ref_get(scope), name, into);
     if(libab_ref_get(into) == NULL) {
@@ -983,7 +982,6 @@ libab_result _interpreter_call_operator(struct interpreter_state* state,
             state->ab->error=1;
 
 	      }
-            printf("%s %d -- ref_vec: %d, %d\n\n", __FILE__, __LINE__, params.capacity, params.size);
 
         if(result == LIBAB_SUCCESS) {
             libab_ref_free(into);
